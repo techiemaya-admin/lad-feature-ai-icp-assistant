@@ -3,12 +3,14 @@
  * 
  * Feature for AI-powered Ideal Customer Profile assistant that helps users
  * define search criteria and trigger Apollo searches through conversational interface.
+ * 
+ * Version 2.0.0: Refactored with proper MVC architecture
  */
 
 module.exports = {
   name: 'AI ICP Assistant',
   key: 'ai-icp-assistant',
-  version: '1.0.0',
+  version: '2.0.0',
   description: 'AI-powered assistant to help define ICP and trigger Apollo searches',
   
   // Feature availability
@@ -21,10 +23,14 @@ module.exports = {
   },
   
   // API routes provided by this feature
-  routes: [
-    'chat',
-    'reset',
-    'history'
+  routes: require('./routes/index.js'),
+  
+  // Database tables
+  tables: [
+    'ai_conversations',
+    'ai_messages',
+    'ai_icp_profiles',
+    'ai_keyword_expansions'
   ],
   
   // Dependencies
@@ -36,6 +42,9 @@ module.exports = {
   capabilities: [
     'chat_with_ai',
     'define_icp',
-    'trigger_apollo_search'
+    'trigger_apollo_search',
+    'save_icp_profiles',
+    'keyword_expansion',
+    'conversation_history'
   ]
 };

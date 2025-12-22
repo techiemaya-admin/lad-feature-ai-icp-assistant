@@ -4,7 +4,9 @@
   "description": "AI-powered ICP Assistant feature for LAD platform",
   "main": "backend/manifest.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node test-server.js",
+    "dev": "nodemon test-server.js",
+    "test": "node test-client.js",
     "merge:backend": "./scripts/merge-to-backend.sh",
     "merge:frontend": "./scripts/merge-to-frontend.sh"
   },
@@ -23,9 +25,14 @@
   "author": "LAD Team",
   "license": "ISC",
   "dependencies": {
-    "@google/generative-ai": "^0.1.0"
+    "@google/generative-ai": "^0.1.0",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
   "engines": {
     "node": ">=18.0.0"
   }

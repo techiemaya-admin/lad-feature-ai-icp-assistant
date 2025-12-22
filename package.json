@@ -1,0 +1,32 @@
+{
+  "name": "lad-feature-ai-icp-assistant",
+  "version": "1.0.0",
+  "description": "AI-powered ICP Assistant feature for LAD platform",
+  "main": "backend/manifest.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "merge:backend": "./scripts/merge-to-backend.sh",
+    "merge:frontend": "./scripts/merge-to-frontend.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/techiemaya-admin/lad-feature-ai-icp-assistant.git"
+  },
+  "keywords": [
+    "lad",
+    "feature",
+    "ai",
+    "icp",
+    "assistant",
+    "lead-generation"
+  ],
+  "author": "LAD Team",
+  "license": "ISC",
+  "dependencies": {
+    "@google/generative-ai": "^0.1.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -1,0 +1,104 @@
+name: Sync to LAD Main Repositories
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  sync-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Checkout LAD-Backend
+        uses: actions/checkout@v3
+        with:
+          repository: techiemaya-admin/LAD-Backend
+          token: ${{ secrets.LAD_REPO_TOKEN }}
+          path: lad-backend
+          ref: develop
+
+      - name: Copy backend files
+        run: |
+          # Remove old files
+          rm -rf lad-backend/features/ai-icp-assistant/services/*
+          rm -rf lad-backend/features/ai-icp-assistant/routes/*
+          rm -f lad-backend/features/ai-icp-assistant/manifest.js
+          rm -f lad-backend/features/ai-icp-assistant/UPGRADE_NOTES.md
+
+          # Ensure directories exist
+          mkdir -p lad-backend/features/ai-icp-assistant/services
+          mkdir -p lad-backend/features/ai-icp-assistant/routes
+
+          # Copy new files
+          cp backend/services/* lad-backend/features/ai-icp-assistant/services/
+          cp backend/routes/routes.js lad-backend/features/ai-icp-assistant/routes.js
+          cp backend/manifest.js lad-backend/features/ai-icp-assistant/
+          cp backend/UPGRADE_NOTES.md lad-backend/features/ai-icp-assistant/
+
+      - name: Commit and push to LAD-Backend
+        working-directory: lad-backend
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add features/ai-icp-assistant/
+          git commit -m "feat(ai-icp-assistant): auto-sync from feature repo
+
+          Synced from: ${{ github.sha }}
+          Repository: lad-feature-ai-icp-assistant
+          Timestamp: $(date -u)
+          " || echo "No changes to commit"
+          git push origin develop
+
+  sync-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature repo
+        uses: actions/checkout@v3
+
+      - name: Checkout LAD-Frontend
+        uses: actions/checkout@v3
+        with:
+          repository: techiemaya-admin/LAD-Frontend
+          token: ${{ secrets.LAD_REPO_TOKEN }}
+          path: lad-frontend
+          ref: develop
+
+      - name: Copy frontend SDK files
+        run: |
+          # Remove old SDK
+          rm -rf lad-frontend/sdk/features/ai-icp-assistant/*
+
+          # Ensure directory exists
+          mkdir -p lad-frontend/sdk/features/ai-icp-assistant
+
+          # Copy new SDK
+          cp -r frontend/sdk/* lad-frontend/sdk/features/ai-icp-assistant/
+
+          # Copy components if exist
+          if [ -d "frontend/components" ] && [ "$(ls -A frontend/components)" ]; then
+            mkdir -p lad-frontend/web/src/features/ai-icp-assistant
+            rm -rf lad-frontend/web/src/features/ai-icp-assistant/*
+            cp -r frontend/components/* lad-frontend/web/src/features/ai-icp-assistant/
+          fi
+
+      - name: Commit and push to LAD-Frontend
+        working-directory: lad-frontend
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add sdk/features/ai-icp-assistant/
+          if [ -d "web/src/features/ai-icp-assistant" ]; then
+            git add web/src/features/ai-icp-assistant/
+          fi
+          git commit -m "feat(ai-icp-assistant): auto-sync SDK from feature repo
+
+          Synced from: ${{ github.sha }}
+          Repository: lad-feature-ai-icp-assistant
+          Timestamp: $(date -u)
+          " || echo "No changes to commit"
+          git push origin develop

@@ -93,6 +93,15 @@ This repository follows the **LAD Feature Development Pattern**:
 3. **Testing**: Test in isolation before merging
 4. **Documentation**: Keep docs updated with changes
 
+### 👨‍💻 For Developers Adding Enhancements
+
+See [DEVELOPER_PLAYBOOK.md](DEVELOPER_PLAYBOOK.md) for a complete guide with examples:
+- Step-by-step feature enhancement walkthrough
+- Real example: Adding AI-powered lead scoring
+- Backend and frontend implementation patterns
+- Testing procedures and best practices
+- Code review checklist
+
 ### Merging to LAD Main Repository
 
 See [MERGE_PIPELINE.md](MERGE_PIPELINE.md) for detailed instructions on:
@@ -188,9 +197,11 @@ cd backend
 npm test
 ```
 
-### Frontend Tests
-
-```bash
+##**[DEVELOPER_PLAYBOOK.md](DEVELOPER_PLAYBOOK.md)** - Complete guide for adding features ⭐
+- [MERGE_PIPELINE.md](MERGE_PIPELINE.md) - Merge workflow to LAD main repo
+- [SETUP_GUIDE.md](SETUP_GUIDE.md) - GitHub Actions setup instructions
+- [UPGRADE_NOTES.md](backend/UPGRADE_NOTES.md) - Migration and upgrade notes
+- [SDK README](frontend/sdk/README.md) - Frontend SDK documentation
 cd frontend
 npm test
 ```

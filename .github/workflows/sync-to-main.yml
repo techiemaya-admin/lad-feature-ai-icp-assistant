@@ -37,9 +37,9 @@ jobs:
           # Copy new files
           cp backend/services/* lad-backend/features/ai-icp-assistant/services/
           cp backend/routes/index.js lad-backend/features/ai-icp-assistant/routes/index.js
-          cp backend/controllers/* lad-backend/features/ai-icp-assistant/controllers/ 2>/dev/null || mkdir -p lad-backend/features/ai-icp-assistant/controllers && cp backend/controllers/* lad-backend/features/ai-icp-assistant/controllers/
-          cp backend/middleware/* lad-backend/features/ai-icp-assistant/middleware/ 2>/dev/null || mkdir -p lad-backend/features/ai-icp-assistant/middleware && cp backend/middleware/* lad-backend/features/ai-icp-assistant/middleware/
-          cp backend/models/* lad-backend/features/ai-icp-assistant/models/ 2>/dev/null || mkdir -p lad-backend/features/ai-icp-assistant/models && cp backend/models/* lad-backend/features/ai-icp-assistant/models/
+          cp backend/controllers/* lad-backend/features/ai-icp-assistant/controllers/ 2>/dev/null || true
+          cp backend/middleware/* lad-backend/features/ai-icp-assistant/middleware/ 2>/dev/null || true
+          cp backend/models/* lad-backend/features/ai-icp-assistant/models/ 2>/dev/null || true
           cp backend/manifest.js lad-backend/features/ai-icp-assistant/
           [ -f backend/UPGRADE_NOTES.md ] && cp backend/UPGRADE_NOTES.md lad-backend/features/ai-icp-assistant/ || echo "No UPGRADE_NOTES.md"
           [ -f backend/README.md ] && cp backend/README.md lad-backend/features/ai-icp-assistant/ || echo "No README.md"

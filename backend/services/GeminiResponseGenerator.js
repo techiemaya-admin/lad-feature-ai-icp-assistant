@@ -70,6 +70,7 @@ ${stageInstructions}
 - If the user has already answered a question, acknowledge it and ask the NEXT question
 - Never repeat a question that's already been answered
 - Always move the conversation forward
+- Check the conversation history - if a question was already asked and answered, skip it
 
 Generate your response now (just the text, no JSON, no explanations):`;
 
@@ -90,6 +91,24 @@ Generate your response now (just the text, no JSON, no explanations):`;
     } catch (error) {
       console.warn('⚠️ Gemini response generation error:', error.message);
       return this.generateFallbackResponse(stage, context, questionType);
+    }
+  }
+
+  /**
+   * Check if the question for a stage was already answered
+   */
+  static checkIfQuestionAlreadyAnswered(stage, context, recentHistory) {
+    switch (stage) {
+      case 'outreach_type':
+        return !!context.outreachType;
+      case 'outbound_target_knowledge':
+        return !!context.targetKnowledge;
+      case 'inbound_flow':
+        if (!context.inboundSource) return false;
+        if (context.inboundDataReady === null) return false;
+        return true;
+      default:
+        return false;
     }
   }
 

@@ -33,6 +33,41 @@ class AIAssistantService {
         conversationHistoryLength: conversationHistory.length 
       }, null, 2));
 
+      // Check conversation history to see if questions were already answered
+      // This helps prevent asking the same question again
+      if (conversationHistory && conversationHistory.length > 0) {
+        const historyText = conversationHistory.map(m => m.content).join(' ').toLowerCase();
+        
+        // If outreachType is not set but we can infer it from history, set it
+        if (!context.outreachType) {
+          if (historyText.match(/\b(inbound|incoming|leads come|respond to|follow.?up)\b/)) {
+            context.outreachType = 'inbound';
+            console.log(`✅ Inferred outreachType=inbound from conversation history`);
+          } else if (historyText.match(/\b(outbound|reach out|proactively|contact|find new|discover)\b/)) {
+            context.outreachType = 'outbound';
+            console.log(`✅ Inferred outreachType=outbound from conversation history`);
+          }
+        }
+        
+        // If targetKnowledge is not set but we can infer it from history, set it
+        if (context.outreachType === 'outbound' && !context.targetKnowledge) {
+          if (historyText.match(/\b(already have|have profiles?|have linkedin|have names?|specific people|these companies|know my|know the)\b/)) {
+            context.targetKnowledge = 'known';
+            console.log(`✅ Inferred targetKnowledge=known from conversation history`);
+          } else if (historyText.match(/\b(dont know|don't know|not sure|discover|find new|need to find|looking for|ideal prospects)\b/)) {
+            context.targetKnowledge = 'discovery';
+            console.log(`✅ Inferred targetKnowledge=discovery from conversation history`);
+          }
+        }
+        // If we have conversation history but stage is still init, move to outreach_type
+        // This handles cases where context was reset or not properly saved
+        context.stage = 'outreach_type';
+        // Recalculate effectiveStage after update
+        effectiveStage = context.stage;
+        console.log(`🔄 Moved from init to outreach_type, effectiveStage=${effectiveStage}`);
+        // Continue to outreach_type handler below - it will process the message
+      }
+
       // Get initial stage
       let effectiveStage = context.stage || 'init';
 
@@ -98,6 +133,15 @@ class AIAssistantService {
           model: 'gemini-2.0-flash',
           tokensUsed: null
         };
+      }
+
+      // CRITICAL: If outreachType is already set, skip outreach_type stage IMMEDIATELY
+      // This prevents asking the same question again when context is loaded
+      if (context.outreachType && (context.stage === 'outreach_type' || effectiveStage === 'outreach_type')) {
+        // Auto-advance to next stage immediately
+        context.stage = context.outreachType === 'inbound' ? 'inbound_flow' : 'outbound_target_knowledge';
+        effectiveStage = context.stage;
+        console.log(`✅ Auto-advanced from outreach_type: outreachType=${context.outreachType}, new stage=${context.stage}`);
       }
 
       // STAGE: outreach_type → Determine inbound vs outbound
@@ -176,13 +220,6 @@ class AIAssistantService {
         }
       }
 
-      // CRITICAL: If outreachType is already set, skip outreach_type stage
-      // This prevents asking the same question again
-      if (context.outreachType && effectiveStage === 'outreach_type') {
-        // Auto-advance to next stage
-        context.stage = context.outreachType === 'inbound' ? 'inbound_flow' : 'outbound_target_knowledge';
-      }
-
       // Recalculate effectiveStage after potential auto-advances
       const finalEffectiveStage = context.stage || 'init';
 
@@ -227,6 +264,15 @@ class AIAssistantService {
           }
         }
         return await StageHandlers.handleInboundFlow(message, context, conversationHistory);
+      }
+
+      // CRITICAL: If targetKnowledge is already set, skip outbound_target_knowledge stage IMMEDIATELY
+      // This prevents asking the same question again when context is loaded
+      if (context.outreachType === 'outbound' && context.targetKnowledge && (finalEffectiveStage === 'outbound_target_knowledge' || context.stage === 'outbound_target_knowledge')) {
+        // Auto-advance to next stage immediately
+        context.stage = context.targetKnowledge === 'known' ? 'outbound_known_target' : 'outbound_icp_discovery';
+        finalEffectiveStage = context.stage;
+        console.log(`✅ Auto-advanced from outbound_target_knowledge: targetKnowledge=${context.targetKnowledge}, new stage=${context.stage}`);
       }
 
       // STAGE: outbound_target_knowledge → Ask if they know targets
@@ -299,12 +345,6 @@ class AIAssistantService {
             tokensUsed: null
           };
         }
-      }
-
-      // CRITICAL: If targetKnowledge is already set, skip outbound_target_knowledge stage
-      if (context.outreachType === 'outbound' && context.targetKnowledge && finalEffectiveStage === 'outbound_target_knowledge') {
-        // Auto-advance to next stage
-        context.stage = context.targetKnowledge === 'known' ? 'outbound_known_target' : 'outbound_icp_discovery';
       }
 
       // Recalculate again after potential auto-advance

@@ -43,6 +43,9 @@ class GeminiResponseGenerator {
 
       const stageInstructions = this.getStageInstructions(stage, context, questionType);
       
+      // Check if the question for this stage was already answered
+      const alreadyAnswered = this.checkIfQuestionAlreadyAnswered(stage, context, recentHistory);
+      
       const prompt = `You are Maya, a friendly and professional AI assistant helping users set up their outreach campaigns. You're having a natural conversation to understand their needs.
 
 **Current Context:**
@@ -53,6 +56,7 @@ ${recentHistory || 'This is the start of the conversation.'}
 
 **Current Stage:** ${stage}
 **User's Latest Message:** "${message || '(no message yet)'}"
+${alreadyAnswered ? '\n**⚠️ IMPORTANT: The question for this stage has ALREADY been answered. DO NOT ask it again. Move to the next question or acknowledge the answer.**' : ''}
 
 **Your Task:**
 ${stageInstructions}
@@ -70,6 +74,7 @@ ${stageInstructions}
 - If the user has already answered a question, acknowledge it and ask the NEXT question
 - Never repeat a question that's already been answered
 - Always move the conversation forward
+- Check the conversation history - if a question was already asked and answered, skip it
 
 Generate your response now (just the text, no JSON, no explanations):`;
 
@@ -90,6 +95,24 @@ Generate your response now (just the text, no JSON, no explanations):`;
     } catch (error) {
       console.warn('⚠️ Gemini response generation error:', error.message);
       return this.generateFallbackResponse(stage, context, questionType);
+    }
+  }
+
+  /**
+   * Check if the question for a stage was already answered
+   */
+  static checkIfQuestionAlreadyAnswered(stage, context, recentHistory) {
+    switch (stage) {
+      case 'outreach_type':
+        return !!context.outreachType;
+      case 'outbound_target_knowledge':
+        return !!context.targetKnowledge;
+      case 'inbound_flow':
+        if (!context.inboundSource) return false;
+        if (context.inboundDataReady === null) return false;
+        return true;
+      default:
+        return false;
     }
   }
 

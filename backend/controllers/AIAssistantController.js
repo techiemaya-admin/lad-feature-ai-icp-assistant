@@ -9,7 +9,7 @@ const AIAssistantService = require('../services/AIAssistantService');
 
 class AIAssistantController {
   /**
-   * Chat with AI Assistant
+   * Chat with AI Assistant - Phase 1: Intent Understanding
    * POST /api/ai-icp-assistant/chat
    */
   static async chat(req, res) {
@@ -18,15 +18,10 @@ class AIAssistantController {
       const userId = req.user?.userId;
       const organizationId = req.user?.organizationId;
 
-      if (!message) {
-        return res.status(400).json({
-          success: false,
-          error: 'Message is required'
-        });
-      }
-
       // Get or create conversation
       let conversation;
+      let isNewConversation = false;
+      
       if (conversationId) {
         conversation = await AIConversation.findById(conversationId);
         if (!conversation || conversation.user_id !== userId) {
@@ -42,8 +37,9 @@ class AIAssistantController {
           conversation = await AIConversation.create({
             userId,
             organizationId,
-            title: message.substring(0, 50) // First 50 chars as title
+            title: 'Outreach Planning'
           });
+          isNewConversation = true;
         }
       }
 
@@ -53,6 +49,55 @@ class AIAssistantController {
         { limit: 10, order: 'ASC' }
       );
 
+      // Load assistant context from conversation metadata
+      // Metadata might be stored as JSON string, so parse it
+      let metadata = conversation.metadata;
+      if (typeof metadata === 'string') {
+        try {
+          metadata = JSON.parse(metadata);
+        } catch (e) {
+          metadata = {};
+        }
+      }
+      let assistantContext = metadata?.assistantContext || null;
+
+      // If new conversation and no message, send initial greeting
+      if (isNewConversation && (!message || message.trim() === '')) {
+        const greeting = "👉 What type of outreach are you setting up?\n\n1) Inbound (leads come to you)\n2) Outbound (you reach out to prospects)";
+        const initialContext = AIAssistantService.initializeContext();
+        initialContext.stage = 'outreach_type'; // Move to outreach_type stage
+        
+        // Save greeting as assistant message
+        await AIMessage.create({
+          conversationId: conversation.id,
+          role: 'assistant',
+          content: greeting,
+          messageData: { isGreeting: true, stage: 'outreach_type' }
+        });
+
+        // Save initial context to conversation
+        await AIConversation.update(conversation.id, { 
+          metadata: { assistantContext: initialContext } 
+        });
+
+        return res.json({
+          success: true,
+          conversationId: conversation.id,
+          response: greeting,
+          text: greeting,
+          assistantContext: initialContext,
+          status: 'collecting_info',
+          readyForExecution: false
+        });
+      }
+
+      if (!message || message.trim() === '') {
+        return res.status(400).json({
+          success: false,
+          error: 'Message is required'
+        });
+      }
+
       // Process message with AI service
       const result = await AIAssistantService.processChat({
         message,
@@ -60,7 +105,8 @@ class AIAssistantController {
         conversationHistory,
         searchResults,
         userId,
-        organizationId
+        organizationId,
+        assistantContext
       });
 
       // Save user message
@@ -77,22 +123,22 @@ class AIAssistantController {
         role: 'assistant',
         content: result.response || result.text,
         messageData: {
-          suggestedParams: result.suggestedParams,
-          actionResult: result.actionResult,
-          searchReady: result.searchReady
+          assistantContext: result.assistantContext,
+          status: result.status,
+          readyForExecution: result.readyForExecution
         },
         tokensUsed: result.tokensUsed,
         model: result.model
       });
 
-      // Update conversation ICP data if extracted
-      if (result.icpData) {
-        await AIConversation.updateICPData(conversation.id, result.icpData);
-      }
-
-      // Mark search triggered if applicable
-      if (result.searchReady && result.suggestedParams) {
-        await AIConversation.markSearchTriggered(conversation.id, result.suggestedParams);
+      // Update conversation metadata with assistant context
+      if (result.assistantContext) {
+        const updatedMetadata = metadata || {};
+        updatedMetadata.assistantContext = result.assistantContext;
+        updatedMetadata.status = result.status;
+        updatedMetadata.readyForExecution = result.readyForExecution === true;
+        
+        await AIConversation.update(conversation.id, { metadata: updatedMetadata });
       }
 
       res.json({

@@ -1,5 +1,9 @@
 # AI ICP Assistant Feature
 
+![PR Validation](https://github.com/techiemaya-admin/lad-feature-ai-icp-assistant/workflows/PR%20Validation/badge.svg)
+![Main Branch](https://github.com/techiemaya-admin/lad-feature-ai-icp-assistant/workflows/Main%20Branch%20Protection/badge.svg)
+![Sync Status](https://github.com/techiemaya-admin/lad-feature-ai-icp-assistant/workflows/Sync%20to%20LAD%20Main%20Repositories/badge.svg)
+
 An intelligent AI assistant feature for Lead Acquisition & Development (LAD) platform that provides conversational ICP (Ideal Customer Profile) discovery and lead qualification.
 
 ## 🎯 Purpose
@@ -86,12 +90,35 @@ lad-feature-ai-icp-assistant/
 
 ## 🔄 Development Workflow
 
-This repository follows the **LAD Feature Development Pattern**:
+This repository follows the **LAD Feature Development Pattern** with automated CI/CD:
+
+### CI/CD Pipeline
+
+This repository uses GitHub Actions for automated testing, validation, and deployment:
+
+- **PR Validation**: Automatic code quality checks, security scans, and tests on every PR
+- **Auto-merge**: Approved PRs are automatically merged after passing all checks
+- **Main Branch Protection**: Post-merge validation and automatic syncing to LAD repositories
+- **Release Management**: Automatic tagging and changelog generation
+
+See **[CI_CD_GUIDE.md](CI_CD_GUIDE.md)** for complete pipeline documentation.
+
+### Quick Setup
+
+```bash
+# Run the automated setup script
+./scripts/setup-github-repo.sh
+
+# Or manually configure (see CI_CD_GUIDE.md for details)
+```
+
+### Development Process
 
 1. **Isolated Development**: Develop features independently in this repo
-2. **Regular Syncing**: Merge changes to LAD main repository using provided scripts
-3. **Testing**: Test in isolation before merging
-4. **Documentation**: Keep docs updated with changes
+2. **Create PR**: Changes are automatically validated
+3. **Review & Approve**: At least 1 approval required
+4. **Auto-merge**: Approved PRs merge automatically
+5. **Auto-sync**: Changes sync to LAD main repositories automatically
 
 ### 👨‍💻 For Developers Adding Enhancements
 
@@ -197,20 +224,15 @@ cd backend
 npm test
 ```
 
-##**[DEVELOPER_PLAYBOOK.md](DEVELOPER_PLAYBOOK.md)** - Complete guide for adding features ⭐
-- [MERGE_PIPELINE.md](MERGE_PIPELINE.md) - Merge workflow to LAD main repo
-- [SETUP_GUIDE.md](SETUP_GUIDE.md) - GitHub Actions setup instructions
-- [UPGRADE_NOTES.md](backend/UPGRADE_NOTES.md) - Migration and upgrade notes
-- [SDK README](frontend/sdk/README.md) - Frontend SDK documentation
-cd frontend
-npm test
-```
-
 ## 📚 Documentation
 
+- **[CI_CD_GUIDE.md](CI_CD_GUIDE.md)** - Complete CI/CD pipeline documentation ⭐
+- **[DEVELOPER_PLAYBOOK.md](DEVELOPER_PLAYBOOK.md)** - Complete guide for adding features ⭐
+- [MERGE_PIPELINE.md](MERGE_PIPELINE.md) - Merge workflow to LAD main repo
+- [SETUP_GUIDE.md](SETUP_GUIDE.md) - GitHub Actions setup instructions
+- [REFACTORING_SUMMARY.md](REFACTORING_SUMMARY.md) - Recent refactoring changes
 - [UPGRADE_NOTES.md](backend/UPGRADE_NOTES.md) - Migration and upgrade notes
 - [SDK README](frontend/sdk/README.md) - Frontend SDK documentation
-- [MERGE_PIPELINE.md](MERGE_PIPELINE.md) - Merge workflow to LAD main repo
 
 ## 🤝 Contributing
 

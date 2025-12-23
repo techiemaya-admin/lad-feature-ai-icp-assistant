@@ -59,6 +59,13 @@ class AIAssistantService {
             console.log(`✅ Inferred targetKnowledge=discovery from conversation history`);
           }
         }
+        // If we have conversation history but stage is still init, move to outreach_type
+        // This handles cases where context was reset or not properly saved
+        context.stage = 'outreach_type';
+        // Recalculate effectiveStage after update
+        effectiveStage = context.stage;
+        console.log(`🔄 Moved from init to outreach_type, effectiveStage=${effectiveStage}`);
+        // Continue to outreach_type handler below - it will process the message
       }
 
       // Get initial stage

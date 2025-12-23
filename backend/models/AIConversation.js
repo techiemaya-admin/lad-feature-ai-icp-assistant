@@ -85,6 +85,56 @@ class AIConversation {
   }
 
   /**
+   * Generic update method
+   */
+  static async update(conversationId, updates) {
+    try {
+      const fields = [];
+      const values = [];
+      let paramIndex = 1;
+
+      if (updates.metadata !== undefined) {
+        fields.push(`metadata = $${paramIndex}`);
+        values.push(JSON.stringify(updates.metadata));
+        paramIndex++;
+      }
+
+      if (updates.icp_data !== undefined) {
+        fields.push(`icp_data = $${paramIndex}`);
+        values.push(JSON.stringify(updates.icp_data));
+        paramIndex++;
+      }
+
+      if (updates.status !== undefined) {
+        fields.push(`status = $${paramIndex}`);
+        values.push(updates.status);
+        paramIndex++;
+      }
+
+      if (fields.length === 0) {
+        throw new Error('No fields to update');
+      }
+
+      fields.push(`updated_at = CURRENT_TIMESTAMP`);
+      values.push(conversationId);
+
+      const sql = `
+        UPDATE ai_conversations
+        SET ${fields.join(', ')}
+        WHERE id = $${paramIndex}
+        RETURNING *
+      `;
+
+      const result = await query(sql, values);
+
+      return result.rows[0];
+    } catch (error) {
+      console.error('Error updating conversation:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Update conversation ICP data
    */
   static async updateICPData(conversationId, icpData) {

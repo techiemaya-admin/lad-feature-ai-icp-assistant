@@ -25,8 +25,7 @@ jobs:
       - name: Copy backend files
         run: |
           # Remove old files
-          # Use rsync to sync files
-          rsync -av --delete backend/features/ai-icp-assistant/ lad-backend/features/ai-icp-assistant/
+          rm -rf lad-backend/features/ai-icp-assistant/*
 
           # Ensure directories exist
           mkdir -p lad-backend/features/ai-icp-assistant/services
@@ -87,7 +86,8 @@ jobs:
           # Copy components if exist
           if [ -d "frontend/components" ] && [ "$(ls -A frontend/components)" ]; then
             mkdir -p lad-frontend/web/src/features/ai-icp-assistant
-            rsync -av --delete frontend/components/ lad-frontend/web/src/features/ai-icp-assistant/
+            rm -rf lad-frontend/web/src/features/ai-icp-assistant/*
+            cp -r frontend/components/* lad-frontend/web/src/features/ai-icp-assistant/
           fi
 
       - name: Commit and push to LAD-Frontend

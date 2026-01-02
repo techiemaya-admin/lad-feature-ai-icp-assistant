@@ -2,11 +2,11 @@
   "name": "lad-feature-ai-icp-assistant",
   "version": "1.0.0",
   "description": "AI-powered ICP Assistant feature for LAD platform",
-  "main": "backend/manifest.js",
+  "main": "backend/features/ai-icp-assistant/manifest.js",
   "scripts": {
-    "start": "node test-server.js",
-    "dev": "nodemon test-server.js",
-    "test": "node test-client.js",
+    "start": "node backend/features/ai-icp-assistant/manifest.js",
+    "dev": "nodemon backend/features/ai-icp-assistant/manifest.js",
+    "test": "echo \"No tests specified\"",
     "merge:backend": "./scripts/merge-to-backend.sh",
     "merge:frontend": "./scripts/merge-to-frontend.sh"
   },

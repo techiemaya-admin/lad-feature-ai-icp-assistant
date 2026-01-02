@@ -35,3 +35,8 @@ temp/
 
 # OS files
 Thumbs.db
+
+# Local utility scripts
+update-imports.js
+fix-*.js
+migrate-*.js

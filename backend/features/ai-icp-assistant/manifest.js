@@ -30,7 +30,8 @@ module.exports = {
     'ai_conversations',
     'ai_messages',
     'ai_icp_profiles',
-    'ai_keyword_expansions'
+    'ai_keyword_expansions',
+    'icp_questions'  // Database-driven ICP questions
   ],
   
   // Dependencies
@@ -45,6 +46,7 @@ module.exports = {
     'trigger_apollo_search',
     'save_icp_profiles',
     'keyword_expansion',
-    'conversation_history'
+    'conversation_history',
+    'db_driven_icp_onboarding'  // Database-driven ICP questions system
   ]
 };

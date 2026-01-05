@@ -43,6 +43,9 @@ class GeminiResponseGenerator {
 
       const stageInstructions = this.getStageInstructions(stage, context, questionType);
       
+      // Check if the question for this stage was already answered
+      const alreadyAnswered = this.checkIfQuestionAlreadyAnswered(stage, context, recentHistory);
+      
       const prompt = `You are Maya, a friendly and professional AI assistant helping users set up their outreach campaigns. You're having a natural conversation to understand their needs.
 
 **Current Context:**
@@ -53,6 +56,7 @@ ${recentHistory || 'This is the start of the conversation.'}
 
 **Current Stage:** ${stage}
 **User's Latest Message:** "${message || '(no message yet)'}"
+${alreadyAnswered ? '\n**⚠️ IMPORTANT: The question for this stage has ALREADY been answered. DO NOT ask it again. Move to the next question or acknowledge the answer.**' : ''}
 
 **Your Task:**
 ${stageInstructions}

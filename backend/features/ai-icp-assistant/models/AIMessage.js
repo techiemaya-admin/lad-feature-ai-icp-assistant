@@ -4,7 +4,7 @@
  * Manages individual messages within conversations
  */
 
-const { query } = require('../../../shared/database/connection');
+const { query } = require('../utils/database');
 
 class AIMessage {
   /**

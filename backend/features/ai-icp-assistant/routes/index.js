@@ -87,4 +87,13 @@ router.delete('/profiles/:id', validateUuidParam('id'), AIAssistantController.de
  */
 router.post('/profiles/:id/use', validateUuidParam('id'), AIAssistantController.useProfile);
 
+// ============================================================================
+// ICP Onboarding Routes (Using new AI-ICP-Assistant feature)
+// ============================================================================
+
+// Use the new feature-based routes which include proper middleware and validation
+// The routes file already includes '/onboarding' prefix, so mount at root
+const aiICPAssistantRoutes = require('../features/ai-icp-assistant/routes/ai-icp-assistant.routes');
+router.use('/', aiICPAssistantRoutes);
+
 module.exports = router;

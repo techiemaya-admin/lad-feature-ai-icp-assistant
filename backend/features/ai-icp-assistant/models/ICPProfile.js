@@ -4,7 +4,7 @@
  * Manages saved ICP (Ideal Customer Profile) configurations
  */
 
-const { query } = require('../../../shared/database/connection');
+const { query } = require('../utils/database');
 
 class ICPProfile {
   /**

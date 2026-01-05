@@ -4,8 +4,7 @@
  * Manages cached keyword expansions for performance optimization
  */
 
-const { query } = require('../../../shared/database/connection');
-
+const { query } = require('../utils/database');const logger = require('../utils/logger');
 class KeywordExpansion {
   /**
    * Create or update keyword expansion cache
@@ -45,7 +44,7 @@ class KeywordExpansion {
 
       return result.rows[0];
     } catch (error) {
-      console.error('Error upserting keyword expansion:', error);
+      logger.error('Error upserting keyword expansion:', error);
       throw error;
     }
   }
@@ -77,7 +76,7 @@ class KeywordExpansion {
 
       return result.rows[0] || null;
     } catch (error) {
-      console.error('Error finding cached keyword expansion:', error);
+      logger.error('Error finding cached keyword expansion:', error);
       throw error;
     }
   }
@@ -109,7 +108,7 @@ class KeywordExpansion {
       const result = await query(sql, params);
       return result.rows;
     } catch (error) {
-      console.error('Error finding organization keyword expansions:', error);
+      logger.error('Error finding organization keyword expansions:', error);
       throw error;
     }
   }
@@ -144,7 +143,7 @@ class KeywordExpansion {
       const result = await query(sql, params);
       return result.rows;
     } catch (error) {
-      console.error('Error getting most used keywords:', error);
+      logger.error('Error getting most used keywords:', error);
       throw error;
     }
   }
@@ -174,7 +173,7 @@ class KeywordExpansion {
       const result = await query(sql, params);
       return result.rows;
     } catch (error) {
-      console.error('Error searching keyword expansions:', error);
+      logger.error('Error searching keyword expansions:', error);
       throw error;
     }
   }
@@ -193,7 +192,7 @@ class KeywordExpansion {
 
       return result.rowCount;
     } catch (error) {
-      console.error('Error pruning old keyword expansions:', error);
+      logger.error('Error pruning old keyword expansions:', error);
       throw error;
     }
   }
@@ -223,7 +222,7 @@ class KeywordExpansion {
       const result = await query(sql, params);
       return result.rows[0];
     } catch (error) {
-      console.error('Error getting keyword expansion stats:', error);
+      logger.error('Error getting keyword expansion stats:', error);
       throw error;
     }
   }
@@ -241,7 +240,7 @@ class KeywordExpansion {
 
       return result.rowCount > 0;
     } catch (error) {
-      console.error('Error deleting keyword expansion:', error);
+      logger.error('Error deleting keyword expansion:', error);
       throw error;
     }
   }

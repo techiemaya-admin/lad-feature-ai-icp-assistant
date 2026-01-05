@@ -4,7 +4,8 @@
  * Manages conversation sessions between users and the AI assistant
  */
 
-const { query } = require('../../../shared/database/connection');
+const { query } = require('../utils/database');
+const logger = require('../utils/logger');
 
 class AIConversation {
   /**
@@ -24,7 +25,7 @@ class AIConversation {
 
       return result.rows[0];
     } catch (error) {
-      console.error('Error creating conversation:', error);
+      logger.error('Error creating conversation', { error: error.message });
       throw error;
     }
   }
@@ -41,7 +42,7 @@ class AIConversation {
 
       return result.rows[0] || null;
     } catch (error) {
-      console.error('Error finding conversation:', error);
+      logger.error('Error finding conversation', { error: error.message });
       throw error;
     }
   }
@@ -79,7 +80,57 @@ class AIConversation {
       const result = await query(sql, params);
       return result.rows;
     } catch (error) {
-      console.error('Error finding user conversations:', error);
+      logger.error('Error finding user conversations', { error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Generic update method
+   */
+  static async update(conversationId, updates) {
+    try {
+      const fields = [];
+      const values = [];
+      let paramIndex = 1;
+
+      if (updates.metadata !== undefined) {
+        fields.push(`metadata = $${paramIndex}`);
+        values.push(JSON.stringify(updates.metadata));
+        paramIndex++;
+      }
+
+      if (updates.icp_data !== undefined) {
+        fields.push(`icp_data = $${paramIndex}`);
+        values.push(JSON.stringify(updates.icp_data));
+        paramIndex++;
+      }
+
+      if (updates.status !== undefined) {
+        fields.push(`status = $${paramIndex}`);
+        values.push(updates.status);
+        paramIndex++;
+      }
+
+      if (fields.length === 0) {
+        throw new Error('No fields to update');
+      }
+
+      fields.push(`updated_at = CURRENT_TIMESTAMP`);
+      values.push(conversationId);
+
+      const sql = `
+        UPDATE ai_conversations
+        SET ${fields.join(', ')}
+        WHERE id = $${paramIndex}
+        RETURNING *
+      `;
+
+      const result = await query(sql, values);
+
+      return result.rows[0];
+    } catch (error) {
+      console.error('Error updating conversation:', error);
       throw error;
     }
   }

@@ -8,6 +8,8 @@ on:
 jobs:
   sync-backend:
     runs-on: ubuntu-latest
+    # Only run on main branch
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout feature repo
         uses: actions/checkout@v3
@@ -21,49 +23,130 @@ jobs:
           token: ${{ secrets.LAD_REPO_TOKEN }}
           path: lad-backend
           ref: develop
+          persist-credentials: true
+
+      - name: Configure git credentials for LAD-Backend
+        working-directory: lad-backend
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.LAD_REPO_TOKEN }}@github.com/techiemaya-admin/LAD-Backend.git
 
       - name: Copy backend files
         run: |
-          # Remove old files
-          # Use rsync to sync files
-          rsync -av --delete backend/features/ai-icp-assistant/ lad-backend/features/ai-icp-assistant/
+          echo "📦 Starting backend file sync..."
+          
+          # Verify source exists
+          if [ ! -d "backend/features/ai-icp-assistant" ]; then
+            echo "❌ Source directory not found: backend/features/ai-icp-assistant"
+            exit 1
+          fi
+          
+          # Ensure destination exists
+          mkdir -p lad-backend/features/ai-icp-assistant
+          
+          # Sync files WITHOUT delete (safer - only adds/updates)
+          if ! rsync -av \
+            --exclude='.env*' \
+            --exclude='*.local.js' \
+            --exclude='node_modules/' \
+            --exclude='.DS_Store' \
+            backend/features/ai-icp-assistant/ lad-backend/features/ai-icp-assistant/; then
+            echo "❌ rsync failed!"
+            exit 1
+          fi
+          
+          echo "✅ Files synced successfully"
 
-          # Ensure directories exist
-          mkdir -p lad-backend/features/ai-icp-assistant/services
-          mkdir -p lad-backend/features/ai-icp-assistant/routes
-          mkdir -p lad-backend/features/ai-icp-assistant/controllers
-          mkdir -p lad-backend/features/ai-icp-assistant/middleware
-          mkdir -p lad-backend/features/ai-icp-assistant/models
-
-          # Copy new files
-          cp backend/services/* lad-backend/features/ai-icp-assistant/services/
-          cp backend/routes/index.js lad-backend/features/ai-icp-assistant/routes/index.js
-          cp backend/controllers/* lad-backend/features/ai-icp-assistant/controllers/ 2>/dev/null || mkdir -p lad-backend/features/ai-icp-assistant/controllers && cp backend/controllers/* lad-backend/features/ai-icp-assistant/controllers/
-          cp backend/middleware/* lad-backend/features/ai-icp-assistant/middleware/ 2>/dev/null || mkdir -p lad-backend/features/ai-icp-assistant/middleware && cp backend/middleware/* lad-backend/features/ai-icp-assistant/middleware/
-          cp backend/models/* lad-backend/features/ai-icp-assistant/models/ 2>/dev/null || mkdir -p lad-backend/features/ai-icp-assistant/models && cp backend/models/* lad-backend/features/ai-icp-assistant/models/
-          cp backend/manifest.js lad-backend/features/ai-icp-assistant/
-          [ -f backend/UPGRADE_NOTES.md ] && cp backend/UPGRADE_NOTES.md lad-backend/features/ai-icp-assistant/ || echo "No UPGRADE_NOTES.md"
-          [ -f backend/README.md ] && cp backend/README.md lad-backend/features/ai-icp-assistant/ || echo "No README.md"
+      - name: Verify critical files
+        run: |
+          echo "🔍 Verifying critical files..."
+          MISSING=0
+          
+          # Check for essential files
+          CRITICAL_FILES=(
+            "lad-backend/features/ai-icp-assistant/manifest.js"
+            "lad-backend/features/ai-icp-assistant/routes/index.js"
+            "lad-backend/features/ai-icp-assistant/controllers/AIAssistantController.js"
+            "lad-backend/features/ai-icp-assistant/repositories/index.js"
+          )
+          
+          for file in "${CRITICAL_FILES[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "❌ CRITICAL: $file is missing!"
+              MISSING=1
+            else
+              echo "✅ $file exists"
+            fi
+          done
+          
+          if [ $MISSING -eq 1 ]; then
+            echo "❌ Sync validation failed - critical files missing"
+            exit 1
+          fi
+          
+          echo "✅ All critical files verified"
 
       - name: Commit and push to LAD-Backend
         working-directory: lad-backend
         run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
+          # Pull latest changes to avoid conflicts
+          echo "📥 Pulling latest changes..."
+          git pull origin develop --rebase || {
+            echo "⚠️ Rebase conflict detected"
+            git rebase --abort
+            exit 1
+          }
+          
+          # Stage changes
           git add features/ai-icp-assistant/
-          git commit -m "feat(ai-icp-assistant): auto-sync from feature repo
-
-          Synced from: ${{ github.sha }}
-          Repository: lad-feature-ai-icp-assistant
-          Timestamp: $(date -u)
-          " || echo "No changes to commit"
-          git push origin develop
+          
+          # Check if there are changes
+          if git diff --staged --quiet; then
+            echo "ℹ️ No changes to commit"
+            exit 0
+          fi
+          
+          # Show what changed
+          echo "📝 Changes to be committed:"
+          git diff --staged --stat
+          
+          # Commit
+          git commit -m "feat(ai-icp-assistant): auto-sync from feature repo" \
+            -m "Synced from: ${{ github.repository }}@${{ github.sha }}" \
+            -m "Triggered by: ${{ github.actor }}" \
+            -m "Timestamp: $(date -u +%Y-%m-%d\ %H:%M:%S\ UTC)" \
+            -m "Workflow: ${{ github.workflow }}"
+          
+          # Push with retry logic
+          echo "📤 Pushing to LAD-Backend..."
+          for attempt in {1..3}; do
+            if git push origin develop; then
+              echo "✅ Push successful on attempt $attempt"
+              exit 0
+            fi
+            
+            echo "⚠️ Push failed, retrying ($attempt/3)..."
+            sleep 2
+            git pull origin develop --rebase || {
+              echo "❌ Rebase failed on retry"
+              git rebase --abort
+              exit 1
+            }
+          done
+          
+          echo "❌ Failed to push after 3 attempts"
+          exit 1
 
   sync-frontend:
     runs-on: ubuntu-latest
+    # Only run on main branch
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout feature repo
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Checkout LAD-Frontend
         uses: actions/checkout@v3
@@ -72,37 +155,160 @@ jobs:
           token: ${{ secrets.LAD_REPO_TOKEN }}
           path: lad-frontend
           ref: develop
+          persist-credentials: true
+
+      - name: Configure git credentials for LAD-Frontend
+        working-directory: lad-frontend
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.LAD_REPO_TOKEN }}@github.com/techiemaya-admin/LAD-Frontend.git
 
       - name: Copy frontend SDK files
         run: |
-          # Remove old SDK
-          rm -rf lad-frontend/sdk/features/ai-icp-assistant/*
-
+          echo "📦 Starting frontend SDK sync..."
+          
+          # Check if SDK directory exists
+          if [ ! -d "frontend/sdk/features/ai-icp-assistant" ]; then
+            echo "⚠️ No frontend SDK directory found, skipping"
+            echo "HAS_SDK=false" >> $GITHUB_ENV
+            exit 0
+          fi
+          
+          echo "HAS_SDK=true" >> $GITHUB_ENV
+          
           # Ensure directory exists
           mkdir -p lad-frontend/sdk/features/ai-icp-assistant
 
-          # Copy new SDK
-          cp -r frontend/sdk/* lad-frontend/sdk/features/ai-icp-assistant/
-
-          # Copy components if exist
-          if [ -d "frontend/components" ] && [ "$(ls -A frontend/components)" ]; then
-            mkdir -p lad-frontend/web/src/features/ai-icp-assistant
-            rsync -av --delete frontend/components/ lad-frontend/web/src/features/ai-icp-assistant/
+          # Sync SDK files WITHOUT delete
+          if ! rsync -av \
+            --exclude='node_modules/' \
+            --exclude='.DS_Store' \
+            --exclude='*.test.ts' \
+            --exclude='*.test.tsx' \
+            frontend/sdk/features/ai-icp-assistant/ lad-frontend/sdk/features/ai-icp-assistant/; then
+            echo "❌ SDK sync failed!"
+            exit 1
           fi
+
+          # Copy components if they exist
+          if [ -d "frontend/components" ] && [ "$(ls -A frontend/components 2>/dev/null)" ]; then
+            echo "📦 Syncing components..."
+            mkdir -p lad-frontend/web/src/features/ai-icp-assistant
+            rsync -av \
+              --exclude='node_modules/' \
+              --exclude='.DS_Store' \
+              frontend/components/ lad-frontend/web/src/features/ai-icp-assistant/
+            echo "HAS_COMPONENTS=true" >> $GITHUB_ENV
+          else
+            echo "ℹ️ No components to sync"
+            echo "HAS_COMPONENTS=false" >> $GITHUB_ENV
+          fi
+          
+          echo "✅ Frontend files synced successfully"
+
+      - name: Verify frontend files
+        if: env.HAS_SDK == 'true'
+        run: |
+          echo "🔍 Verifying frontend SDK files..."
+          
+          # Check for essential SDK files
+          CRITICAL_FILES=(
+            "lad-frontend/sdk/features/ai-icp-assistant/index.ts"
+            "lad-frontend/sdk/features/ai-icp-assistant/aiICPAssistantService.ts"
+            "lad-frontend/sdk/features/ai-icp-assistant/types.ts"
+          )
+          
+          MISSING=0
+          for file in "${CRITICAL_FILES[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "❌ CRITICAL: $file is missing!"
+              MISSING=1
+            else
+              echo "✅ $file exists"
+            fi
+          done
+          
+          if [ $MISSING -eq 1 ]; then
+            echo "❌ Frontend sync validation failed"
+            exit 1
+          fi
+          
+          echo "✅ Frontend SDK verified"
 
       - name: Commit and push to LAD-Frontend
+        if: env.HAS_SDK == 'true'
         working-directory: lad-frontend
         run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
+          # Pull latest
+          echo "📥 Pulling latest changes..."
+          git pull origin develop --rebase || {
+            echo "⚠️ Rebase conflict detected"
+            git rebase --abort
+            exit 1
+          }
+          
+          # Stage all changes
           git add sdk/features/ai-icp-assistant/
-          if [ -d "web/src/features/ai-icp-assistant" ]; then
+          if [ "${{ env.HAS_COMPONENTS }}" = "true" ]; then
             git add web/src/features/ai-icp-assistant/
           fi
-          git commit -m "feat(ai-icp-assistant): auto-sync SDK from feature repo
+          
+          # Check for changes
+          if git diff --staged --quiet; then
+            echo "ℹ️ No changes to commit"
+            exit 0
+          fi
+          
+          # Show changes
+          echo "📝 Changes to be committed:"
+          git diff --staged --stat
+          
+          # Commit
+          git commit -m "feat(ai-icp-assistant): auto-sync SDK from feature repo" \
+            -m "Synced from: ${{ github.repository }}@${{ github.sha }}" \
+            -m "Triggered by: ${{ github.actor }}" \
+            -m "Timestamp: $(date -u +%Y-%m-%d\ %H:%M:%S\ UTC)" \
+            -m "Workflow: ${{ github.workflow }}"
+          
+          # Push with retry
+          echo "📤 Pushing to LAD-Frontend..."
+          for attempt in {1..3}; do
+            if git push origin develop; then
+              echo "✅ Push successful on attempt $attempt"
+              exit 0
+            fi
+            
+            echo "⚠️ Push failed, retrying ($attempt/3)..."
+            sleep 2
+            git pull origin develop --rebase || {
+              echo "❌ Rebase failed on retry"
+              git rebase --abort
+              exit 1
+            }
+          done
+          
+          echo "❌ Failed to push after 3 attempts"
+          exit 1
 
-          Synced from: ${{ github.sha }}
-          Repository: lad-feature-ai-icp-assistant
-          Timestamp: $(date -u)
-          " || echo "No changes to commit"
-          git push origin develop
+  notify-success:
+    needs: [sync-backend, sync-frontend]
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - name: Success notification
+        run: |
+          echo "✅ Successfully synced ai-icp-assistant feature to LAD repositories"
+          echo "Backend: ✅"
+          echo "Frontend: ✅"
+
+  notify-failure:
+    needs: [sync-backend, sync-frontend]
+    runs-on: ubuntu-latest
+    if: failure()
+    steps:
+      - name: Failure notification
+        run: |
+          echo "❌ Sync to LAD repositories failed"
+          echo "Check workflow logs for details"
+          exit 1

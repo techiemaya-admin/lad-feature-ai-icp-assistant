@@ -23,6 +23,14 @@ jobs:
           token: ${{ secrets.LAD_REPO_TOKEN }}
           path: lad-backend
           ref: develop
+          persist-credentials: true
+
+      - name: Configure git credentials for LAD-Backend
+        working-directory: lad-backend
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.LAD_REPO_TOKEN }}@github.com/techiemaya-admin/LAD-Backend.git
 
       - name: Copy backend files
         run: |
@@ -82,9 +90,6 @@ jobs:
       - name: Commit and push to LAD-Backend
         working-directory: lad-backend
         run: |
-          git config user.name "GitHub Actions Bot"
-          git config user.email "actions@github.com"
-          
           # Pull latest changes to avoid conflicts
           echo "📥 Pulling latest changes..."
           git pull origin develop --rebase || {
@@ -150,6 +155,14 @@ jobs:
           token: ${{ secrets.LAD_REPO_TOKEN }}
           path: lad-frontend
           ref: develop
+          persist-credentials: true
+
+      - name: Configure git credentials for LAD-Frontend
+        working-directory: lad-frontend
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.LAD_REPO_TOKEN }}@github.com/techiemaya-admin/LAD-Frontend.git
 
       - name: Copy frontend SDK files
         run: |
@@ -227,9 +240,6 @@ jobs:
         if: env.HAS_SDK == 'true'
         working-directory: lad-frontend
         run: |
-          git config user.name "GitHub Actions Bot"
-          git config user.email "actions@github.com"
-          
           # Pull latest
           echo "📥 Pulling latest changes..."
           git pull origin develop --rebase || {
@@ -302,4 +312,3 @@ jobs:
           echo "❌ Sync to LAD repositories failed"
           echo "Check workflow logs for details"
           exit 1
-

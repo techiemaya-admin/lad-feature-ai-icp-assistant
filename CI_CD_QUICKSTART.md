@@ -64,10 +64,17 @@ Click **"Add branch protection rule"** and configure:
 
 ✅ **Require status checks to pass before merging**
    - Require branches to be up to date before merging
-   - Add these status checks:
-     * `Validate PR / validate`
-     * `Security Scan / security-check`
-     * `Auto-label PR / label-pr`
+   - Add these status checks from **PR Validation** workflow:
+     * `validate` (Validate PR)
+     * `label-pr` (Auto-label PR)
+     * `security-check` (Security Scan)
+   
+   **Note:** You're currently seeing checks from the **main branch workflows** (Post-Merge Validation, Sync, etc.). 
+   The PR validation checks will appear after you create your **first pull request**. 
+   
+   For now, you can either:
+   - Skip adding status checks and add them after your first PR, OR
+   - Create a test PR first to register the checks, then add them here
 
 ✅ **Require conversation resolution before merging**
 

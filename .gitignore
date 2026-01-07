@@ -43,3 +43,8 @@ coverage/
 *.tmp
 *.temp
 .cache/
+
+# Local utility scripts
+update-imports.js
+fix-*.js
+migrate-*.js

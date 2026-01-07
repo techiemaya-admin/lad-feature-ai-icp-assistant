@@ -10,24 +10,26 @@
 CREATE TABLE IF NOT EXISTS ai_conversations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  organization_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   title VARCHAR(255), -- Optional title for the conversation
   status VARCHAR(50) DEFAULT 'active', -- active, archived, completed
   icp_data JSONB DEFAULT '{}', -- Extracted ICP parameters (industry, company_size, etc.)
   search_params JSONB, -- Final search parameters when ready to search
   search_triggered BOOLEAN DEFAULT false, -- Whether search was executed
   metadata JSONB DEFAULT '{}', -- Additional metadata
+  is_deleted BOOLEAN DEFAULT false, -- Soft delete flag
+  deleted_at TIMESTAMP, -- Soft delete timestamp
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   archived_at TIMESTAMP
 );
 
--- Indexes for ai_conversations
-CREATE INDEX idx_ai_conversations_user_id ON ai_conversations(user_id);
-CREATE INDEX idx_ai_conversations_organization_id ON ai_conversations(organization_id);
-CREATE INDEX idx_ai_conversations_status ON ai_conversations(status);
-CREATE INDEX idx_ai_conversations_created_at ON ai_conversations(created_at DESC);
-CREATE INDEX idx_ai_conversations_user_org ON ai_conversations(user_id, organization_id);
+-- Indexes for ai_conversations (tenant-first for multi-tenancy)
+CREATE INDEX idx_ai_conversations_tenant_id ON ai_conversations(tenant_id);
+CREATE INDEX idx_ai_conversations_tenant_user ON ai_conversations(tenant_id, user_id);
+CREATE INDEX idx_ai_conversations_tenant_status ON ai_conversations(tenant_id, status);
+CREATE INDEX idx_ai_conversations_tenant_created ON ai_conversations(tenant_id, created_at DESC);
+CREATE INDEX idx_ai_conversations_is_deleted ON ai_conversations(is_deleted) WHERE is_deleted = false;
 
 -- Trigger for updated_at
 CREATE TRIGGER update_ai_conversations_updated_at
@@ -52,6 +54,8 @@ CREATE TABLE IF NOT EXISTS ai_messages (
   message_data JSONB DEFAULT '{}', -- Structured data (extracted parameters, suggestions, etc.)
   tokens_used INTEGER, -- Token count for this message (for billing)
   model VARCHAR(100), -- AI model used (gpt-4, claude-3, etc.)
+  is_deleted BOOLEAN DEFAULT false, -- Soft delete flag
+  deleted_at TIMESTAMP, -- Soft delete timestamp
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -74,7 +78,7 @@ COMMENT ON COLUMN ai_messages.tokens_used IS 'Token count for billing and usage 
 CREATE TABLE IF NOT EXISTS ai_icp_profiles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  organization_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   name VARCHAR(255) NOT NULL, -- User-defined profile name
   description TEXT, -- Optional description
   icp_data JSONB NOT NULL, -- The ICP parameters
@@ -83,17 +87,19 @@ CREATE TABLE IF NOT EXISTS ai_icp_profiles (
   is_active BOOLEAN DEFAULT true,
   usage_count INTEGER DEFAULT 0, -- How many times this profile was used
   last_used_at TIMESTAMP,
+  is_deleted BOOLEAN DEFAULT false, -- Soft delete flag
+  deleted_at TIMESTAMP, -- Soft delete timestamp
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Indexes for ai_icp_profiles
-CREATE INDEX idx_ai_icp_profiles_user_id ON ai_icp_profiles(user_id);
-CREATE INDEX idx_ai_icp_profiles_organization_id ON ai_icp_profiles(organization_id);
-CREATE INDEX idx_ai_icp_profiles_is_active ON ai_icp_profiles(is_active);
-CREATE INDEX idx_ai_icp_profiles_usage_count ON ai_icp_profiles(usage_count DESC);
-CREATE INDEX idx_ai_icp_profiles_user_org ON ai_icp_profiles(user_id, organization_id);
-CREATE INDEX idx_ai_icp_profiles_name ON ai_icp_profiles(name);
+-- Indexes for ai_icp_profiles (tenant-first for multi-tenancy)
+CREATE INDEX idx_ai_icp_profiles_tenant_id ON ai_icp_profiles(tenant_id);
+CREATE INDEX idx_ai_icp_profiles_tenant_user ON ai_icp_profiles(tenant_id, user_id);
+CREATE INDEX idx_ai_icp_profiles_tenant_active ON ai_icp_profiles(tenant_id, is_active);
+CREATE INDEX idx_ai_icp_profiles_tenant_usage ON ai_icp_profiles(tenant_id, usage_count DESC);
+CREATE INDEX idx_ai_icp_profiles_tenant_name ON ai_icp_profiles(tenant_id, name);
+CREATE INDEX idx_ai_icp_profiles_is_deleted ON ai_icp_profiles(is_deleted) WHERE is_deleted = false;
 
 -- Trigger for updated_at
 CREATE TRIGGER update_ai_icp_profiles_updated_at
@@ -117,17 +123,21 @@ CREATE TABLE IF NOT EXISTS ai_keyword_expansions (
   expanded_keywords JSONB NOT NULL, -- Array of expanded keywords
   context VARCHAR(100), -- Context used (e.g., 'technology', 'industry', 'general')
   model VARCHAR(100), -- AI model used
-  organization_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+  tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
   usage_count INTEGER DEFAULT 1,
   last_used_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  is_deleted BOOLEAN DEFAULT false, -- Soft delete flag
+  deleted_at TIMESTAMP, -- Soft delete timestamp
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Indexes for ai_keyword_expansions
-CREATE INDEX idx_ai_keyword_expansions_original ON ai_keyword_expansions(original_keyword);
-CREATE INDEX idx_ai_keyword_expansions_org ON ai_keyword_expansions(organization_id);
-CREATE INDEX idx_ai_keyword_expansions_context ON ai_keyword_expansions(context);
-CREATE UNIQUE INDEX idx_ai_keyword_unique ON ai_keyword_expansions(original_keyword, context, organization_id);
+-- Indexes for ai_keyword_expansions (tenant-first for multi-tenancy)
+CREATE INDEX idx_ai_keyword_expansions_tenant_keyword ON ai_keyword_expansions(tenant_id, original_keyword);
+CREATE INDEX idx_ai_keyword_expansions_tenant_context ON ai_keyword_expansions(tenant_id, context);
+CREATE INDEX idx_ai_keyword_expansions_tenant_usage ON ai_keyword_expansions(tenant_id, usage_count DESC);
+CREATE INDEX idx_ai_keyword_expansions_is_deleted ON ai_keyword_expansions(is_deleted) WHERE is_deleted = false;
+CREATE UNIQUE INDEX idx_ai_keyword_unique ON ai_keyword_expansions(original_keyword, context, tenant_id)
+  WHERE is_deleted = false;
 
 COMMENT ON TABLE ai_keyword_expansions IS 'Cache for AI-generated keyword expansions';
 COMMENT ON COLUMN ai_keyword_expansions.expanded_keywords IS 'Array of expanded keyword variations';

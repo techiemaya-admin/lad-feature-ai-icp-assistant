@@ -28,9 +28,10 @@ jobs:
       - name: Check for required files
         run: |
           echo "Checking required files..."
-          test -f backend/manifest.js || (echo "❌ backend/manifest.js is required" && exit 1)
-          test -d backend/services || (echo "❌ backend/services directory is required" && exit 1)
-          test -d backend/routes || (echo "❌ backend/routes directory is required" && exit 1)
+          test -f backend/features/ai-icp-assistant/manifest.js || (echo "❌ backend/features/ai-icp-assistant/manifest.js is required" && exit 1)
+          test -d backend/features/ai-icp-assistant/services || (echo "❌ backend/features/ai-icp-assistant/services directory is required" && exit 1)
+          test -d backend/features/ai-icp-assistant/routes || (echo "❌ backend/features/ai-icp-assistant/routes directory is required" && exit 1)
+          test -d backend/features/ai-icp-assistant/repositories || (echo "❌ backend/features/ai-icp-assistant/repositories directory is required" && exit 1)
           echo "✅ All required files present"
 
       - name: Validate backend structure
@@ -39,10 +40,12 @@ jobs:
           
           # Check for key backend files
           files=(
-            "backend/services/AIAssistantService.js"
-            "backend/routes/index.js"
-            "backend/controllers/AIAssistantController.js"
-            "backend/middleware/validation.js"
+            "backend/features/ai-icp-assistant/services/AIAssistantService.js"
+            "backend/features/ai-icp-assistant/routes/index.js"
+            "backend/features/ai-icp-assistant/controllers/AIAssistantController.js"
+            "backend/features/ai-icp-assistant/middleware/validation.js"
+            "backend/features/ai-icp-assistant/repositories/index.js"
+            "backend/features/ai-icp-assistant/repositories/AIConversationRepository.js"
           )
           
           for file in "${files[@]}"; do
@@ -57,12 +60,13 @@ jobs:
         run: |
           echo "Validating frontend structure..."
           
-          if [ -d "frontend/sdk" ]; then
+          if [ -d "frontend/sdk/features/ai-icp-assistant" ]; then
             echo "✅ Frontend SDK directory exists"
-            test -f frontend/sdk/index.ts && echo "✅ SDK index.ts exists"
-            test -f frontend/sdk/types.ts && echo "✅ SDK types.ts exists"
+            test -f frontend/sdk/features/ai-icp-assistant/index.ts && echo "✅ SDK index.ts exists"
+            test -f frontend/sdk/features/ai-icp-assistant/types.ts && echo "✅ SDK types.ts exists"
+            test -f frontend/sdk/features/ai-icp-assistant/aiICPAssistantService.ts && echo "✅ SDK service exists"
           else
-            echo "⚠️  No frontend/sdk directory (may be backend-only PR)"
+            echo "⚠️  No frontend/sdk/features/ai-icp-assistant directory (may be backend-only PR)"
           fi
 
       - name: Check code syntax

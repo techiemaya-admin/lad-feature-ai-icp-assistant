@@ -12,25 +12,24 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout feature repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Checkout LAD-Backend
-        uses: actions/checkout@v3
-        with:
-          repository: techiemaya-admin/LAD-Backend
-          token: ${{ secrets.LAD_REPO_TOKEN }}
-          path: lad-backend
-          ref: develop
-          persist-credentials: true
-
-      - name: Configure git credentials for LAD-Backend
-        working-directory: lad-backend
+      - name: Setup Git credentials
         run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+          git config --global url."https://x-access-token:${{ secrets.LAD_REPO_TOKEN }}@github.com/".insteadOf "https://github.com/"
+
+      - name: Checkout LAD-Backend
+        run: |
+          echo "📥 Cloning LAD-Backend repository..."
+          git clone --depth=1 --branch=develop https://x-access-token:${{ secrets.LAD_REPO_TOKEN }}@github.com/techiemaya-admin/LAD-Backend.git lad-backend
+          cd lad-backend
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
-          git remote set-url origin https://x-access-token:${{ secrets.LAD_REPO_TOKEN }}@github.com/techiemaya-admin/LAD-Backend.git
+          echo "✅ LAD-Backend cloned successfully"
 
       - name: Copy backend files
         run: |
@@ -144,27 +143,27 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout feature repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      - name: Setup Git credentials
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+          git config --global url."https://x-access-token:${{ secrets.LAD_REPO_TOKEN }}@github.com/".insteadOf "https://github.com/"
+
       - name: Checkout LAD-Frontend
-        uses: actions/checkout@v3
-        with:
-          repository: techiemaya-admin/LAD-Frontend
-          token: ${{ secrets.LAD_REPO_TOKEN }}
-          path: lad-frontend
-          ref: develop
-          persist-credentials: true
+        run: |
+          echo "📥 Cloning LAD-Frontend repository..."
+          git clone --depth=1 --branch=develop https://x-access-token:${{ secrets.LAD_REPO_TOKEN }}@github.com/techiemaya-admin/LAD-Frontend.git lad-frontend
+          cd lad-frontend
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          echo "✅ LAD-Frontend cloned successfully"
 
       - name: Configure git credentials for LAD-Frontend
         working-directory: lad-frontend
-        run: |
-          git config user.name "GitHub Actions Bot"
-          git config user.email "actions@github.com"
-          git remote set-url origin https://x-access-token:${{ secrets.LAD_REPO_TOKEN }}@github.com/techiemaya-admin/LAD-Frontend.git
-
-      - name: Copy frontend SDK files
         run: |
           echo "📦 Starting frontend SDK sync..."
           

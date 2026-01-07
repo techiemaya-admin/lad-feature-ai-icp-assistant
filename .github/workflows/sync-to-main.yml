@@ -180,7 +180,7 @@ jobs:
           git config user.email "actions@github.com"
           echo "✅ LAD-Frontend cloned successfully"
 
-      - name: Copy frontend SDK files
+      - name: Verify LAD_REPO_TOKEN
         run: |
           echo "📦 Starting frontend SDK sync..."
           

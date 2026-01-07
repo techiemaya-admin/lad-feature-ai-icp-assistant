@@ -4,8 +4,14 @@
  * Handles business logic for AI conversations, ICP profiles, and keyword expansion
  */
 
-const { AIConversation, AIMessage, ICPProfile, KeywordExpansion } = require('../models');
+const {
+  AIConversationRepository,
+  AIMessageRepository,
+  ICPProfileRepository,
+  KeywordExpansionRepository
+} = require('../repositories');
 const AIAssistantService = require('../services/AIAssistantService');
+const logger = require('../utils/logger');
 
 class AIAssistantController {
   /**
@@ -16,14 +22,14 @@ class AIAssistantController {
     try {
       const { message, conversationId = null, searchResults = [] } = req.body;
       const userId = req.user?.userId;
-      const organizationId = req.user?.organizationId;
+      const tenantId = req.user?.tenantId;
 
       // Get or create conversation
       let conversation;
       let isNewConversation = false;
       
       if (conversationId) {
-        conversation = await AIConversation.findById(conversationId);
+        conversation = await AIConversationRepository.findById(conversationId, tenantId);
         if (!conversation || conversation.user_id !== userId) {
           return res.status(404).json({
             success: false,
@@ -31,12 +37,18 @@ class AIAssistantController {
           });
         }
       } else {
-        // Get active conversation or create new one
-        conversation = await AIConversation.getActiveForUser(userId, organizationId);
-        if (!conversation) {
-          conversation = await AIConversation.create({
+        // Get active conversations and use first one or create new
+        const activeConversations = await AIConversationRepository.findByUser(userId, tenantId, {
+          status: 'active',
+          limit: 1
+        });
+        
+        if (activeConversations.length > 0) {
+          conversation = activeConversations[0];
+        } else {
+          conversation = await AIConversationRepository.create({
             userId,
-            organizationId,
+            tenantId,
             title: 'Outreach Planning'
           });
           isNewConversation = true;
@@ -44,9 +56,10 @@ class AIAssistantController {
       }
 
       // Get recent messages for context
-      const conversationHistory = await AIMessage.findByConversation(
+      const conversationHistory = await AIMessageRepository.findByConversation(
         conversation.id,
-        { limit: 10, order: 'ASC' }
+        tenantId,
+        { limit: 10 }
       );
 
       // Load assistant context from conversation metadata
@@ -68,15 +81,16 @@ class AIAssistantController {
         initialContext.stage = 'outreach_type'; // Move to outreach_type stage
         
         // Save greeting as assistant message
-        await AIMessage.create({
+        await AIMessageRepository.create({
           conversationId: conversation.id,
+          tenantId,
           role: 'assistant',
           content: greeting,
           messageData: { isGreeting: true, stage: 'outreach_type' }
         });
 
         // Save initial context to conversation
-        await AIConversation.update(conversation.id, { 
+        await AIConversationRepository.update(conversation.id, tenantId, { 
           metadata: { assistantContext: initialContext } 
         });
 
@@ -105,21 +119,23 @@ class AIAssistantController {
         conversationHistory,
         searchResults,
         userId,
-        organizationId,
+        tenantId,
         assistantContext
       });
 
       // Save user message
-      await AIMessage.create({
+      await AIMessageRepository.create({
         conversationId: conversation.id,
+        tenantId,
         role: 'user',
         content: message,
         messageData: { searchResultsCount: searchResults?.length || 0 }
       });
 
       // Save assistant response
-      await AIMessage.create({
+      await AIMessageRepository.create({
         conversationId: conversation.id,
+        tenantId,
         role: 'assistant',
         content: result.response || result.text,
         messageData: {
@@ -138,7 +154,7 @@ class AIAssistantController {
         updatedMetadata.status = result.status;
         updatedMetadata.readyForExecution = result.readyForExecution === true;
         
-        await AIConversation.update(conversation.id, { metadata: updatedMetadata });
+        await AIConversationRepository.update(conversation.id, tenantId, { metadata: updatedMetadata });
       }
 
       res.json({
@@ -148,7 +164,7 @@ class AIAssistantController {
       });
 
     } catch (error) {
-      console.error('Chat error:', error);
+      logger.error('Chat error', { error, userId: req.user.id, tenantId: req.user.tenantId });
       res.status(500).json({
         success: false,
         error: error.message || 'Failed to process chat'
@@ -163,13 +179,13 @@ class AIAssistantController {
   static async getHistory(req, res) {
     try {
       const userId = req.user?.userId;
-      const organizationId = req.user?.organizationId;
-      const { limit = 20, offset = 0, status = null } = req.query;
+      const tenantId = req.user?.tenantId;
+      const { limit = 20, status = null } = req.query;
 
-      const conversations = await AIConversation.findByUser(
+      const conversations = await AIConversationRepository.findByUser(
         userId,
-        organizationId,
-        { status, limit: parseInt(limit), offset: parseInt(offset) }
+        tenantId,
+        { status, limit: parseInt(limit) }
       );
 
       res.json({
@@ -179,7 +195,7 @@ class AIAssistantController {
       });
 
     } catch (error) {
-      console.error('Get history error:', error);
+      logger.error('Get history error', { error, userId: req.user.userId, tenantId: req.user.tenantId });
       res.status(500).json({
         success: false,
         error: 'Failed to get conversation history'
@@ -195,8 +211,9 @@ class AIAssistantController {
     try {
       const { id } = req.params;
       const userId = req.user?.userId;
+      const tenantId = req.user?.tenantId;
 
-      const conversation = await AIConversation.findById(id);
+      const conversation = await AIConversationRepository.findById(id, tenantId);
       if (!conversation || conversation.user_id !== userId) {
         return res.status(404).json({
           success: false,
@@ -204,8 +221,8 @@ class AIAssistantController {
         });
       }
 
-      const messages = await AIMessage.findByConversation(id);
-      const stats = await AIConversation.getWithStats(id);
+      const messages = await AIMessageRepository.findByConversation(id, tenantId);
+      const stats = await AIConversationRepository.getStats(id, tenantId);
 
       res.json({
         success: true,
@@ -215,7 +232,7 @@ class AIAssistantController {
       });
 
     } catch (error) {
-      console.error('Get conversation error:', error);
+      logger.error('Get conversation error', { error, userId: req.user.userId, tenantId: req.user.tenantId });
       res.status(500).json({
         success: false,
         error: 'Failed to get conversation'
@@ -230,24 +247,27 @@ class AIAssistantController {
   static async resetConversation(req, res) {
     try {
       const userId = req.user?.userId;
-      const organizationId = req.user?.organizationId;
+      const tenantId = req.user?.tenantId;
       const { conversationId = null } = req.body;
 
       if (conversationId) {
         // Archive specific conversation
-        const conversation = await AIConversation.findById(conversationId);
+        const conversation = await AIConversationRepository.findById(conversationId, tenantId);
         if (!conversation || conversation.user_id !== userId) {
           return res.status(404).json({
             success: false,
             error: 'Conversation not found'
           });
         }
-        await AIConversation.archive(conversationId);
+        await AIConversationRepository.archive(conversationId, tenantId);
       } else {
         // Archive active conversation
-        const activeConversation = await AIConversation.getActiveForUser(userId, organizationId);
-        if (activeConversation) {
-          await AIConversation.archive(activeConversation.id);
+        const activeConversations = await AIConversationRepository.findByUser(userId, tenantId, {
+          status: 'active',
+          limit: 1
+        });
+        if (activeConversations.length > 0) {
+          await AIConversationRepository.archive(activeConversations[0].id, tenantId);
         }
       }
 
@@ -257,7 +277,7 @@ class AIAssistantController {
       });
 
     } catch (error) {
-      console.error('Reset conversation error:', error);
+      logger.error('Reset conversation error', { error, userId: req.user.userId, tenantId: req.user.tenantId });
       res.status(500).json({
         success: false,
         error: 'Failed to reset conversation'
@@ -272,7 +292,7 @@ class AIAssistantController {
   static async expandKeywords(req, res) {
     try {
       const { topic, context = 'general' } = req.body;
-      const organizationId = req.user?.organizationId;
+      const tenantId = req.user?.tenantId;
 
       if (!topic) {
         return res.status(400).json({
@@ -282,9 +302,9 @@ class AIAssistantController {
       }
 
       // Check cache first
-      const cached = await KeywordExpansion.findCached(topic, context, organizationId);
+      const cached = await KeywordExpansionRepository.findByKeyword(topic, context, tenantId);
       if (cached) {
-        console.log('✅ Using cached keyword expansion');
+        logger.info('Using cached keyword expansion', { topic, context });
         return res.json({
           success: true,
           original: topic,
@@ -298,12 +318,12 @@ class AIAssistantController {
       const expandedKeywords = await AIAssistantService.expandKeywords(topic, context);
 
       // Cache the result
-      await KeywordExpansion.upsert({
+      await KeywordExpansionRepository.create({
         originalKeyword: topic,
         expandedKeywords,
         context,
         model: process.env.AI_MODEL || 'gemini-2.0-flash',
-        organizationId
+        tenantId
       });
 
       res.json({
@@ -315,7 +335,7 @@ class AIAssistantController {
       });
 
     } catch (error) {
-      console.error('Expand keywords error:', error);
+      logger.error('Expand keywords error', { error, userId: req.user.userId, tenantId: req.user.tenantId });
       res.status(500).json({
         success: false,
         error: 'Failed to expand keywords'
@@ -330,13 +350,13 @@ class AIAssistantController {
   static async getProfiles(req, res) {
     try {
       const userId = req.user?.userId;
-      const organizationId = req.user?.organizationId;
-      const { limit = 50, offset = 0 } = req.query;
+      const tenantId = req.user?.tenantId;
+      const { limit = 50 } = req.query;
 
-      const profiles = await ICPProfile.findByUser(
+      const profiles = await ICPProfileRepository.findByUser(
         userId,
-        organizationId,
-        { limit: parseInt(limit), offset: parseInt(offset) }
+        tenantId,
+        { limit: parseInt(limit) }
       );
 
       res.json({
@@ -346,7 +366,7 @@ class AIAssistantController {
       });
 
     } catch (error) {
-      console.error('Get profiles error:', error);
+      logger.error('Get profiles error', { error, userId: req.user.userId, tenantId: req.user.tenantId });
       res.status(500).json({
         success: false,
         error: 'Failed to get ICP profiles'
@@ -361,7 +381,7 @@ class AIAssistantController {
   static async createProfile(req, res) {
     try {
       const userId = req.user?.userId;
-      const organizationId = req.user?.organizationId;
+      const tenantId = req.user?.tenantId;
       const { name, description, icpData, searchParams, sourceConversationId } = req.body;
 
       if (!name || !icpData) {
@@ -371,9 +391,9 @@ class AIAssistantController {
         });
       }
 
-      const profile = await ICPProfile.create({
+      const profile = await ICPProfileRepository.create({
         userId,
-        organizationId,
+        tenantId,
         name,
         description,
         icpData,
@@ -387,7 +407,7 @@ class AIAssistantController {
       });
 
     } catch (error) {
-      console.error('Create profile error:', error);
+      logger.error('Create profile error', { error, userId: req.user.userId, tenantId: req.user.tenantId });
       res.status(500).json({
         success: false,
         error: 'Failed to create ICP profile'
@@ -403,9 +423,10 @@ class AIAssistantController {
     try {
       const { id } = req.params;
       const userId = req.user?.userId;
+      const tenantId = req.user?.tenantId;
       const updates = req.body;
 
-      const profile = await ICPProfile.findById(id);
+      const profile = await ICPProfileRepository.findById(id, tenantId);
       if (!profile || profile.user_id !== userId) {
         return res.status(404).json({
           success: false,
@@ -413,7 +434,7 @@ class AIAssistantController {
         });
       }
 
-      const updated = await ICPProfile.update(id, updates);
+      const updated = await ICPProfileRepository.update(id, tenantId, updates);
 
       res.json({
         success: true,
@@ -421,7 +442,7 @@ class AIAssistantController {
       });
 
     } catch (error) {
-      console.error('Update profile error:', error);
+      logger.error('Update profile error', { error, userId: req.user.userId, tenantId: req.user.tenantId });
       res.status(500).json({
         success: false,
         error: 'Failed to update profile'
@@ -437,8 +458,9 @@ class AIAssistantController {
     try {
       const { id } = req.params;
       const userId = req.user?.userId;
+      const tenantId = req.user?.tenantId;
 
-      const profile = await ICPProfile.findById(id);
+      const profile = await ICPProfileRepository.findById(id, tenantId);
       if (!profile || profile.user_id !== userId) {
         return res.status(404).json({
           success: false,
@@ -446,7 +468,7 @@ class AIAssistantController {
         });
       }
 
-      await ICPProfile.deactivate(id);
+      await ICPProfileRepository.softDelete(id, tenantId);
 
       res.json({
         success: true,
@@ -454,7 +476,7 @@ class AIAssistantController {
       });
 
     } catch (error) {
-      console.error('Delete profile error:', error);
+      logger.error('Delete profile error', { error, userId: req.user.userId, tenantId: req.user.tenantId });
       res.status(500).json({
         success: false,
         error: 'Failed to delete profile'
@@ -470,8 +492,9 @@ class AIAssistantController {
     try {
       const { id } = req.params;
       const userId = req.user?.userId;
+      const tenantId = req.user?.tenantId;
 
-      const profile = await ICPProfile.findById(id);
+      const profile = await ICPProfileRepository.findById(id, tenantId);
       if (!profile || profile.user_id !== userId) {
         return res.status(404).json({
           success: false,
@@ -479,7 +502,7 @@ class AIAssistantController {
         });
       }
 
-      const updated = await ICPProfile.incrementUsage(id);
+      const updated = await ICPProfileRepository.incrementUsage(id, tenantId);
 
       res.json({
         success: true,
@@ -487,7 +510,7 @@ class AIAssistantController {
       });
 
     } catch (error) {
-      console.error('Use profile error:', error);
+      logger.error('Use profile error', { error, userId: req.user.userId, tenantId: req.user.tenantId });
       res.status(500).json({
         success: false,
         error: 'Failed to use profile'

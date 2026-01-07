@@ -3,6 +3,8 @@
  * Uses Gemini API to generate natural, conversational responses
  */
 
+const logger = require('../utils/logger');
+
 let genAI = null;
 let GoogleGenerativeAI = null;
 
@@ -11,10 +13,10 @@ try {
   const geminiApiKey = process.env.GEMINI_API_KEY;
   if (geminiApiKey) {
     genAI = new GoogleGenerativeAI(geminiApiKey);
-    console.log('✅ Gemini AI initialized for response generation');
+    logger.info('Gemini AI initialized for response generation');
   }
 } catch (error) {
-  console.log('⚠️ Gemini AI package not found for response generation');
+  logger.warn('Gemini AI package not found for response generation');
   genAI = null;
 }
 
@@ -89,11 +91,11 @@ Generate your response now (just the text, no JSON, no explanations):`;
         .replace(/```[\s\S]*?```/g, '') // Remove code blocks
         .trim();
 
-      console.log(`🤖 Gemini generated response: "${cleanResponse}"`);
+      logger.debug('Gemini generated response', { response: cleanResponse });
       return cleanResponse;
 
     } catch (error) {
-      console.warn('⚠️ Gemini response generation error:', error.message);
+      logger.warn('Gemini response generation error', { error: error.message, stage, context });
       return this.generateFallbackResponse(stage, context, questionType);
     }
   }

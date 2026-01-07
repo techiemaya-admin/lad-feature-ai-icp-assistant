@@ -20,12 +20,21 @@ jobs:
         run: |
           git config --global user.name "GitHub Actions Bot"
           git config --global user.email "actions@github.com"
-          git config --global url."https://x-access-token:${{ secrets.LAD_REPO_TOKEN }}@github.com/".insteadOf "https://github.com/"
+
+      - name: Verify LAD_REPO_TOKEN
+        run: |
+          if [ -z "${{ secrets.LAD_REPO_TOKEN }}" ]; then
+            echo "❌ LAD_REPO_TOKEN secret is not set!"
+            exit 1
+          fi
+          echo "✅ LAD_REPO_TOKEN is configured"
 
       - name: Checkout LAD-Backend
+        env:
+          GH_TOKEN: ${{ secrets.LAD_REPO_TOKEN }}
         run: |
           echo "📥 Cloning LAD-Backend repository..."
-          git clone --depth=1 --branch=develop https://x-access-token:${{ secrets.LAD_REPO_TOKEN }}@github.com/techiemaya-admin/LAD-Backend.git lad-backend
+          git clone --depth=1 --branch=develop "https://oauth2:${GH_TOKEN}@github.com/techiemaya-admin/LAD-Backend.git" lad-backend
           cd lad-backend
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
@@ -151,12 +160,21 @@ jobs:
         run: |
           git config --global user.name "GitHub Actions Bot"
           git config --global user.email "actions@github.com"
-          git config --global url."https://x-access-token:${{ secrets.LAD_REPO_TOKEN }}@github.com/".insteadOf "https://github.com/"
+
+      - name: Verify LAD_REPO_TOKEN
+        run: |
+          if [ -z "${{ secrets.LAD_REPO_TOKEN }}" ]; then
+            echo "❌ LAD_REPO_TOKEN secret is not set!"
+            exit 1
+          fi
+          echo "✅ LAD_REPO_TOKEN is configured"
 
       - name: Checkout LAD-Frontend
+        env:
+          GH_TOKEN: ${{ secrets.LAD_REPO_TOKEN }}
         run: |
           echo "📥 Cloning LAD-Frontend repository..."
-          git clone --depth=1 --branch=develop https://x-access-token:${{ secrets.LAD_REPO_TOKEN }}@github.com/techiemaya-admin/LAD-Frontend.git lad-frontend
+          git clone --depth=1 --branch=develop "https://oauth2:${GH_TOKEN}@github.com/techiemaya-admin/LAD-Frontend.git" lad-frontend
           cd lad-frontend
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"

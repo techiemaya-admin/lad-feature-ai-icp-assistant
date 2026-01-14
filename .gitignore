@@ -51,7 +51,6 @@ migrate-*.js
 
 # Test files (for local testing only)
 test-ui.html
-test-server.js
 test-api.js
 test-db-setup.js
 test-package.json

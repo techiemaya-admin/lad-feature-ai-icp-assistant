@@ -65,7 +65,8 @@ class GeminiIntentService {
           clarificationNeeded: true,
           message: analysis.message || 'Please provide more details.',
           confidence: analysis.confidence || 'medium',
-          completed: false
+          completed: false,
+          correctedAnswer: analysis.correctedAnswer || null
         };
       }
 
@@ -75,14 +76,18 @@ class GeminiIntentService {
           clarificationNeeded: false,
           message: analysis.message || "Great! I've understood your requirements. Building your workflow now…",
           confidence: analysis.confidence || 'high',
-          completed: true
+          completed: true,
+          correctedAnswer: analysis.correctedAnswer || null
         };
       }
+
+      // Use corrected answer if available for next step processing
+      const effectiveAnswer = analysis.correctedAnswer || userAnswer;
 
       const transition = await this.platformHandler.determineNextStep({
         currentStepIndex,
         currentIntentKey,
-        userAnswer,
+        userAnswer: effectiveAnswer,
         collectedAnswers
       });
 
@@ -95,7 +100,8 @@ class GeminiIntentService {
           clarificationNeeded: false,
           message: "Great! I've understood your requirements. Building your workflow now…",
           confidence: 'high',
-          completed: true
+          completed: true,
+          correctedAnswer: analysis.correctedAnswer || null
         };
       }
 
@@ -124,7 +130,8 @@ class GeminiIntentService {
         clarificationNeeded: false,
         message: null,
         confidence: analysis.confidence || 'high',
-        completed: false
+        completed: false,
+        correctedAnswer: analysis.correctedAnswer || null
       };
     } catch (error) {
       logger.error('Error in generateNextQuestionAndAnalyze', { 
@@ -150,7 +157,8 @@ class GeminiIntentService {
         clarificationNeeded: false,
         message: null,
         confidence: 'low',
-        completed: false
+        completed: false,
+        correctedAnswer: null
       };
     }
   }

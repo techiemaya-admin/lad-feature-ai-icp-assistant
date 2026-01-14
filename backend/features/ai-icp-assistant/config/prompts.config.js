@@ -133,11 +133,56 @@ module.exports = {
       {
         stepIndex: 6,
         intentKey: 'workflow_delays',
-        prompt: `Do you want to add delays between actions?\n\nOptions:\n${delayOptions.map(opt => `• ${opt}`).join('\n')}`,
         title: 'Workflow Delays',
         expectedInput: 'Delay configuration',
         allowSkip: false,
-        options: delayOptions,
+        isDynamic: true,
+        questionType: 'select',
+        generateDynamic: (context) => {
+          const { completed_platform_actions = [], selected_platforms = [], completed_delay_platforms = [] } = context;
+          
+          // Find next platform that needs delay configuration
+          const platformsWithActions = completed_platform_actions || [];
+          const platformsWithDelay = completed_delay_platforms || [];
+          const nextPlatform = platformsWithActions.find(p => !platformsWithDelay.includes(p));
+          
+          if (!nextPlatform) {
+            // All platforms have delay configured
+            return `All platforms configured! Do you want to review or modify delays?\n\nOptions:\n${delayOptions.map(opt => `• ${opt}`).join('\n')}`;
+          }
+          
+          // Ask for delay for this specific platform
+          const platformDisplayNames = {
+            linkedin: 'LinkedIn',
+            email: 'Email',
+            whatsapp: 'WhatsApp',
+            voice: 'Voice Calls'
+          };
+          
+          const platformName = platformDisplayNames[nextPlatform] || nextPlatform;
+          const platformIndex = platformsWithDelay.length + 1;
+          const totalPlatforms = platformsWithActions.length;
+          
+          const platformSpecificDelayOptions = [
+            'No delay (run immediately)',
+            '1 hour delay',
+            '2 hours delay',
+            '1 day delay',
+            '2 days delay',
+            'Custom delay',
+          ];
+          
+          // Return just the question string - the service expects a string, not an object
+          return `Platform ${platformIndex} of ${totalPlatforms}: ${platformName}\n\nWhat delay do you want between ${platformName} actions?\n\nOptions:\n${platformSpecificDelayOptions.map(opt => `• ${opt}`).join('\n')}`;
+        },
+        options: [
+          'No delay (run immediately)',
+          '1 hour delay',
+          '2 hours delay',
+          '1 day delay',
+          '2 days delay',
+          'Custom delay',
+        ],
       },
       {
         stepIndex: 7,

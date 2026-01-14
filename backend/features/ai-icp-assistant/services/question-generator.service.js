@@ -54,6 +54,8 @@ class QuestionGeneratorService {
     
     // For campaign settings step, set intentKey based on sub-step
     let intentKey = promptConfig.intentKey;
+    let helperText = promptConfig.helperText || null;
+    
     if (stepIndex === stepsConfig.CAMPAIGN_SETTINGS) {
       const subStepIndex = context.subStepIndex !== undefined ? context.subStepIndex : stepsConfig.CAMPAIGN_DAYS_SUBSTEP;
       if (subStepIndex === stepsConfig.CAMPAIGN_DAYS_SUBSTEP) {
@@ -66,9 +68,30 @@ class QuestionGeneratorService {
       logger.debug(`[QuestionGenerator] Campaign settings step: intentKey set to ${intentKey} (subStepIndex: ${subStepIndex})`);
     }
     
+    // For workflow delays step, set intentKey based on platform
+    if (stepIndex === stepsConfig.WORKFLOW_DELAYS) {
+      const { completed_platform_actions = [], completed_delay_platforms = [] } = context;
+      const nextPlatform = completed_platform_actions.find(p => !completed_delay_platforms.includes(p));
+      
+      if (nextPlatform) {
+        intentKey = `${nextPlatform}_delay`;
+        
+        const platformDisplayNames = {
+          linkedin: 'LinkedIn',
+          email: 'Email',
+          whatsapp: 'WhatsApp',
+          voice: 'Voice Calls'
+        };
+        const platformName = platformDisplayNames[nextPlatform] || nextPlatform;
+        helperText = `Configure delay timing for ${platformName} actions`;
+        
+        logger.debug(`[QuestionGenerator] Workflow delays step: intentKey set to ${intentKey} for platform ${platformName}`);
+      }
+    }
+    
     return {
       question: `${stepPrefix}${questionText}`,
-      helperText: promptConfig.helperText || null,
+      helperText,
       stepIndex,
       intentKey,
       title: promptConfig.title,

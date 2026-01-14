@@ -38,6 +38,7 @@ if (process.env.DATABASE_URL && !process.env.DB_HOST) {
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+<<<<<<< HEAD
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -211,10 +212,37 @@ app.listen(PORT, () => {
   console.log(`- Gemini API: ${process.env.GEMINI_API_KEY ? '✅ Configured' : '❌ Not configured'}`);
   console.log('='.repeat(60));
   console.log('');
+=======
+// Basic middleware
+app.use(express.json());
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    service: 'ai-icp-assistant-test',
+    version: '2.0.0'
+  });
+});
+
+// Mount routes (with error handling for CI environment)
+try {
+  const routes = require('./backend/features/ai-icp-assistant/routes');
+  app.use('/api/ai-icp-assistant', routes);
+  console.log('✅ Routes loaded successfully');
+} catch (error) {
+  console.error('⚠️  Routes could not be loaded (may be expected in test environment):', error.message);
+}
+
+// Start server
+const server = app.listen(PORT, () => {
+  console.log(`✅ Test server started on port ${PORT}`);
+>>>>>>> eee5077 (feat: AI ICP Assistant with duplicate question fix and improved flow control)
 });
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
+<<<<<<< HEAD
   console.log('SIGTERM received, shutting down gracefully...');
   process.exit(0);
 });
@@ -223,3 +251,13 @@ process.on('SIGINT', () => {
   console.log('SIGINT received, shutting down gracefully...');
   process.exit(0);
 });
+=======
+  console.log('SIGTERM received, shutting down gracefully');
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
+});
+
+module.exports = app;
+>>>>>>> eee5077 (feat: AI ICP Assistant with duplicate question fix and improved flow control)

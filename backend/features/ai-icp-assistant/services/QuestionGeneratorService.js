@@ -57,6 +57,7 @@ class QuestionGeneratorService {
         title: 'Workflow Delays',
         expectedInput: 'Delay configuration',
         allowSkip: true,
+        isDynamic: true,
         options: ['No delay', 'Add delay between actions', 'Custom delay configuration']
       },
       {
@@ -127,6 +128,10 @@ class QuestionGeneratorService {
         return this.generatePlatformFeaturesStep(context);
       }
 
+      if (stepIndex === 6 && promptConfig.isDynamic) {
+        return this.generateDelayStep(context);
+      }
+
       if (stepIndex === 10 && promptConfig.subSteps) {
         return this.generateCampaignSettingsStep(context, promptConfig);
       }
@@ -147,6 +152,83 @@ class QuestionGeneratorService {
       logger.error('Error generating question', { error: error.message, stepIndex });
       return this.getFallbackQuestion(stepIndex);
     }
+  }
+
+  /**
+   * Generate delay configuration step (per platform)
+   */
+  generateDelayStep(context) {
+    const completedPlatformActions = context.completed_platform_actions || [];
+    const completedDelayPlatforms = context.completed_delay_platforms || [];
+    
+    logger.debug('[QuestionGeneratorService] generateDelayStep called', {
+      completedPlatformActions,
+      completedDelayPlatforms,
+      contextKeys: Object.keys(context)
+    });
+    
+    // Find next platform that needs delay configuration
+    const nextPlatform = completedPlatformActions.find(p => !completedDelayPlatforms.includes(p));
+    
+    logger.debug('[QuestionGeneratorService] Next platform for delay', { nextPlatform });
+    
+    const platformDisplayNames = {
+      linkedin: 'LinkedIn',
+      email: 'Email',
+      whatsapp: 'WhatsApp',
+      voice: 'Voice Calls'
+    };
+    
+    if (!nextPlatform) {
+      // All platforms have delay configured
+      logger.debug('[QuestionGeneratorService] All platforms have delays configured');
+      return {
+        question: 'All platforms have delay configured!\n\nOptions:\n• No delay (actions run immediately)\n• Add delay between actions (specify hours/days)\n• Custom delay configuration',
+        helperText: 'You can review or modify delays',
+        stepIndex: 6,
+        intentKey: 'workflow_delays',
+        title: 'Workflow Delays - Review',
+        questionType: 'select',
+        options: ['No delay', 'Add delay between actions', 'Custom delay configuration'],
+        allowSkip: true,
+      };
+    }
+    
+    // Ask for delay for this specific platform
+    const platformName = platformDisplayNames[nextPlatform] || nextPlatform;
+    const platformIndex = completedDelayPlatforms.length + 1;
+    const totalPlatforms = completedPlatformActions.length;
+    
+    const platformSpecificDelayOptions = [
+      'No delay (run immediately)',
+      '1 hour delay',
+      '2 hours delay',
+      '1 day delay',
+      '2 days delay',
+      'Custom delay',
+    ];
+    
+    const generatedQuestion = {
+      question: `Platform ${platformIndex} of ${totalPlatforms}: ${platformName}\n\nWhat delay do you want between ${platformName} actions?\n\nOptions:\n${platformSpecificDelayOptions.map(opt => `• ${opt}`).join('\n')}`,
+      helperText: `Configure delay timing for ${platformName} actions`,
+      stepIndex: 6,
+      intentKey: `${nextPlatform}_delay`,
+      title: `${platformName} - Delay Configuration`,
+      questionType: 'select',
+      options: platformSpecificDelayOptions,
+      allowSkip: false,
+      currentPlatform: nextPlatform,
+      platformIndex,
+      totalPlatforms,
+    };
+    
+    logger.debug('[QuestionGeneratorService] Generated delay question', {
+      intentKey: generatedQuestion.intentKey,
+      platformName,
+      questionPreview: generatedQuestion.question.substring(0, 100)
+    });
+    
+    return generatedQuestion;
   }
 
   /**

@@ -68,20 +68,76 @@ class StepProcessorService {
       ? completedActions
       : [...completedActions, normalizedPlatformKey];
     updatedAnswers.completed_platform_actions = finalCompletedActions;
+    
+    const platformDisplayNames = {
+      linkedin: 'LinkedIn',
+      email: 'Email',
+      whatsapp: 'WhatsApp',
+      voice: 'Voice Calls'
+    };
+    
+    const delayOptions = [
+      'No delay (run immediately)',
+      '1 hour delay',
+      '2 hours delay',
+      '1 day delay',
+      '2 days delay',
+      'Custom delay',
+    ];
+    
+    // Find the position of current platform and check if there's a NEXT platform
+    const currentPlatformIndex = selectedPlatforms.indexOf(normalizedPlatformKey);
+    const nextPlatformInSequence = selectedPlatforms[currentPlatformIndex + 1];
+    
+    // If there's a next platform in sequence, ask for delay BETWEEN them
+    if (nextPlatformInSequence) {
+      const delayKey = `delay_${normalizedPlatformKey}_${nextPlatformInSequence}`;
+      const hasDelayBetween = updatedAnswers[delayKey] !== undefined;
+      
+      if (!hasDelayBetween) {
+        const currentPlatformName = platformDisplayNames[normalizedPlatformKey] || normalizedPlatformKey;
+        const nextPlatformName = platformDisplayNames[nextPlatformInSequence] || nextPlatformInSequence;
+        
+        logger.debug(`[StepProcessor] Platform ${currentPlatformName} complete (no template needed), asking for delay before ${nextPlatformName}`);
+        
+        return {
+          clarificationNeeded: false,
+          message: null,
+          nextStepIndex: stepsConfig.PLATFORM_ACTIONS,
+          nextQuestion: {
+            question: `What delay do you want between ${currentPlatformName} and ${nextPlatformName}?\n\nThis controls how long to wait after completing ${currentPlatformName} actions before starting ${nextPlatformName} actions.\n\nOptions:\n${delayOptions.map(opt => `• ${opt}`).join('\n')}`,
+            helperText: `Set timing between ${currentPlatformName} → ${nextPlatformName}`,
+            stepIndex: stepsConfig.PLATFORM_ACTIONS,
+            intentKey: delayKey,
+            title: `Delay: ${currentPlatformName} → ${nextPlatformName}`,
+            questionType: 'select',
+            options: delayOptions,
+            allowSkip: false,
+          },
+          completed: false,
+          updatedCollectedAnswers: updatedAnswers,
+        };
+      }
+    }
+    
     // Check if all platforms are done
     const allDone = platformProgressionService.areAllPlatformsCompleted(
       selectedPlatforms,
       finalCompletedActions
     );
     if (allDone) {
+      // All platforms complete - skip workflow delays step and go to campaign goal
+      updatedAnswers.workflow_delays = 'configured_between_platforms';
+      updatedAnswers.workflow_conditions = stepsConfig.DEFAULT_WORKFLOW_CONDITIONS;
+      
       const nextQuestion = questionGeneratorService.generateQuestion(
-        stepsConfig.WORKFLOW_DELAYS,
+        stepsConfig.CAMPAIGN_GOAL,
         updatedAnswers
       );
       return {
         clarificationNeeded: false,
         message: null,
-        nextStepIndex: stepsConfig.WORKFLOW_DELAYS,
+        nextStepIndex: stepsConfig.CAMPAIGN_GOAL,
         nextQuestion,
         completed: false,
         updatedCollectedAnswers: updatedAnswers,
@@ -126,14 +182,18 @@ class StepProcessorService {
       };
     }
     
+    // All platforms done - skip to campaign goal
+    collectedAnswers.workflow_delays = 'configured_between_platforms';
+    collectedAnswers.workflow_conditions = stepsConfig.DEFAULT_WORKFLOW_CONDITIONS;
+    
     const nextQuestion = questionGeneratorService.generateQuestion(
-      stepsConfig.WORKFLOW_DELAYS,
+      stepsConfig.CAMPAIGN_GOAL,
       collectedAnswers
     );
     return {
       clarificationNeeded: false,
       message: null,
-      nextStepIndex: stepsConfig.WORKFLOW_DELAYS,
+      nextStepIndex: stepsConfig.CAMPAIGN_GOAL,
       nextQuestion,
       completed: false,
       updatedCollectedAnswers: collectedAnswers,

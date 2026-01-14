@@ -8,6 +8,7 @@
 const express = require('express');
 const router = express.Router();
 const AICICPAssistantController = require('../controllers/ai-icp-assistant.controller');
+const { authenticateToken } = require('../../../core/middleware/auth');
 const {
   validateStepIndex,
   validateICPAnswer,
@@ -20,6 +21,7 @@ const {
  */
 router.get(
   '/onboarding/icp-questions',
+  authenticateToken,
   validateCategory,
   AICICPAssistantController.getQuestions
 );
@@ -30,6 +32,7 @@ router.get(
  */
 router.get(
   '/onboarding/icp-questions/:stepIndex',
+  authenticateToken,
   validateStepIndex,
   validateCategory,
   AICICPAssistantController.getQuestionByStep
@@ -41,6 +44,7 @@ router.get(
  */
 router.post(
   '/onboarding/icp-answer',
+  authenticateToken,
   validateICPAnswer,
   AICICPAssistantController.processAnswer
 );

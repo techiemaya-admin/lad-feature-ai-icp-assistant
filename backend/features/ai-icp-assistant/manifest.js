@@ -15,6 +15,7 @@ module.exports = {
   
   // Feature availability
   plans: ['professional', 'enterprise'],
+  hasRoutes: true,
   
   // Credit costs
   credits: {
@@ -22,8 +23,18 @@ module.exports = {
     per_search_trigger: 0  // No additional cost for triggering search (Apollo charges separately)
   },
   
-  // API routes provided by this feature
-  routes: require('./routes/index.js'),
+  // API routes provided by this feature (array of route paths for documentation)
+  routes: [
+    'chat',
+    'onboarding/icp-questions',
+    'onboarding/icp-questions/:stepIndex',
+    'onboarding/icp-answer',
+    'profiles',
+    'profiles/:id',
+    'expand-keywords',
+    'conversations/:id',
+    'reset'
+  ],
   
   // Database tables
   tables: [

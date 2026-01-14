@@ -7,6 +7,7 @@
 const express = require('express');
 const router = express.Router();
 const AIAssistantController = require('../controllers/AIAssistantController');
+const { authenticateToken } = require('../../../core/middleware/auth');
 const {
   validateChatRequest,
   validateKeywordRequest,
@@ -23,25 +24,25 @@ const {
  * POST /api/ai-icp-assistant/chat
  * Chat with AI assistant to define ICP and trigger searches
  */
-router.post('/chat', validateChatRequest, AIAssistantController.chat);
+router.post('/chat', authenticateToken, validateChatRequest, AIAssistantController.chat);
 
 /**
  * GET /api/ai-icp-assistant/history
  * Get conversation history for user
  */
-router.get('/history', validatePagination, AIAssistantController.getHistory);
+router.get('/history', authenticateToken, validatePagination, AIAssistantController.getHistory);
 
 /**
  * GET /api/ai-icp-assistant/conversations/:id
  * Get specific conversation with all messages
  */
-router.get('/conversations/:id', validateUuidParam('id'), AIAssistantController.getConversation);
+router.get('/conversations/:id', authenticateToken, validateUuidParam('id'), AIAssistantController.getConversation);
 
 /**
  * POST /api/ai-icp-assistant/reset
  * Reset/archive active conversation
  */
-router.post('/reset', AIAssistantController.resetConversation);
+router.post('/reset', authenticateToken, AIAssistantController.resetConversation);
 
 // ============================================================================
 // Keyword Expansion Routes
@@ -51,7 +52,7 @@ router.post('/reset', AIAssistantController.resetConversation);
  * POST /api/ai-icp-assistant/expand-keywords
  * Expand keywords/topic into comprehensive search terms
  */
-router.post('/expand-keywords', validateKeywordRequest, AIAssistantController.expandKeywords);
+router.post('/expand-keywords', authenticateToken, validateKeywordRequest, AIAssistantController.expandKeywords);
 
 // ============================================================================
 // ICP Profile Routes
@@ -61,31 +62,40 @@ router.post('/expand-keywords', validateKeywordRequest, AIAssistantController.ex
  * GET /api/ai-icp-assistant/profiles
  * Get all ICP profiles for user
  */
-router.get('/profiles', validatePagination, AIAssistantController.getProfiles);
+router.get('/profiles', authenticateToken, validatePagination, AIAssistantController.getProfiles);
 
 /**
  * POST /api/ai-icp-assistant/profiles
  * Create new ICP profile
  */
-router.post('/profiles', validateProfileCreation, AIAssistantController.createProfile);
+router.post('/profiles', authenticateToken, validateProfileCreation, AIAssistantController.createProfile);
 
 /**
  * PUT /api/ai-icp-assistant/profiles/:id
  * Update existing ICP profile
  */
-router.put('/profiles/:id', validateUuidParam('id'), AIAssistantController.updateProfile);
+router.put('/profiles/:id', authenticateToken, validateUuidParam('id'), AIAssistantController.updateProfile);
 
 /**
  * DELETE /api/ai-icp-assistant/profiles/:id
  * Delete (deactivate) ICP profile
  */
-router.delete('/profiles/:id', validateUuidParam('id'), AIAssistantController.deleteProfile);
+router.delete('/profiles/:id', authenticateToken, validateUuidParam('id'), AIAssistantController.deleteProfile);
 
 /**
  * POST /api/ai-icp-assistant/profiles/:id/use
  * Increment profile usage counter
  */
-router.post('/profiles/:id/use', validateUuidParam('id'), AIAssistantController.useProfile);
+router.post('/profiles/:id/use', authenticateToken, validateUuidParam('id'), AIAssistantController.useProfile);
+
+// ============================================================================
+// ICP Onboarding Routes (Using new AI-ICP-Assistant feature)
+// ============================================================================
+
+// Use the new feature-based routes which include proper middleware and validation
+// The routes file already includes '/onboarding' prefix, so mount at root
+const aiICPAssistantRoutes = require('./ai-icp-assistant.routes');
+router.use('/', aiICPAssistantRoutes);
 
 // ============================================================================
 // ICP Onboarding Routes (Using new AI-ICP-Assistant feature)

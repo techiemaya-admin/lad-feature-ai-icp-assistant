@@ -8,22 +8,62 @@
 
 const fs = require('fs');
 const path = require('path');
-const { query } = require('../shared/database/connection');
+const { query } = require('../backend/features/ai-icp-assistant/utils/database');
 
-async function runMigration() {
+async function runMigration(migrationFile) {
   try {
-    console.log('🔄 Running ICP Questions migration...\n');
+    console.log(`🔄 Running migration: ${migrationFile}\n`);
 
-    // Read the SQL file
-    const migrationPath = path.join(__dirname, '../migrations/008_create_icp_questions_table.sql');
+    // Use provided migration file or default to ICP questions
+    const migrationPath = migrationFile ? 
+      path.resolve(migrationFile) : 
+      path.join(__dirname, '../migrations/008_create_icp_questions_table.sql');
+    
+    if (!fs.existsSync(migrationPath)) {
+      console.error(`❌ Migration file not found: ${migrationPath}`);
+      process.exit(1);
+    }
+
+    console.log(`📁 Using migration file: ${migrationPath}`);
     const sql = fs.readFileSync(migrationPath, 'utf8');
 
-    // Split by semicolons and execute each statement
-    // Note: This is a simple approach. For production, consider using a proper SQL parser
-    const statements = sql
-      .split(';')
-      .map(s => s.trim())
-      .filter(s => s.length > 0 && !s.startsWith('--'));
+    // Split by semicolons but be more careful about multi-line statements
+    let statements = [];
+    let currentStatement = '';
+    let inParentheses = 0;
+    
+    const lines = sql.split('\n');
+    
+    for (let line of lines) {
+      line = line.trim();
+      
+      // Skip comment lines
+      if (line.startsWith('--') || line.length === 0) {
+        continue;
+      }
+      
+      // Count parentheses to handle multi-line CREATE TABLE
+      for (let char of line) {
+        if (char === '(') inParentheses++;
+        if (char === ')') inParentheses--;
+      }
+      
+      currentStatement += ' ' + line;
+      
+      // If we hit a semicolon and we're not inside parentheses, it's a complete statement
+      if (line.includes(';') && inParentheses === 0) {
+        const cleanStatement = currentStatement.replace(/;$/, '').trim();
+        if (cleanStatement.length > 0) {
+          statements.push(cleanStatement);
+        }
+        currentStatement = '';
+      }
+    }
+    
+    // Add any remaining statement
+    if (currentStatement.trim().length > 0) {
+      statements.push(currentStatement.trim());
+    }
 
     console.log(`📝 Found ${statements.length} SQL statements to execute\n`);
 
@@ -37,6 +77,7 @@ async function runMigration() {
 
       try {
         console.log(`⏳ Executing statement ${i + 1}/${statements.length}...`);
+        console.log(`📝 SQL (first 100 chars): ${statement.substring(0, 100)}...`);
         await query(statement);
         console.log(`✅ Statement ${i + 1} executed successfully\n`);
       } catch (error) {
@@ -76,5 +117,7 @@ async function runMigration() {
 }
 
 // Run the migration
-runMigration();
+// Run the migration with optional file argument
+const migrationFile = process.argv[2];
+runMigration(migrationFile);
 

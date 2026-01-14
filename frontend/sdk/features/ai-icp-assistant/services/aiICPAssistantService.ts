@@ -57,10 +57,8 @@ export class AIICPAssistantService implements AIICPAssistantAPI {
       });
       return response.data;
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error chatting with AI ICP Assistant:', error);
-      }
-      throw new Error('Failed to send message to AI ICP Assistant');
+      console.error('Error chatting with AI ICP Assistant:', error);
+      throw error;
     }
   }
 
@@ -72,10 +70,8 @@ export class AIICPAssistantService implements AIICPAssistantAPI {
       const response = await this.apiClient.post('/api/ai-icp-assistant/reset');
       return response.data;
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error resetting conversation:', error);
-      }
-      throw new Error('Failed to reset conversation');
+      console.error('Error resetting conversation:', error);
+      throw error;
     }
   }
 
@@ -87,10 +83,8 @@ export class AIICPAssistantService implements AIICPAssistantAPI {
       const response = await this.apiClient.get('/api/ai-icp-assistant/history');
       return response.data;
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error getting conversation history:', error);
-      }
-      throw new Error('Failed to get conversation history');
+      console.error('Error getting conversation history:', error);
+      throw error;
     }
   }
 }

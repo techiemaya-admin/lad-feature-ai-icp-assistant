@@ -1,50 +1,43 @@
 /**
  * Keyword Expansion Model
- * 
- * Manages cached keyword expansions for performance optimization
+ * LAD Architecture: Business Logic Layer
+ * Uses Repository Pattern for Data Access
  */
 
-const { query } = require('../utils/database');const logger = require('../utils/logger');
+const { KeywordExpansionRepository } = require('../repositories');
+const logger = require('../utils/logger');
 class KeywordExpansion {
   /**
-   * Create or update keyword expansion cache
+   * Create or update keyword expansion cache with tenant isolation
    */
   static async upsert({
     originalKeyword,
     expandedKeywords,
     context = 'general',
     model = null,
-    organizationId = null
+    tenantId = null // Nullable for global expansions
   }) {
     try {
-      const result = await query(`
-        INSERT INTO ai_keyword_expansions (
-          original_keyword,
-          expanded_keywords,
-          context,
-          model,
-          organization_id,
-          usage_count,
-          last_used_at
-        ) VALUES ($1, $2, $3, $4, $5, 1, CURRENT_TIMESTAMP)
-        ON CONFLICT (original_keyword, context, organization_id)
-        DO UPDATE SET
-          expanded_keywords = EXCLUDED.expanded_keywords,
-          model = EXCLUDED.model,
-          usage_count = ai_keyword_expansions.usage_count + 1,
-          last_used_at = CURRENT_TIMESTAMP
-        RETURNING *
-      `, [
-        originalKeyword.toLowerCase().trim(),
-        JSON.stringify(expandedKeywords),
+      if (!originalKeyword || !expandedKeywords) {
+        throw new Error('originalKeyword and expandedKeywords are required');
+      }
+
+      // Business logic: Validate expanded keywords array
+      const validatedKeywords = this.validateKeywords(expandedKeywords);
+      
+      return await KeywordExpansionRepository.upsert({
+        originalKeyword,
+        expandedKeywords: validatedKeywords,
         context,
         model,
-        organizationId
-      ]);
-
-      return result.rows[0];
+        tenantId
+      });
     } catch (error) {
-      logger.error('Error upserting keyword expansion:', error);
+      logger.error('Model error upserting keyword expansion', { 
+        error: error.message, 
+        originalKeyword, 
+        tenantId 
+      });
       throw error;
     }
   }

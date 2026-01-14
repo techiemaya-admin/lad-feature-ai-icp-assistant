@@ -1,0 +1,660 @@
+[
+  '[2026-01-07T20:31:02.915Z] [INFO]',
+  'Gemini AI initialized for response generation'
+]
+✅ AI ICP Assistant routes mounted at /api/ai-icp-assistant
+
+============================================================
+🚀 AI ICP Assistant Test Server
+============================================================
+Server running on: http://localhost:3001
+Test UI available at: http://localhost:3001/test-ui
+Health check: http://localhost:3001/health
+
+Configuration:
+- Database: ✅ Connected (165.22.221.77:5432/salesmaya_agent)
+- Schema: lad_dev
+- Gemini API: ✅ Configured
+============================================================
+
+[2026-01-07T20:31:24.874Z] POST /api/ai-icp-assistant/chat
+Headers: {
+  userId: '00000000-0000-0000-0000-000000000001',
+  orgId: undefined,
+  tenantId: '00000000-0000-0000-0000-000000000001'
+}
+Body: {
+  "message": "I want to find sales leads"
+}
+[
+  '[2026-01-07T20:31:27.252Z] [DEBUG]',
+  'Gemini generated response',
+  {
+    response: "Hi there! To get started, are you planning an inbound campaign where leads come to you, or an outbound campaign where you'll be reaching out to prospects?"
+  }
+]
+[2026-01-07T20:32:33.849Z] POST /api/ai-icp-assistant/chat
+Headers: {
+  userId: '00000000-0000-0000-0000-000000000001',
+  orgId: undefined,
+  tenantId: '00000000-0000-0000-0000-000000000001'
+}
+Body: {
+  "message": "Outbound",
+  "conversationId": "d8d38e7f-0fef-47ff-afee-cf5e4334cef0"
+}
+[
+  '[2026-01-07T20:32:36.054Z] [DEBUG]',
+  'Gemini generated response',
+  {
+    response: 'Okay, great! And where are these outbound leads coming from? For example, will you be using a CRM, purchasing a list, or something else?'
+  }
+]
+[2026-01-07T20:32:41.714Z] GET /test-ui
+Headers: { userId: undefined, orgId: undefined, tenantId: undefined }
+[2026-01-07T20:32:41.716Z] GET /test-ui/
+Headers: { userId: undefined, orgId: undefined, tenantId: undefined }
+[2026-01-07T20:32:58.707Z] POST /api/ai-icp-assistant/chat
+Headers: {
+  userId: 'test-user-123',
+  orgId: 'test-org-456',
+  tenantId: 'test-tenant-789'
+}
+Body: {
+  "message": "Hi, help me with sales automation",
+  "conversationId": null,
+  "conversationHistory": [],
+  "userId": "test-user-123",
+  "organizationId": "test-org-456",
+  "assistantContext": null
+}
+[
+  '[2026-01-07T20:32:58.787Z] [ERROR]',
+  'Repository error finding user conversations',
+  {
+    error: 'invalid input syntax for type uuid: "test-user-123"',
+    userId: 'test-user-123',
+    tenantId: 'test-tenant-789'
+  }
+]
+[
+  '[2026-01-07T20:32:58.788Z] [ERROR]',
+  'Chat error',
+  {
+    error: error: invalid input syntax for type uuid: "test-user-123"
+        at /Users/naveenreddy/Desktop/AI-Maya/lad-feature-ai-icp-assistant/node_modules/pg-pool/index.js:45:11
+        at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+        at async AIConversationRepository.findByUser (/Users/naveenreddy/Desktop/AI-Maya/lad-feature-ai-icp-assistant/backend/features/ai-icp-assistant/repositories/AIConversationRepository.js:75:22)
+        at async chat (/Users/naveenreddy/Desktop/AI-Maya/lad-feature-ai-icp-assistant/backend/features/ai-icp-assistant/controllers/AIAssistantController.js:41:37) {
+      length: 145,
+      severity: 'ERROR',
+      code: '22P02',
+      detail: undefined,
+      hint: undefined,
+      position: undefined,
+      internalPosition: undefined,
+      internalQuery: undefined,
+      where: "unnamed portal parameter $1 = '...'",
+      schema: undefined,
+      table: undefined,
+      column: undefined,
+      dataType: undefined,
+      constraint: undefined,
+      file: 'uuid.c',
+      line: '133',
+      routine: 'string_to_uuid'
+    },
+    userId: 'test-user-123',
+    tenantId: 'test-tenant-789'
+  }
+]
+[2026-01-07T20:34:07.761Z] GET /api/ai-icp-assistant/onboarding/icp-questions
+Headers: {
+  userId: 'test-user-123',
+  orgId: 'test-org-456',
+  tenantId: 'test-tenant-789'
+}
+[2026-01-07T20:34:14.128Z] GET /api/ai-icp-assistant/onboarding/icp-questions
+Headers: {
+  userId: 'test-user-123',
+  orgId: 'test-org-456',
+  tenantId: 'test-tenant-789'
+}
+[2026-01-07T20:34:14.798Z] GET /api/ai-icp-assistant/onboarding/icp-questions
+Headers: {
+  userId: 'test-user-123',
+  orgId: 'test-org-456',
+  tenantId: 'test-tenant-789'
+}
+[2026-01-07T20:34:16.451Z] GET /api/ai-icp-assistant/onboarding/icp-questions
+Headers: {
+  userId: 'test-user-123',
+  orgId: 'test-org-456',
+  tenantId: 'test-tenant-789'
+}
+[2026-01-07T20:34:18.733Z] GET /api/ai-icp-assistant/onboarding/icp-questions
+Headers: {
+  userId: 'test-user-123',
+  orgId: 'test-org-456',
+  tenantId: 'test-tenant-789'
+}
+[2026-01-07T20:34:26.162Z] GET /api/ai-icp-assistant/history
+Headers: {
+  userId: 'test-user-123',
+  orgId: 'test-org-456',
+  tenantId: 'test-tenant-789'
+}
+[
+  '[2026-01-07T20:34:26.663Z] [ERROR]',
+  'Repository error finding user conversations',
+  {
+    error: 'invalid input syntax for type uuid: "test-user-123"',
+    userId: 'test-user-123',
+    tenantId: 'test-tenant-789'
+  }
+]
+[
+  '[2026-01-07T20:34:26.663Z] [ERROR]',
+  'Get history error',
+  {
+    error: error: invalid input syntax for type uuid: "test-user-123"
+        at /Users/naveenreddy/Desktop/AI-Maya/lad-feature-ai-icp-assistant/node_modules/pg-pool/index.js:45:11
+        at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+        at async AIConversationRepository.findByUser (/Users/naveenreddy/Desktop/AI-Maya/lad-feature-ai-icp-assistant/backend/features/ai-icp-assistant/repositories/AIConversationRepository.js:75:22)
+        at async getHistory (/Users/naveenreddy/Desktop/AI-Maya/lad-feature-ai-icp-assistant/backend/features/ai-icp-assistant/controllers/AIAssistantController.js:185:29) {
+      length: 145,
+      severity: 'ERROR',
+      code: '22P02',
+      detail: undefined,
+      hint: undefined,
+      position: undefined,
+      internalPosition: undefined,
+      internalQuery: undefined,
+      where: "unnamed portal parameter $1 = '...'",
+      schema: undefined,
+      table: undefined,
+      column: undefined,
+      dataType: undefined,
+      constraint: undefined,
+      file: 'uuid.c',
+      line: '133',
+      routine: 'string_to_uuid'
+    },
+    userId: 'test-user-123',
+    tenantId: 'test-tenant-789'
+  }
+]
+[2026-01-07T20:35:25.115Z] GET /api/ai-icp-assistant/profiles
+Headers: {
+  userId: 'test-user-123',
+  orgId: 'test-org-456',
+  tenantId: 'test-tenant-789'
+}
+[
+  '[2026-01-07T20:35:25.615Z] [ERROR]',
+  'Repository error finding profiles by user',
+  {
+    error: 'invalid input syntax for type uuid: "test-user-123"',
+    userId: 'test-user-123',
+    tenantId: 'test-tenant-789'
+  }
+]
+[
+  '[2026-01-07T20:35:25.615Z] [ERROR]',
+  'Get profiles error',
+  {
+    error: error: invalid input syntax for type uuid: "test-user-123"
+        at /Users/naveenreddy/Desktop/AI-Maya/lad-feature-ai-icp-assistant/node_modules/pg-pool/index.js:45:11
+        at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+        at async ICPProfileRepository.findByUser (/Users/naveenreddy/Desktop/AI-Maya/lad-feature-ai-icp-assistant/backend/features/ai-icp-assistant/repositories/ICPProfileRepository.js:103:22)
+        at async getProfiles (/Users/naveenreddy/Desktop/AI-Maya/lad-feature-ai-icp-assistant/backend/features/ai-icp-assistant/controllers/AIAssistantController.js:356:24) {
+      length: 145,
+      severity: 'ERROR',
+      code: '22P02',
+      detail: undefined,
+      hint: undefined,
+      position: undefined,
+      internalPosition: undefined,
+      internalQuery: undefined,
+      where: "unnamed portal parameter $1 = '...'",
+      schema: undefined,
+      table: undefined,
+      column: undefined,
+      dataType: undefined,
+      constraint: undefined,
+      file: 'uuid.c',
+      line: '133',
+      routine: 'string_to_uuid'
+    },
+    userId: 'test-user-123',
+    tenantId: 'test-tenant-789'
+  }
+]
+[2026-01-07T20:36:22.543Z] GET /api/ai-icp-assistant/history
+Headers: {
+  userId: '00000000-0000-0000-0000-000000000001',
+  orgId: undefined,
+  tenantId: '00000000-0000-0000-0000-000000000001'
+}
+[2026-01-07T20:36:42.840Z] GET /test-ui
+Headers: { userId: undefined, orgId: undefined, tenantId: undefined }
+[2026-01-07T20:36:42.884Z] GET /test-ui/
+Headers: { userId: undefined, orgId: undefined, tenantId: undefined }
+[2026-01-07T20:36:43.691Z] GET /favicon.ico
+Headers: { userId: undefined, orgId: undefined, tenantId: undefined }
+[2026-01-07T20:36:47.115Z] GET /api/ai-icp-assistant/profiles
+Headers: {
+  userId: '00000000-0000-0000-0000-000000000001',
+  orgId: 'test-org-456',
+  tenantId: '00000000-0000-0000-0000-000000000001'
+}
+[2026-01-07T20:36:50.927Z] GET /api/ai-icp-assistant/history
+Headers: {
+  userId: '00000000-0000-0000-0000-000000000001',
+  orgId: 'test-org-456',
+  tenantId: '00000000-0000-0000-0000-000000000001'
+}
+[2026-01-07T20:37:14.777Z] POST /api/ai-icp-assistant/chat
+Headers: {
+  userId: '00000000-0000-0000-0000-000000000001',
+  orgId: 'test-org-456',
+  tenantId: '00000000-0000-0000-0000-000000000001'
+}
+Body: {
+  "message": "Hi, help me with sale automation",
+  "conversationId": null,
+  "conversationHistory": [],
+  "userId": "00000000-0000-0000-0000-000000000001",
+  "organizationId": "test-org-456",
+  "assistantContext": null
+}
+[
+  '[2026-01-07T20:37:16.940Z] [DEBUG]',
+  'Gemini generated response',
+  {
+    response: 'Okay, I can help with sales automation! Where are those sales leads coming from? Are they filling out a form on your website, messaging you on WhatsApp, clicking on ads, or something else?'
+  }
+]
+[2026-01-07T20:38:02.884Z] POST /api/ai-icp-assistant/chat
+Headers: {
+  userId: '00000000-0000-0000-0000-000000000001',
+  orgId: 'test-org-456',
+  tenantId: '00000000-0000-0000-0000-000000000001'
+}
+Body: {
+  "message": "I need help in lead generation as well, I don't have any leads data",
+  "conversationId": "d8d38e7f-0fef-47ff-afee-cf5e4334cef0",
+  "conversationHistory": [
+    {
+      "role": "user",
+      "content": "Hi, help me with sale automation"
+    },
+    {
+      "role": "assistant",
+      "content": "Okay, I can help with sales automation! Where are those sales leads coming from? Are they filling out a form on your website, messaging you on WhatsApp, clicking on ads, or something else?"
+    }
+  ],
+  "userId": "00000000-0000-0000-0000-000000000001",
+  "organizationId": "test-org-456",
+  "assistantContext": {
+    "roles": [],
+    "stage": "inbound_flow",
+    "status": "collecting_info",
+    "dealType": null,
+    "companies": [],
+    "confirmed": false,
+    "locations": [],
+    "industries": [],
+    "companySize": null,
+    "captureRules": null,
+    "linkedinUrls": [],
+    "outreachType": "inbound",
+    "inboundSource": null,
+    "confidenceScore": 0,
+    "targetKnowledge": null,
+    "inboundDataReady": null,
+    "inferredStrategy": null,
+    "problemStatement": null
+  }
+}
+[
+  '[2026-01-07T20:38:04.655Z] [DEBUG]',
+  'Gemini generated response',
+  {
+    response: "Got it! Since you don't have any leads data yet, where will these *inbound* leads be coming from? Will they be filling out a form on your website, messaging you on WhatsApp, clicking on ads, or something else?"
+  }
+]
+[2026-01-07T20:38:24.513Z] POST /api/ai-icp-assistant/chat
+Headers: {
+  userId: '00000000-0000-0000-0000-000000000001',
+  orgId: 'test-org-456',
+  tenantId: '00000000-0000-0000-0000-000000000001'
+}
+Body: {
+  "message": "messaging on whatsapp",
+  "conversationId": "d8d38e7f-0fef-47ff-afee-cf5e4334cef0",
+  "conversationHistory": [
+    {
+      "role": "user",
+      "content": "Hi, help me with sale automation"
+    },
+    {
+      "role": "assistant",
+      "content": "Okay, I can help with sales automation! Where are those sales leads coming from? Are they filling out a form on your website, messaging you on WhatsApp, clicking on ads, or something else?"
+    },
+    {
+      "role": "user",
+      "content": "I need help in lead generation as well, I don't have any leads data"
+    },
+    {
+      "role": "assistant",
+      "content": "Got it! Since you don't have any leads data yet, where will these *inbound* leads be coming from? Will they be filling out a form on your website, messaging you on WhatsApp, clicking on ads, or something else?"
+    }
+  ],
+  "userId": "00000000-0000-0000-0000-000000000001",
+  "organizationId": "test-org-456",
+  "assistantContext": {
+    "roles": [],
+    "stage": "inbound_flow",
+    "status": "collecting_info",
+    "dealType": null,
+    "companies": [],
+    "confirmed": false,
+    "locations": [],
+    "industries": [],
+    "companySize": null,
+    "captureRules": null,
+    "linkedinUrls": [],
+    "outreachType": "inbound",
+    "inboundSource": null,
+    "confidenceScore": 0,
+    "targetKnowledge": null,
+    "inboundDataReady": null,
+    "inferredStrategy": null,
+    "problemStatement": null
+  }
+}
+[
+  '[2026-01-07T20:38:26.162Z] [DEBUG]',
+  'Gemini generated response',
+  {
+    response: 'Got it, so leads are messaging you on WhatsApp! Awesome. Do you already have that prospect data captured somewhere, like in a CRM or spreadsheet?'
+  }
+]
+[2026-01-07T20:38:49.014Z] POST /api/ai-icp-assistant/chat
+Headers: {
+  userId: '00000000-0000-0000-0000-000000000001',
+  orgId: 'test-org-456',
+  tenantId: '00000000-0000-0000-0000-000000000001'
+}
+Body: {
+  "message": "yes its in spreadsheet",
+  "conversationId": "d8d38e7f-0fef-47ff-afee-cf5e4334cef0",
+  "conversationHistory": [
+    {
+      "role": "user",
+      "content": "Hi, help me with sale automation"
+    },
+    {
+      "role": "assistant",
+      "content": "Okay, I can help with sales automation! Where are those sales leads coming from? Are they filling out a form on your website, messaging you on WhatsApp, clicking on ads, or something else?"
+    },
+    {
+      "role": "user",
+      "content": "I need help in lead generation as well, I don't have any leads data"
+    },
+    {
+      "role": "assistant",
+      "content": "Got it! Since you don't have any leads data yet, where will these *inbound* leads be coming from? Will they be filling out a form on your website, messaging you on WhatsApp, clicking on ads, or something else?"
+    },
+    {
+      "role": "user",
+      "content": "messaging on whatsapp"
+    },
+    {
+      "role": "assistant",
+      "content": "Got it, so leads are messaging you on WhatsApp! Awesome. Do you already have that prospect data captured somewhere, like in a CRM or spreadsheet?"
+    }
+  ],
+  "userId": "00000000-0000-0000-0000-000000000001",
+  "organizationId": "test-org-456",
+  "assistantContext": {
+    "roles": [],
+    "stage": "inbound_flow",
+    "status": "collecting_info",
+    "dealType": null,
+    "companies": [],
+    "confirmed": false,
+    "locations": [],
+    "industries": [],
+    "companySize": null,
+    "captureRules": null,
+    "linkedinUrls": [],
+    "outreachType": "inbound",
+    "inboundSource": "whatsapp",
+    "confidenceScore": 0,
+    "targetKnowledge": null,
+    "inboundDataReady": null,
+    "inferredStrategy": null,
+    "problemStatement": null
+  }
+}
+[2026-01-07T20:38:56.799Z] POST /api/ai-icp-assistant/chat
+Headers: {
+  userId: '00000000-0000-0000-0000-000000000001',
+  orgId: 'test-org-456',
+  tenantId: '00000000-0000-0000-0000-000000000001'
+}
+Body: {
+  "message": "yes",
+  "conversationId": "d8d38e7f-0fef-47ff-afee-cf5e4334cef0",
+  "conversationHistory": [
+    {
+      "role": "user",
+      "content": "Hi, help me with sale automation"
+    },
+    {
+      "role": "assistant",
+      "content": "Okay, I can help with sales automation! Where are those sales leads coming from? Are they filling out a form on your website, messaging you on WhatsApp, clicking on ads, or something else?"
+    },
+    {
+      "role": "user",
+      "content": "I need help in lead generation as well, I don't have any leads data"
+    },
+    {
+      "role": "assistant",
+      "content": "Got it! Since you don't have any leads data yet, where will these *inbound* leads be coming from? Will they be filling out a form on your website, messaging you on WhatsApp, clicking on ads, or something else?"
+    },
+    {
+      "role": "user",
+      "content": "messaging on whatsapp"
+    },
+    {
+      "role": "assistant",
+      "content": "Got it, so leads are messaging you on WhatsApp! Awesome. Do you already have that prospect data captured somewhere, like in a CRM or spreadsheet?"
+    },
+    {
+      "role": "user",
+      "content": "yes its in spreadsheet"
+    },
+    {
+      "role": "assistant",
+      "content": "Perfect! Here's what I understood:\n\nYou're setting up inbound outreach.\nLeads are coming from: WhatsApp.\nYou already have prospect data captured.\n\nDoes this look correct?"
+    }
+  ],
+  "userId": "00000000-0000-0000-0000-000000000001",
+  "organizationId": "test-org-456",
+  "assistantContext": {
+    "roles": [],
+    "stage": "confirmation",
+    "status": "collecting_info",
+    "dealType": null,
+    "companies": [],
+    "confirmed": false,
+    "locations": [],
+    "industries": [],
+    "companySize": null,
+    "captureRules": null,
+    "linkedinUrls": [],
+    "outreachType": "inbound",
+    "inboundSource": "whatsapp",
+    "confidenceScore": 0,
+    "targetKnowledge": null,
+    "inboundDataReady": true,
+    "inferredStrategy": null,
+    "problemStatement": null
+  }
+}
+[2026-01-07T20:39:03.098Z] POST /api/ai-icp-assistant/chat
+Headers: {
+  userId: '00000000-0000-0000-0000-000000000001',
+  orgId: 'test-org-456',
+  tenantId: '00000000-0000-0000-0000-000000000001'
+}
+Body: {
+  "message": "ok",
+  "conversationId": "d8d38e7f-0fef-47ff-afee-cf5e4334cef0",
+  "conversationHistory": [
+    {
+      "role": "user",
+      "content": "Hi, help me with sale automation"
+    },
+    {
+      "role": "assistant",
+      "content": "Okay, I can help with sales automation! Where are those sales leads coming from? Are they filling out a form on your website, messaging you on WhatsApp, clicking on ads, or something else?"
+    },
+    {
+      "role": "user",
+      "content": "I need help in lead generation as well, I don't have any leads data"
+    },
+    {
+      "role": "assistant",
+      "content": "Got it! Since you don't have any leads data yet, where will these *inbound* leads be coming from? Will they be filling out a form on your website, messaging you on WhatsApp, clicking on ads, or something else?"
+    },
+    {
+      "role": "user",
+      "content": "messaging on whatsapp"
+    },
+    {
+      "role": "assistant",
+      "content": "Got it, so leads are messaging you on WhatsApp! Awesome. Do you already have that prospect data captured somewhere, like in a CRM or spreadsheet?"
+    },
+    {
+      "role": "user",
+      "content": "yes its in spreadsheet"
+    },
+    {
+      "role": "assistant",
+      "content": "Perfect! Here's what I understood:\n\nYou're setting up inbound outreach.\nLeads are coming from: WhatsApp.\nYou already have prospect data captured.\n\nDoes this look correct?"
+    },
+    {
+      "role": "user",
+      "content": "yes"
+    },
+    {
+      "role": "assistant",
+      "content": "Great. I'm ready to move forward."
+    }
+  ],
+  "userId": "00000000-0000-0000-0000-000000000001",
+  "organizationId": "test-org-456",
+  "assistantContext": {
+    "roles": [],
+    "stage": "ready_for_execution",
+    "status": "ready_for_execution",
+    "dealType": null,
+    "companies": [],
+    "confirmed": true,
+    "locations": [],
+    "industries": [],
+    "companySize": null,
+    "captureRules": null,
+    "linkedinUrls": [],
+    "outreachType": "inbound",
+    "inboundSource": "whatsapp",
+    "confidenceScore": 0,
+    "targetKnowledge": null,
+    "inboundDataReady": true,
+    "inferredStrategy": null,
+    "problemStatement": null
+  }
+}
+[2026-01-07T20:39:48.339Z] POST /api/ai-icp-assistant/reset
+Headers: {
+  userId: '00000000-0000-0000-0000-000000000001',
+  orgId: 'test-org-456',
+  tenantId: '00000000-0000-0000-0000-000000000001'
+}
+Body: {
+  "conversationId": "d8d38e7f-0fef-47ff-afee-cf5e4334cef0"
+}
+[2026-01-07T20:40:18.678Z] POST /api/ai-icp-assistant/chat
+Headers: {
+  userId: '00000000-0000-0000-0000-000000000001',
+  orgId: 'test-org-456',
+  tenantId: '00000000-0000-0000-0000-000000000001'
+}
+Body: {
+  "message": "help me with linkedin campaign setup",
+  "conversationId": null,
+  "conversationHistory": [],
+  "userId": "00000000-0000-0000-0000-000000000001",
+  "organizationId": "test-org-456",
+  "assistantContext": null
+}
+[
+  '[2026-01-07T20:40:20.147Z] [DEBUG]',
+  'Gemini generated response',
+  {
+    response: 'Hey there! To get started, are you looking to set up an inbound campaign where leads come to you, or an outbound campaign where you reach out to potential customers?'
+  }
+]
+[2026-01-07T20:40:30.596Z] POST /api/ai-icp-assistant/chat
+Headers: {
+  userId: '00000000-0000-0000-0000-000000000001',
+  orgId: 'test-org-456',
+  tenantId: '00000000-0000-0000-0000-000000000001'
+}
+Body: {
+  "message": "linkedin",
+  "conversationId": "4a02198e-b9b6-4ec0-acd5-e29dd329fdcd",
+  "conversationHistory": [
+    {
+      "role": "user",
+      "content": "help me with linkedin campaign setup"
+    },
+    {
+      "role": "assistant",
+      "content": "Hey there! To get started, are you looking to set up an inbound campaign where leads come to you, or an outbound campaign where you reach out to potential customers?"
+    }
+  ],
+  "userId": "00000000-0000-0000-0000-000000000001",
+  "organizationId": "test-org-456",
+  "assistantContext": {
+    "stage": "outreach_type",
+    "outreachType": null,
+    "inboundSource": null,
+    "inboundDataReady": null,
+    "captureRules": null,
+    "targetKnowledge": null,
+    "inferredStrategy": null,
+    "roles": [],
+    "industries": [],
+    "locations": [],
+    "companies": [],
+    "linkedinUrls": [],
+    "companySize": null,
+    "dealType": null,
+    "problemStatement": null,
+    "confidenceScore": 0,
+    "status": "collecting_info",
+    "confirmed": false
+  }
+}
+[
+  '[2026-01-07T20:40:32.676Z] [DEBUG]',
+  'Gemini generated response',
+  {
+    response: 'Got it! So you want to use LinkedIn for your inbound leads. Great! Where are these leads coming from originally? For example, is it a form on your website that leads them to contact you on LinkedIn, or something else?'
+  }
+]

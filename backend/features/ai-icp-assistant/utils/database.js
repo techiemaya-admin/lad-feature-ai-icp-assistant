@@ -7,7 +7,7 @@ const { Pool } = require('pg');
 
 // PRODUCTION VALIDATION: Fail fast if required env vars missing
 if (process.env.NODE_ENV === 'production') {
-  const required = ['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASSWORD'];
+  const required = ['POSTGRES_HOST', 'POSTGRES_USER', 'POSTGRES_PASSWORD'];
   const missing = required.filter(key => !process.env[key]);
   
   if (missing.length > 0) {
@@ -27,8 +27,17 @@ const pool = new Pool({
   connectionTimeoutMillis: 5000,
 });
 
+// Get the schema to use
+const schema = process.env.DB_SCHEMA || 'lad_dev';
+
+// Set search_path for all connections
+pool.on('connect', (client) => {
+  client.query(`SET search_path TO ${schema}, public`);
+});
+
 // Export pool and query function
 module.exports = {
   pool,
-  query: (text, params) => pool.query(text, params)
+  query: (text, params) => pool.query(text, params),
+  schema
 };

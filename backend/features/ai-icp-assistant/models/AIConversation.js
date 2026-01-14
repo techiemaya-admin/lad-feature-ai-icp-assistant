@@ -1,303 +1,233 @@
 /**
  * AI Conversation Model
- * 
- * Manages conversation sessions between users and the AI assistant
+ * LAD Architecture: Business Logic Layer
+ * Uses Repository Pattern for Data Access
  */
 
-const { query } = require('../utils/database');
+const { AIConversationRepository } = require('../repositories');
 const logger = require('../utils/logger');
 
 class AIConversation {
   /**
    * Create a new conversation
    */
-  static async create({ userId, organizationId, title = null, metadata = {} }) {
+  static async create({ userId, tenantId, title = null, metadata = {} }) {
     try {
-      const result = await query(`
-        INSERT INTO ai_conversations (
-          user_id, 
-          organization_id, 
-          title, 
-          metadata
-        ) VALUES ($1, $2, $3, $4)
-        RETURNING *
-      `, [userId, organizationId, title, JSON.stringify(metadata)]);
+      // Validate required parameters
+      if (!userId || !tenantId) {
+        throw new Error('userId and tenantId are required');
+      }
 
-      return result.rows[0];
-    } catch (error) {
-      logger.error('Error creating conversation', { error: error.message });
-      throw error;
-    }
-  }
-
-  /**
-   * Get conversation by ID
-   */
-  static async findById(conversationId) {
-    try {
-      const result = await query(`
-        SELECT * FROM ai_conversations
-        WHERE id = $1
-      `, [conversationId]);
-
-      return result.rows[0] || null;
-    } catch (error) {
-      logger.error('Error finding conversation', { error: error.message });
-      throw error;
-    }
-  }
-
-  /**
-   * Get all conversations for a user
-   */
-  static async findByUser(userId, organizationId, options = {}) {
-    try {
-      const { status = null, limit = 50, offset = 0 } = options;
+      // Business logic: Validate metadata structure
+      const validatedMetadata = this.validateMetadata(metadata);
       
-      let sql = `
-        SELECT 
-          c.*,
-          COUNT(m.id) as message_count,
-          MAX(m.created_at) as last_message_at
-        FROM ai_conversations c
-        LEFT JOIN ai_messages m ON m.conversation_id = c.id
-        WHERE c.user_id = $1 AND c.organization_id = $2
-      `;
-      const params = [userId, organizationId];
-
-      if (status) {
-        sql += ` AND c.status = $${params.length + 1}`;
-        params.push(status);
-      }
-
-      sql += `
-        GROUP BY c.id
-        ORDER BY c.updated_at DESC
-        LIMIT $${params.length + 1} OFFSET $${params.length + 2}
-      `;
-      params.push(limit, offset);
-
-      const result = await query(sql, params);
-      return result.rows;
+      return await AIConversationRepository.create({
+        userId,
+        tenantId,
+        title,
+        metadata: validatedMetadata
+      });
     } catch (error) {
-      logger.error('Error finding user conversations', { error: error.message });
+      logger.error('Model error creating conversation', { 
+        error: error.message, 
+        userId, 
+        tenantId 
+      });
       throw error;
     }
   }
 
   /**
-   * Generic update method
+   * Get conversation by ID with tenant validation
    */
-  static async update(conversationId, updates) {
+  static async findById(conversationId, tenantId) {
     try {
-      const fields = [];
-      const values = [];
-      let paramIndex = 1;
-
-      if (updates.metadata !== undefined) {
-        fields.push(`metadata = $${paramIndex}`);
-        values.push(JSON.stringify(updates.metadata));
-        paramIndex++;
+      if (!conversationId || !tenantId) {
+        throw new Error('conversationId and tenantId are required');
       }
 
-      if (updates.icp_data !== undefined) {
-        fields.push(`icp_data = $${paramIndex}`);
-        values.push(JSON.stringify(updates.icp_data));
-        paramIndex++;
-      }
-
-      if (updates.status !== undefined) {
-        fields.push(`status = $${paramIndex}`);
-        values.push(updates.status);
-        paramIndex++;
-      }
-
-      if (fields.length === 0) {
-        throw new Error('No fields to update');
-      }
-
-      fields.push(`updated_at = CURRENT_TIMESTAMP`);
-      values.push(conversationId);
-
-      const sql = `
-        UPDATE ai_conversations
-        SET ${fields.join(', ')}
-        WHERE id = $${paramIndex}
-        RETURNING *
-      `;
-
-      const result = await query(sql, values);
-
-      return result.rows[0];
+      return await AIConversationRepository.findById(conversationId, tenantId);
     } catch (error) {
-      console.error('Error updating conversation:', error);
+      logger.error('Model error finding conversation', { 
+        error: error.message, 
+        conversationId, 
+        tenantId 
+      });
       throw error;
     }
   }
 
   /**
-   * Generic update method
+   * Get all conversations for a user with tenant scoping
    */
-  static async update(conversationId, updates) {
+  static async findByUser(userId, tenantId, options = {}) {
     try {
-      const fields = [];
-      const values = [];
-      let paramIndex = 1;
-
-      if (updates.metadata !== undefined) {
-        fields.push(`metadata = $${paramIndex}`);
-        values.push(JSON.stringify(updates.metadata));
-        paramIndex++;
+      if (!userId || !tenantId) {
+        throw new Error('userId and tenantId are required');
       }
 
-      if (updates.icp_data !== undefined) {
-        fields.push(`icp_data = $${paramIndex}`);
-        values.push(JSON.stringify(updates.icp_data));
-        paramIndex++;
-      }
+      // Business logic: Apply default limits for performance
+      const safeOptions = {
+        ...options,
+        limit: options.limit || 50 // Default limit for performance
+      };
 
-      if (updates.status !== undefined) {
-        fields.push(`status = $${paramIndex}`);
-        values.push(updates.status);
-        paramIndex++;
-      }
-
-      if (fields.length === 0) {
-        throw new Error('No fields to update');
-      }
-
-      fields.push(`updated_at = CURRENT_TIMESTAMP`);
-      values.push(conversationId);
-
-      const sql = `
-        UPDATE ai_conversations
-        SET ${fields.join(', ')}
-        WHERE id = $${paramIndex}
-        RETURNING *
-      `;
-
-      const result = await query(sql, values);
-
-      return result.rows[0];
+      return await AIConversationRepository.findByUser(userId, tenantId, safeOptions);
     } catch (error) {
-      console.error('Error updating conversation:', error);
+      logger.error('Model error finding user conversations', { 
+        error: error.message, 
+        userId, 
+        tenantId 
+      });
       throw error;
     }
   }
 
   /**
-   * Update conversation ICP data
+   * Update conversation with business logic validation
    */
-  static async updateICPData(conversationId, icpData) {
+  static async update(conversationId, tenantId, updates = {}) {
     try {
-      const result = await query(`
-        UPDATE ai_conversations
-        SET 
-          icp_data = $2,
-          updated_at = CURRENT_TIMESTAMP
-        WHERE id = $1
-        RETURNING *
-      `, [conversationId, JSON.stringify(icpData)]);
+      if (!conversationId || !tenantId) {
+        throw new Error('conversationId and tenantId are required');
+      }
 
-      return result.rows[0];
+      // Business logic: Validate updates
+      const validatedUpdates = this.validateUpdates(updates);
+
+      return await AIConversationRepository.update(conversationId, tenantId, validatedUpdates);
     } catch (error) {
-      console.error('Error updating ICP data:', error);
+      logger.error('Model error updating conversation', { 
+        error: error.message, 
+        conversationId, 
+        tenantId 
+      });
       throw error;
     }
   }
 
   /**
-   * Mark search as triggered
+   * Archive conversation (business logic: mark as completed)
    */
-  static async markSearchTriggered(conversationId, searchParams) {
+  static async archive(conversationId, tenantId) {
     try {
-      const result = await query(`
-        UPDATE ai_conversations
-        SET 
-          search_triggered = true,
-          search_params = $2,
-          status = 'completed',
-          updated_at = CURRENT_TIMESTAMP
-        WHERE id = $1
-        RETURNING *
-      `, [conversationId, JSON.stringify(searchParams)]);
+      if (!conversationId || !tenantId) {
+        throw new Error('conversationId and tenantId are required');
+      }
 
-      return result.rows[0];
+      return await AIConversationRepository.archive(conversationId, tenantId);
     } catch (error) {
-      console.error('Error marking search triggered:', error);
+      logger.error('Model error archiving conversation', { 
+        error: error.message, 
+        conversationId, 
+        tenantId 
+      });
       throw error;
     }
   }
 
   /**
-   * Update conversation status
+   * Delete conversation (soft delete)
    */
-  static async updateStatus(conversationId, status) {
+  static async delete(conversationId, tenantId) {
     try {
+      if (!conversationId || !tenantId) {
+        throw new Error('conversationId and tenantId are required');
+      }
+
+      return await AIConversationRepository.softDelete(conversationId, tenantId);
+    } catch (error) {
+      logger.error('Model error deleting conversation', { 
+        error: error.message, 
+        conversationId, 
+        tenantId 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Get conversation statistics
+   */
+  static async getStats(conversationId, tenantId) {
+    try {
+      if (!conversationId || !tenantId) {
+        throw new Error('conversationId and tenantId are required');
+      }
+
+      return await AIConversationRepository.getStats(conversationId, tenantId);
+    } catch (error) {
+      logger.error('Model error getting conversation stats', { 
+        error: error.message, 
+        conversationId, 
+        tenantId 
+      });
+      throw error;
+    }
+  }
+
+  /**
+   * Update ICP data for conversation (legacy method for backward compatibility)
+   */
+  static async updateICPData(conversationId, tenantId, icpData) {
+    return await this.update(conversationId, tenantId, { icp_data: icpData });
+  }
+
+  /**
+   * Mark search as triggered (legacy method)
+   */
+  static async markSearchTriggered(conversationId, tenantId, searchParams) {
+    return await this.update(conversationId, tenantId, { 
+      search_triggered: true,
+      search_params: searchParams,
+      status: 'completed'
+    });
+  }
+
+  /**
+   * Business Logic: Validate metadata structure
+   */
+  static validateMetadata(metadata) {
+    if (!metadata || typeof metadata !== 'object') {
+      return {};
+    }
+
+    // Ensure metadata doesn't contain sensitive information
+    const allowedKeys = ['stage', 'preferences', 'ui_state', 'custom_fields'];
+    const validatedMetadata = {};
+
+    Object.keys(metadata).forEach(key => {
+      if (allowedKeys.includes(key)) {
+        validatedMetadata[key] = metadata[key];
+      }
+    });
+
+    return validatedMetadata;
+  }
+
+  /**
+   * Business Logic: Validate update fields
+   */
+  static validateUpdates(updates) {
+    const validatedUpdates = { ...updates };
+
+    // Validate specific fields
+    if (validatedUpdates.metadata) {
+      validatedUpdates.metadata = this.validateMetadata(validatedUpdates.metadata);
+    }
+
+    if (validatedUpdates.status) {
       const validStatuses = ['active', 'archived', 'completed'];
-      if (!validStatuses.includes(status)) {
-        throw new Error(`Invalid status: ${status}`);
+      if (!validStatuses.includes(validatedUpdates.status)) {
+        throw new Error('Invalid status value');
       }
-
-      const result = await query(`
-        UPDATE ai_conversations
-        SET 
-          status = $2,
-          ${status === 'archived' ? 'archived_at = CURRENT_TIMESTAMP,' : ''}
-          updated_at = CURRENT_TIMESTAMP
-        WHERE id = $1
-        RETURNING *
-      `, [conversationId, status]);
-
-      return result.rows[0];
-    } catch (error) {
-      console.error('Error updating conversation status:', error);
-      throw error;
     }
-  }
 
-  /**
-   * Delete conversation (soft delete by archiving)
-   */
-  static async archive(conversationId) {
-    return this.updateStatus(conversationId, 'archived');
-  }
-
-  /**
-   * Get conversation with message count and token usage
-   */
-  static async getWithStats(conversationId) {
-    try {
-      const result = await query(`
-        SELECT * FROM get_conversation_summary($1)
-      `, [conversationId]);
-
-      return result.rows[0] || null;
-    } catch (error) {
-      console.error('Error getting conversation stats:', error);
-      throw error;
+    if (validatedUpdates.title && validatedUpdates.title.length > 255) {
+      validatedUpdates.title = validatedUpdates.title.substring(0, 255);
     }
-  }
 
-  /**
-   * Get active conversation for user (most recent)
-   */
-  static async getActiveForUser(userId, organizationId) {
-    try {
-      const result = await query(`
-        SELECT * FROM ai_conversations
-        WHERE user_id = $1 
-          AND organization_id = $2
-          AND status = 'active'
-        ORDER BY updated_at DESC
-        LIMIT 1
-      `, [userId, organizationId]);
-
-      return result.rows[0] || null;
-    } catch (error) {
-      console.error('Error getting active conversation:', error);
-      throw error;
-    }
+    return validatedUpdates;
   }
 }
 

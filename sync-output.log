@@ -1,0 +1,91 @@
+🚀 Manual Sync to LAD Repositories
+==================================
+✅ LAD_REPO_TOKEN is set
+
+📦 Syncing to LAD-Backend...
+Cloning into '/tmp/lad-backend'...
+📝 Copying backend files...
+Transfer starting: 68 files
+./
+README.md
+UPGRADE_NOTES.md
+manifest.js
+routes.js
+config/
+config/onboarding.config.js
+config/prompts.config.js
+config/steps.config.js
+controllers/
+controllers/AIAssistantController.js
+controllers/ICPControllerHelpers.js
+controllers/ICPOnboardingController.js
+controllers/ai-icp-assistant.controller.js
+middleware/
+middleware/ai-icp-assistant.middleware.js
+middleware/tenantValidation.js
+middleware/validation.js
+models/
+models/AIConversation.js
+models/AIMessage.js
+models/ICPProfile.js
+models/ICPQuestion.js
+models/KeywordExpansion.js
+models/ai-icp-assistant.model.js
+models/index.js
+repositories/
+repositories/AIConversationRepository.js
+repositories/AIMessageRepository.js
+repositories/ICPProfileRepository.js
+repositories/KeywordExpansionRepository.js
+repositories/index.js
+routes/
+routes/ai-icp-assistant.routes.js
+routes/icpOnboarding.js
+routes/index.js
+services/
+services/AIAssistantService.js
+services/AnswerProcessorService.js
+services/CampaignPrompts.js
+services/CampaignPromptsConfig.js
+services/ContextManager.js
+services/GeminiIntentService.js
+services/GeminiResponseGenerator.js
+services/GeminiResponseParser.js
+services/IntentExtractor.js
+services/MessageHelper.js
+services/PlatformHandlerService.js
+services/QuestionGeneratorService.js
+services/ResponseBuilder.js
+services/StageHandlers.js
+services/StageRouter.js
+services/ai-icp-assistant.service.js
+services/gemini-client.service.js
+services/intent-analyzer.service.js
+services/mocks.js
+services/platform-handler.service.js
+services/platform-progression.service.js
+services/platform-validation.service.js
+services/question-generator.service.js
+services/sequence-builder.service.js
+services/step-processor.service.js
+services/template-handler.service.js
+services/template-processor.service.js
+utils/
+utils/config.js
+utils/database.js
+utils/logger.js
+
+sent 348853 bytes  received 1372 bytes  18336387 bytes/sec
+total size is 342589  speedup is 0.98
+🔍 Verifying critical files...
+✅ All critical files present
+💾 Committing changes...
+ℹ️ No changes to commit to LAD-Backend
+
+📦 Syncing to LAD-Frontend...
+Cloning into '/tmp/lad-frontend'...
+⚠️ No frontend SDK directory found, skipping
+
+✅ Manual sync completed successfully!
+Backend: ✅
+Frontend: ✅

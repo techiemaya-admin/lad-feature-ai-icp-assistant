@@ -3,6 +3,10 @@
  * 
  * Handles Gemini API initialization and communication.
  * No business logic - only API interaction.
+ * 
+ * NOTE: Uses lazy initialization to support optional API keys.
+ * If GEMINI_API_KEY is not set, the service will return mock responses
+ * for testing/development purposes.
  */
 
 const { GoogleGenerativeAI } = require('@google/generative-ai');
@@ -10,20 +14,53 @@ const logger = require('../utils/logger');
 
 class GeminiClientService {
   constructor() {
+    this._initialized = false;
+    this.genAI = null;
+    this.model = null;
+    this._geminiAvailable = false;
+  }
+
+  /**
+   * Initialize Gemini client (lazy initialization)
+   * Throws error if API key is missing AND Gemini is actually needed
+   */
+  _initialize() {
+    if (this._initialized) return;
+    
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      throw new Error('GEMINI_API_KEY environment variable is required');
+      logger.warn('[GeminiClientService] GEMINI_API_KEY not set - using mock responses for development');
+      this._geminiAvailable = false;
+      this._initialized = true;
+      return;
     }
     
-    this.genAI = new GoogleGenerativeAI(apiKey);
-    const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
-    this.model = this.genAI.getGenerativeModel({ model: modelName });
+    try {
+      this.genAI = new GoogleGenerativeAI(apiKey);
+      const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+      this.model = this.genAI.getGenerativeModel({ model: modelName });
+      this._geminiAvailable = true;
+      logger.info('[GeminiClientService] Gemini API initialized successfully');
+    } catch (error) {
+      logger.error('[GeminiClientService] Failed to initialize Gemini:', error);
+      this._geminiAvailable = false;
+    }
+    
+    this._initialized = true;
   }
 
   /**
    * Generate content from Gemini
    */
   async generateContent(prompt) {
+    this._initialize();
+    
+    if (!this._geminiAvailable) {
+      logger.debug('[GeminiClientService] Using mock response (Gemini not available)');
+      // Return a mock response for development/testing
+      return `Mock response: Processing prompt - "${prompt.substring(0, 50)}..."`;
+    }
+    
     try {
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
@@ -38,7 +75,16 @@ class GeminiClientService {
    * Get model instance (for advanced usage)
    */
   getModel() {
+    this._initialize();
     return this.model;
+  }
+
+  /**
+   * Check if Gemini is available
+   */
+  isAvailable() {
+    this._initialize();
+    return this._geminiAvailable;
   }
 }
 

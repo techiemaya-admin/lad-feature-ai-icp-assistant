@@ -215,9 +215,22 @@ CURRENT CONTEXT:
 - Current Intent: ${safeIntentKey}
 ${specialInstructions}
 YOUR TASK:
-1. Analyze if the user's answer is complete and relevant to the current question
-2. If the answer is incomplete/irrelevant → Set clarificationNeeded: true and provide a helpful message
-3. If the answer is complete → Proceed to next step sequentially (Step ${currentStepIndex + 1})
+1. FIRST: Check for spelling mistakes in the user's answer and correct them
+2. Analyze if the (corrected) answer is complete and relevant to the current question
+3. If the answer is incomplete/irrelevant → Set clarificationNeeded: true and provide a helpful message
+4. If the answer is complete → Proceed to next step sequentially (Step ${currentStepIndex + 1})
+
+SPELLING CORRECTION RULES:
+- If user types "Healthcar" → correct to "Healthcare"
+- If user types "Technolgy" → correct to "Technology"
+- If user types "Finace" → correct to "Finance"
+- If user types "Ecommrce" or "E-comerce" → correct to "E-commerce"
+- If user types "Manufactruing" → correct to "Manufacturing"
+- If user types "Linkdin" → correct to "LinkedIn"
+- If user types "Whatsap" → correct to "WhatsApp"
+- If user types "emal" or "emial" → correct to "Email"
+- Always try to understand the user's intent even with typos
+- Use fuzzy matching - if the word is 70%+ similar, accept and correct it
 
 CRITICAL RULES:
 - You MUST ask ALL ${totalSteps} steps in sequence (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
@@ -232,11 +245,13 @@ RESPOND IN VALID JSON FORMAT:
   "clarificationNeeded": <boolean>,
   "message": "<your message to user - clarification request OR completion message OR null if proceeding>",
   "confidence": "<high|medium|low>",
-  "completed": <boolean - true ONLY if this is Step ${totalSteps} and answer is complete>
+  "completed": <boolean - true ONLY if this is Step ${totalSteps} and answer is complete>,
+  "correctedAnswer": "<the corrected spelling of the user's answer, or null if no correction needed>"
 }
 
 IMPORTANT:
 - Be friendly and conversational in your messages
+- If you corrected a spelling mistake, do NOT ask for clarification - just use the corrected value
 - If clarification needed, explain what's missing clearly
 - If completed (Step ${totalSteps} only), congratulate and indicate next steps
 - Keep messages concise (1-2 sentences max)
@@ -291,7 +306,8 @@ Accept these as valid answers and proceed to the next step.
           clarificationNeeded: parsed.clarificationNeeded || false,
           message: parsed.message || null,
           confidence: parsed.confidence || 'medium',
-          completed: parsed.completed || false
+          completed: parsed.completed || false,
+          correctedAnswer: parsed.correctedAnswer || null
         };
       }
       return JSON.parse(text);
@@ -301,7 +317,8 @@ Accept these as valid answers and proceed to the next step.
         clarificationNeeded: false,
         message: null,
         confidence: 'low',
-        completed: currentStepIndex >= 11
+        completed: currentStepIndex >= 11,
+        correctedAnswer: null
       };
     }
   }

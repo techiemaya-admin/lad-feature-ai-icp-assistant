@@ -103,7 +103,7 @@ router.use('/', aiICPAssistantRoutes);
 
 // Use the new feature-based routes which include proper middleware and validation
 // The routes file already includes '/onboarding' prefix, so mount at root
-const aiICPAssistantRoutes = require('../features/ai-icp-assistant/routes/ai-icp-assistant.routes');
+const aiICPAssistantRoutes = require('./ai-icp-assistant.routes');
 router.use('/', aiICPAssistantRoutes);
 
 module.exports = router;

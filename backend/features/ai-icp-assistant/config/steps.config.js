@@ -8,6 +8,7 @@
 module.exports = {
   // Step indices
   PLATFORM_ACTIONS: 5,
+  PLATFORM_FEATURES: 5, // Alias for PLATFORM_ACTIONS (same step)
   WORKFLOW_DELAYS: 6,
   WORKFLOW_CONDITIONS: 7,
   CAMPAIGN_GOAL: 8,

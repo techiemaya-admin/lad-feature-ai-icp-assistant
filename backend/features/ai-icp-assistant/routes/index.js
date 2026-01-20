@@ -6,7 +6,9 @@
 
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
 const AIAssistantController = require('../controllers/AIAssistantController');
+const LeadsUploadController = require('../controllers/LeadsUploadController');
 const { authenticateToken } = require('../../../core/middleware/auth');
 const {
   validateChatRequest,
@@ -15,6 +17,19 @@ const {
   validateUuidParam,
   validatePagination
 } = require('../middleware/validation');
+
+// Configure multer for file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'text/csv' || file.originalname.endsWith('.csv')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only CSV files are allowed'), false);
+    }
+  }
+});
 
 // ============================================================================
 // Conversation Routes
@@ -89,21 +104,51 @@ router.delete('/profiles/:id', authenticateToken, validateUuidParam('id'), AIAss
 router.post('/profiles/:id/use', authenticateToken, validateUuidParam('id'), AIAssistantController.useProfile);
 
 // ============================================================================
-// ICP Onboarding Routes (Using new AI-ICP-Assistant feature)
+// Leads Upload Routes
+// ============================================================================
+
+/**
+ * GET /api/ai-icp-assistant/leads/template
+ * Download CSV template for leads upload
+ */
+router.get('/leads/template', authenticateToken, LeadsUploadController.downloadTemplate);
+
+/**
+ * GET /api/ai-icp-assistant/leads/template/columns
+ * Get template column definitions
+ */
+router.get('/leads/template/columns', authenticateToken, LeadsUploadController.getTemplateColumns);
+
+/**
+ * POST /api/ai-icp-assistant/leads/upload
+ * Upload and parse CSV file
+ */
+router.post('/leads/upload', authenticateToken, upload.single('file'), LeadsUploadController.uploadLeads);
+
+/**
+ * POST /api/ai-icp-assistant/leads/analyze
+ * Deep AI analysis of uploaded leads
+ */
+router.post('/leads/analyze', authenticateToken, LeadsUploadController.analyzeLeads);
+
+/**
+ * POST /api/ai-icp-assistant/leads/platform-questions
+ * Get platform-specific questions based on lead data
+ */
+router.post('/leads/platform-questions', authenticateToken, LeadsUploadController.getPlatformQuestions);
+
+/**
+ * POST /api/ai-icp-assistant/leads/validate
+ * Validate leads for campaign execution
+ */
+router.post('/leads/validate', authenticateToken, LeadsUploadController.validateLeads);
+
+// ============================================================================
+// ICP Onboarding Routes
 // ============================================================================
 
 // Use the new feature-based routes which include proper middleware and validation
-// The routes file already includes '/onboarding' prefix, so mount at root
 const aiICPAssistantRoutes = require('./ai-icp-assistant.routes');
-router.use('/', aiICPAssistantRoutes);
-
-// ============================================================================
-// ICP Onboarding Routes (Using new AI-ICP-Assistant feature)
-// ============================================================================
-
-// Use the new feature-based routes which include proper middleware and validation
-// The routes file already includes '/onboarding' prefix, so mount at root
-const aiICPAssistantRoutes = require('../features/ai-icp-assistant/routes/ai-icp-assistant.routes');
 router.use('/', aiICPAssistantRoutes);
 
 module.exports = router;

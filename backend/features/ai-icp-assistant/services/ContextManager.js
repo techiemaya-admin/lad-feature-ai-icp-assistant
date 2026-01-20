@@ -26,7 +26,18 @@ class ContextManager {
       problemStatement: null,
       confidenceScore: 0,
       status: 'collecting_info',
-      confirmed: false
+      confirmed: false,
+      // New leads-based flow fields
+      hasLeadsData: null,           // true if user has their own leads
+      leadsData: null,              // uploaded leads array
+      leadsAnalysis: null,          // AI analysis of leads
+      availablePlatforms: [],       // platforms detected from leads
+      unavailablePlatforms: [],     // platforms missing from leads
+      platformCoverage: {},         // coverage % per platform
+      selectedPlatforms: [],        // user-selected platforms
+      platformActions: {},          // selected actions per platform
+      sequenceOrder: [],            // order of platform touchpoints
+      delayBetween: 2               // days between touchpoints
     };
   }
 

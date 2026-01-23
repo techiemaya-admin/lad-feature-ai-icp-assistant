@@ -4,7 +4,6 @@
  * All hardcoded values extracted to this config file.
  * No magic strings or numbers in business logic.
  */
-
 module.exports = {
   // Step configuration
   steps: {
@@ -12,7 +11,6 @@ module.exports = {
     minStepIndex: 1,
     maxStepIndex: parseInt(process.env.ICP_MAX_STEP_INDEX || '11', 10),
   },
-
   // Platform configuration
   platforms: {
     supported: [
@@ -21,7 +19,6 @@ module.exports = {
       { key: 'whatsapp', displayName: 'WhatsApp', normalized: 'whatsapp' },
       { key: 'voice', displayName: 'Voice Calls', normalized: 'voice' },
     ],
-    
     // Platform detection patterns
     detectionPatterns: {
       linkedin: ['linkedin'],
@@ -29,7 +26,6 @@ module.exports = {
       whatsapp: ['whatsapp'],
       voice: ['voice', 'call'],
     },
-
     // Platform actions configuration
     actions: {
       linkedin: [
@@ -55,7 +51,6 @@ module.exports = {
         'Use call script',
       ],
     },
-
     // Template requirements
     templateRequired: {
       linkedin: (actions) => {
@@ -73,7 +68,6 @@ module.exports = {
       email: () => false, // Email doesn't require template in onboarding
     },
   },
-
   // Campaign goal options
   campaignGoals: [
     'Generate leads',
@@ -81,14 +75,12 @@ module.exports = {
     'Promote product',
     'Follow up existing leads',
   ],
-
   // Delay options
   delayOptions: [
     'No delay (actions run immediately)',
     'Add delay between actions (specify hours/days)',
     'Custom delay configuration',
   ],
-
   // Condition options
   conditionOptions: [
     'No conditions (run all actions)',
@@ -98,7 +90,6 @@ module.exports = {
     'If clicked (Email)',
     'Custom conditions',
   ],
-
   // Campaign duration options
   campaignDurationOptions: [
     { value: '7', label: '7 days (1 week)' },
@@ -107,14 +98,12 @@ module.exports = {
     { value: '60', label: '60 days (2 months)' },
     { value: 'custom', label: 'Custom (Enter your own number)' },
   ],
-
   // Working days options
   workingDaysOptions: [
     'Monday-Friday (Weekdays only)',
     'All days (7 days a week)',
     'Custom (Select specific days)',
   ],
-
   // Leads per day options
   leadsPerDayOptions: [
     { value: '10', label: '10 leads (Recommended for new accounts)', warning: true },
@@ -122,10 +111,8 @@ module.exports = {
     { value: '50', label: '50 leads (High volume - may require account warming)', warning: true },
     { value: 'custom', label: 'Custom (Enter your own number)', warning: false },
   ],
-
   // Default category
   defaultCategory: process.env.ICP_DEFAULT_CATEGORY || 'lead_generation',
-
   // Validation rules
   validation: {
     minStepIndex: 1,
@@ -133,5 +120,4 @@ module.exports = {
     minAnswerLength: 1,
     maxAnswerLength: 10000,
   },
-};
-
+};

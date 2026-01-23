@@ -26,13 +26,11 @@ class StepProcessorService {
     if (!selectedPlatforms.includes(normalizedPlatformKey)) {
       return this._handlePlatformMismatch(selectedPlatforms, collectedAnswers);
     }
-    
     // Match actions
     const matched = this._matchActions(normalizedPlatformKey, userAnswer);
     if (matched.length === 0) {
       return this._requestActionClarification(normalizedPlatformKey, currentIntentKey, collectedAnswers);
     }
-    
     // CRITICAL: Auto-remove dependent actions when required actions are removed
     const cleanedActions = this._autoRemoveDependentActions(
       normalizedPlatformKey,
@@ -60,7 +58,6 @@ class StepProcessorService {
         updatedCollectedAnswers: updatedAnswers,
       };
     }
-    
     // Mark platform as completed
     const completedActions = (collectedAnswers.completed_platform_actions || [])
       .map(p => String(p).toLowerCase());
@@ -87,7 +84,6 @@ class StepProcessorService {
         updatedCollectedAnswers: updatedAnswers,
       };
     }
-    
     // More platforms need actions
     const nextQuestion = questionGeneratorService.generatePlatformActionsQuestion(
       selectedPlatforms,
@@ -125,7 +121,6 @@ class StepProcessorService {
         updatedCollectedAnswers: collectedAnswers,
       };
     }
-    
     const nextQuestion = questionGeneratorService.generateQuestion(
       stepsConfig.WORKFLOW_DELAYS,
       collectedAnswers
@@ -139,7 +134,6 @@ class StepProcessorService {
       updatedCollectedAnswers: collectedAnswers,
     };
   }
-
   /**
    * Validate LinkedIn action dependencies (legacy - kept for backward compatibility)
    */
@@ -147,7 +141,6 @@ class StepProcessorService {
     // This is now handled by _validateActionDependencies
     return null;
   }
-
   /**
    * Auto-remove dependent actions when required actions are removed
    * Returns cleaned actions array
@@ -168,7 +161,6 @@ class StepProcessorService {
         });
       }
     }
-    
     // WhatsApp: Remove follow-up messages if initial message is removed
     if (platformKey === 'whatsapp') {
       const hasInitialMessage = actionsLower.some(a => 
@@ -183,7 +175,6 @@ class StepProcessorService {
         });
       }
     }
-    
     // Email: Remove follow-up emails if initial email is removed
     if (platformKey === 'email') {
       const hasInitialEmail = actionsLower.some(a => 
@@ -198,7 +189,6 @@ class StepProcessorService {
         });
       }
     }
-    
     // Voice: Remove follow-up calls if initial call is removed
     if (platformKey === 'voice') {
       const hasInitialCall = actionsLower.some(a => 
@@ -215,7 +205,6 @@ class StepProcessorService {
     }
     return cleaned;
   }
-
   /**
    * Validate action dependencies for all platforms
    * Checks if user removed required dependencies
@@ -248,7 +237,6 @@ class StepProcessorService {
         };
       }
     }
-    
     // WhatsApp: Follow-up messages require an initial message
     if (platformKey === 'whatsapp') {
       const hasFollowUp = actionsLower.some(a => a.includes('follow-up') || a.includes('follow up'));
@@ -272,7 +260,6 @@ class StepProcessorService {
         };
       }
     }
-    
     // Email: Follow-up emails require an initial email
     if (platformKey === 'email') {
       const hasFollowUp = actionsLower.some(a => a.includes('follow-up') || a.includes('follow up'));
@@ -296,7 +283,6 @@ class StepProcessorService {
         };
       }
     }
-    
     // Voice: Follow-up calls require an initial call
     if (platformKey === 'voice') {
       const hasFollowUp = actionsLower.some(a => a.includes('follow-up') || a.includes('follow up'));
@@ -322,7 +308,6 @@ class StepProcessorService {
     }
     return null;
   }
-
   /**
    * Match user answer to allowed actions
    */
@@ -354,7 +339,6 @@ class StepProcessorService {
       return false;
     });
   }
-
   /**
    * Process Campaign Settings Step (Step 10) - handles campaign_days, working_days, leads_per_day sub-steps
    */
@@ -420,7 +404,6 @@ class StepProcessorService {
       };
     }
   }
-
   /**
    * Request action clarification
    */
@@ -444,5 +427,4 @@ class StepProcessorService {
       };
   }
 }
-
-module.exports = new StepProcessorService();
+module.exports = new StepProcessorService();

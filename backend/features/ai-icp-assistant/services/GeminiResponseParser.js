@@ -2,9 +2,7 @@
  * Gemini Response Parser
  * Handles parsing and validation of Gemini AI responses
  */
-
 const logger = require('../utils/logger');
-
 class GeminiResponseParser {
   /**
    * Parse Gemini's conversation response
@@ -33,7 +31,6 @@ class GeminiResponseParser {
       };
     }
   }
-
   /**
    * Parse Gemini's analysis response  
    */
@@ -56,5 +53,4 @@ class GeminiResponseParser {
     }
   }
 }
-
 module.exports = GeminiResponseParser;

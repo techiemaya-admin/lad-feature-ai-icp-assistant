@@ -2,28 +2,23 @@
  * Gemini Intent Service (Refactored)
  * Orchestrates question generation and answer processing using specialized services
  */
-
 const config = require('../utils/config');
 const logger = require('../utils/logger');
 const questionGenerator = require('./QuestionGeneratorService');
 const answerProcessor = require('./AnswerProcessorService');
 const platformHandler = require('./PlatformHandlerService');
-
 class GeminiIntentService {
   constructor() {
     if (!config.GEMINI_API_KEY) {
       throw new Error('GEMINI_API_KEY environment variable is required');
     }
-    
     this.questionGenerator = questionGenerator;
     this.answerProcessor = answerProcessor;
     this.platformHandler = platformHandler;
     this.totalSteps = 11;
-    
     this.campaignPrompts = this.questionGenerator.campaignPrompts;
     this.icpPrompts = this.campaignPrompts;
   }
-
   /**
    * Generate the first ICP question
    */
@@ -35,7 +30,6 @@ class GeminiIntentService {
       throw error;
     }
   }
-
   /**
    * Generate next question and analyze user answer
    */
@@ -49,7 +43,6 @@ class GeminiIntentService {
   }) {
     try {
       const isLastStep = currentStepIndex >= this.totalSteps;
-
       const analysis = await this.answerProcessor.analyzeAnswer({
         userAnswer,
         currentStepIndex,
@@ -58,7 +51,6 @@ class GeminiIntentService {
         answeredSteps,
         collectedAnswers
       });
-
       if (analysis.clarificationNeeded) {
         return {
           nextQuestion: null,
@@ -68,7 +60,6 @@ class GeminiIntentService {
           completed: false
         };
       }
-
       if (analysis.completed || isLastStep) {
         return {
           nextQuestion: null,
@@ -78,17 +69,14 @@ class GeminiIntentService {
           completed: true
         };
       }
-
       const transition = await this.platformHandler.determineNextStep({
         currentStepIndex,
         currentIntentKey,
         userAnswer,
         collectedAnswers
       });
-
       let nextStepIndex = transition.nextStepIndex;
       let context = transition.context || {};
-
       if (nextStepIndex > this.totalSteps) {
         return {
           nextQuestion: null,
@@ -98,16 +86,13 @@ class GeminiIntentService {
           completed: true
         };
       }
-
       if (nextStepIndex === 5) {
         context = this.platformHandler.buildPlatformContext(
           collectedAnswers.selected_platforms,
           collectedAnswers.completed_platform_actions || []
         );
       }
-
       const nextQuestion = await this.questionGenerator.generateQuestion(nextStepIndex, context);
-
       if (!nextQuestion || !nextQuestion.question) {
         logger.error('Generated question is invalid', { question: nextQuestion, nextStepIndex });
         return {
@@ -118,7 +103,6 @@ class GeminiIntentService {
           completed: false
         };
       }
-
       return {
         nextQuestion,
         clarificationNeeded: false,
@@ -131,7 +115,6 @@ class GeminiIntentService {
         error: error.message,
         stepIndex: currentStepIndex
       });
-
       if (currentStepIndex >= this.totalSteps) {
         return {
           nextQuestion: null,
@@ -141,10 +124,8 @@ class GeminiIntentService {
           completed: true
         };
       }
-
       const nextStepIndex = currentStepIndex + 1;
       const nextQuestion = await this.questionGenerator.generateQuestion(nextStepIndex);
-
       return {
         nextQuestion,
         clarificationNeeded: false,
@@ -154,26 +135,21 @@ class GeminiIntentService {
       };
     }
   }
-
   /**
    * Legacy methods for backward compatibility
    */
   async generatePlatformFeaturesStep(context) {
     return this.questionGenerator.generatePlatformFeaturesStep(context);
   }
-
   async generateConfirmationStep(context) {
     return this.questionGenerator.generateConfirmationStep(context);
   }
-
   buildConversationPrompt(params) {
     return this.answerProcessor.buildConversationPrompt(params);
   }
-
   parseConversationResponse(text, currentStepIndex, isLastStep) {
     return this.answerProcessor.parseConversationResponse(text, currentStepIndex);
   }
-
   async analyzeAnswerAndDecideNextStep({
     userAnswer,
     currentStepIndex,
@@ -188,7 +164,6 @@ class GeminiIntentService {
         availableSteps,
         answeredSteps
       );
-
       return {
         nextStepIndex,
         clarificationNeeded: false,
@@ -198,13 +173,11 @@ class GeminiIntentService {
       };
     } catch (error) {
       logger.error('Error in analyzeAnswerAndDecideNextStep', { error: error.message });
-      
       const nextStepIndex = this.getNextAvailableStep(
         currentStepIndex,
         availableSteps,
         answeredSteps
       );
-
       return {
         nextStepIndex,
         clarificationNeeded: false,
@@ -214,11 +187,9 @@ class GeminiIntentService {
       };
     }
   }
-
   buildAnalysisPrompt(params) {
     const { userAnswer, currentStepIndex, currentIntentKey, currentQuestion, availableSteps, answeredSteps } = params;
     return `You are an AI assistant helping with ICP (Ideal Customer Profile) onboarding.
-
 CURRENT CONTEXT:
 - Current Step: ${currentStepIndex}
 - Current Question Intent: ${currentIntentKey}
@@ -226,21 +197,18 @@ CURRENT CONTEXT:
 - User's Answer: "${userAnswer}"
 - Available Steps: ${availableSteps.join(', ')}
 - Already Answered Steps: ${answeredSteps.length > 0 ? answeredSteps.join(', ') : 'None'}
-
 YOUR TASK:
 Analyze the user's answer and determine:
 1. Is the answer complete and satisfactory? (clarificationNeeded: true/false)
 2. What should be the next step_index? (nextStepIndex: number)
 3. Your confidence level (confidence: 'high' | 'medium' | 'low')
 4. Brief reasoning for your decision
-
 RULES:
 - If answer is incomplete/unclear → clarificationNeeded: true, nextStepIndex: same as current
 - If answer is complete → clarificationNeeded: false, nextStepIndex: next available step
 - Next step must be in availableSteps array
 - Next step should NOT be in answeredSteps (unless clarification needed)
 - If current step is last (7), nextStepIndex should be null or -1 to indicate completion
-
 RESPOND IN VALID JSON FORMAT:
 {
   "nextStepIndex": <number or null>,
@@ -252,7 +220,6 @@ RESPOND IN VALID JSON FORMAT:
   }
 }`;
   }
-
   parseAnalysisResponse(text) {
     try {
       const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -270,7 +237,6 @@ RESPOND IN VALID JSON FORMAT:
       };
     }
   }
-
   validateNextStep(nextStepIndex, availableSteps, answeredSteps, currentStepIndex) {
     if (nextStepIndex === null || nextStepIndex === -1) {
       const maxStep = Math.max(...availableSteps);
@@ -279,30 +245,22 @@ RESPOND IN VALID JSON FORMAT:
       }
       return this.getNextAvailableStep(currentStepIndex, availableSteps, answeredSteps);
     }
-
     if (!availableSteps.includes(nextStepIndex)) {
       return this.getNextAvailableStep(currentStepIndex, availableSteps, answeredSteps);
     }
-
     if (answeredSteps.includes(nextStepIndex) && nextStepIndex <= currentStepIndex) {
       return this.getNextAvailableStep(currentStepIndex, availableSteps, answeredSteps);
     }
-
     return nextStepIndex;
   }
-
   getNextAvailableStep(currentStepIndex, availableSteps, answeredSteps) {
     const sortedSteps = [...availableSteps].sort((a, b) => a - b);
-    
     for (const step of sortedSteps) {
       if (step > currentStepIndex && !answeredSteps.includes(step)) {
         return step;
       }
     }
-
     return null;
   }
 }
-
-module.exports = new GeminiIntentService();
-
+module.exports = new GeminiIntentService();

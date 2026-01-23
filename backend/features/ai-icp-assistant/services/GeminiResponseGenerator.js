@@ -2,12 +2,9 @@
  * Gemini Response Generator
  * Uses Gemini API to generate natural, conversational responses
  */
-
 const logger = require('../utils/logger');
-
 let genAI = null;
 let GoogleGenerativeAI = null;
-
 try {
   GoogleGenerativeAI = require('@google/generative-ai').GoogleGenerativeAI;
   const geminiApiKey = process.env.GEMINI_API_KEY;
@@ -19,7 +16,6 @@ try {
   logger.warn('Gemini AI package not found for response generation');
   genAI = null;
 }
-
 class GeminiResponseGenerator {
   /**
    * Generate natural conversational response using Gemini
@@ -34,7 +30,6 @@ class GeminiResponseGenerator {
     if (!genAI) {
       return this.generateFallbackResponse(stage, context, questionType);
     }
-
     try {
       const ContextManager = require('./ContextManager');
       const contextSummary = ContextManager.formatContextForAI(context);
@@ -42,27 +37,19 @@ class GeminiResponseGenerator {
         .slice(-6)
         .map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
         .join('\n');
-
       const stageInstructions = this.getStageInstructions(stage, context, questionType);
-      
       // Check if the question for this stage was already answered
       const alreadyAnswered = this.checkIfQuestionAlreadyAnswered(stage, context, recentHistory);
-      
       const prompt = `You are Maya, a friendly and professional AI assistant helping users set up their outreach campaigns. You're having a natural conversation to understand their needs.
-
 **Current Context:**
 ${contextSummary}
-
 **Recent Conversation:**
 ${recentHistory || 'This is the start of the conversation.'}
-
 **Current Stage:** ${stage}
 **User's Latest Message:** "${message || '(no message yet)'}"
 ${alreadyAnswered ? '\n**⚠️ IMPORTANT: The question for this stage has ALREADY been answered. DO NOT ask it again. Move to the next question or acknowledge the answer.**' : ''}
-
 **Your Task:**
 ${stageInstructions}
-
 **Response Guidelines:**
 - Be warm, friendly, and professional (like a top-tier AI assistant)
 - Use natural, conversational language (not robotic or formulaic)
@@ -71,35 +58,28 @@ ${stageInstructions}
 - Don't repeat questions that were already answered
 - If the user's message answers your question, acknowledge it naturally and move to the next question
 - If the message is unclear, ask for clarification in a friendly way
-
 **IMPORTANT:**
 - If the user has already answered a question, acknowledge it and ask the NEXT question
 - Never repeat a question that's already been answered
 - Always move the conversation forward
 - Check the conversation history - if a question was already asked and answered, skip it
-
 Generate your response now (just the text, no JSON, no explanations):`;
-
       const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
       const result = await model.generateContent(prompt);
       const response = await result.response;
       const responseText = response.text().trim();
-
       // Clean up the response (remove any markdown, quotes, etc.)
       let cleanResponse = responseText
         .replace(/^["']|["']$/g, '') // Remove surrounding quotes
         .replace(/```[\s\S]*?```/g, '') // Remove code blocks
         .trim();
-
       logger.debug('Gemini generated response', { response: cleanResponse });
       return cleanResponse;
-
     } catch (error) {
       logger.warn('Gemini response generation error', { error: error.message, stage, context });
       return this.generateFallbackResponse(stage, context, questionType);
     }
   }
-
   /**
    * Check if the question for a stage was already answered
    */
@@ -117,7 +97,6 @@ Generate your response now (just the text, no JSON, no explanations):`;
         return false;
     }
   }
-
   /**
    * Get stage-specific instructions for Gemini
    */
@@ -126,10 +105,9 @@ Generate your response now (just the text, no JSON, no explanations):`;
       case 'init':
       case 'outreach_type':
         if (!context.outreachType) {
-          return 'Ask the user what type of outreach they want to set up - inbound (leads come to them) or outbound (they reach out to prospects). Use natural, conversational phrasing.';
+          return 'Ask the user: "What type of outreach are you setting up?" and present TWO options clearly: "1) Inbound (leads come to you)" and "2) Outbound (you reach out to prospects)". Do NOT ask about categories, automation types, or anything else. ONLY ask about inbound vs outbound.';
         }
         return 'The user has already indicated their outreach type. Move to the next appropriate question.';
-
       case 'inbound_flow':
         if (!context.inboundSource) {
           return 'Ask where the inbound leads are coming from (website form, WhatsApp, ads, CRM, etc.). Be conversational.';
@@ -141,13 +119,11 @@ Generate your response now (just the text, no JSON, no explanations):`;
           return 'Ask what minimum details should be captured from leads. Be helpful and conversational.';
         }
         return 'Move to confirmation - summarize what you understood.';
-
       case 'outbound_target_knowledge':
         if (!context.targetKnowledge) {
           return 'Ask if they already know who they want to target, or if they want help discovering ideal prospects. Use natural language.';
         }
         return 'The user has answered. Move to the next stage.';
-
       case 'outbound_known_target':
         if (context.linkedinUrls.length === 0 && context.companies.length === 0) {
           return 'Ask what information they already have (LinkedIn profiles, company names, roles, locations). Be conversational.';
@@ -159,7 +135,6 @@ Generate your response now (just the text, no JSON, no explanations):`;
           return 'Ask which location or geography to focus on. Be friendly.';
         }
         return 'Move to confirmation - summarize what you understood.';
-
       case 'outbound_icp_discovery':
         if (!context.problemStatement) {
           return 'Ask what problem their solution solves. Be conversational and helpful.';
@@ -180,18 +155,14 @@ Generate your response now (just the text, no JSON, no explanations):`;
           return 'Ask what deal size they\'re targeting (SMB, mid-market, enterprise). Be natural.';
         }
         return 'Move to confirmation - summarize what you understood.';
-
       case 'confirmation':
         return 'Present a clear summary of what you understood and ask if it looks correct. Be friendly and concise.';
-
       case 'ready_for_execution':
         return 'Acknowledge that you\'re ready to move forward. Be positive and brief.';
-
       default:
         return 'Continue the conversation naturally based on the context.';
     }
   }
-
   /**
    * Fallback response generator (if Gemini unavailable)
    */
@@ -199,8 +170,7 @@ Generate your response now (just the text, no JSON, no explanations):`;
     // Use natural fallback responses
     switch (stage) {
       case 'outreach_type':
-        return "I'd be happy to help you set up your outreach! Are you looking to respond to inbound leads that come to you, or proactively reach out to prospects?";
-      
+        return "👉 What type of outreach are you setting up?\n\n1) Inbound (leads come to you)\n2) Outbound (you reach out to prospects)";
       case 'inbound_flow':
         if (!context.inboundSource) {
           return "Great! Where are these inbound leads coming from? For example, your website form, WhatsApp, ads, or a CRM system.";
@@ -209,13 +179,10 @@ Generate your response now (just the text, no JSON, no explanations):`;
           return "Do you already have prospect data captured, or do we need to set up data collection?";
         }
         return "Perfect! I understand your inbound setup.";
-
       case 'outbound_target_knowledge':
         return "Perfect! Do you already have specific people or companies in mind, or would you like me to help you discover ideal prospects?";
-
       case 'outbound_known_target':
         return "Got it! What information do you already have? For example, LinkedIn profile links, specific company names, or decision maker roles and locations.";
-
       case 'outbound_icp_discovery':
         if (!context.problemStatement) {
           return "Perfect! Let's discover your ideal prospects together. To get started, what problem does your solution solve?";
@@ -227,17 +194,13 @@ Generate your response now (just the text, no JSON, no explanations):`;
           return "What industries are your ideal customers in? For example, SaaS, Healthcare, or FinTech.";
         }
         return "Great! I'm gathering the information I need.";
-
       case 'confirmation':
         const StageHandlers = require('./StageHandlers');
         const confirmationMsg = StageHandlers.generateConfirmationMessage(context);
         return confirmationMsg.text;
-
       default:
         return "I'm ready to help. What would you like to do next?";
     }
   }
 }
-
-module.exports = GeminiResponseGenerator;
-
+module.exports = GeminiResponseGenerator;

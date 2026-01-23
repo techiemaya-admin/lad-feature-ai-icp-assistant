@@ -2,7 +2,6 @@
  * Campaign Prompt Config
  * Contains all campaign setup prompts and configuration
  */
-
 class CampaignPrompts {
   static getCampaignPrompts() {
     return [
@@ -106,7 +105,6 @@ class CampaignPrompts {
       }
     ];
   }
-
   static getPlatformConfigs() {
     return {
       linkedin: {
@@ -138,5 +136,4 @@ class CampaignPrompts {
     };
   }
 }
-
 module.exports = CampaignPrompts;

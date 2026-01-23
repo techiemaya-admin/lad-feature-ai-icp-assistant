@@ -2,11 +2,9 @@
  * Answer Processor Service
  * Handles answer analysis and validation
  */
-
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const config = require('../utils/config');
 const logger = require('../utils/logger');
-
 class AnswerProcessorService {
   constructor() {
     if (!config.GEMINI_API_KEY) {
@@ -15,7 +13,6 @@ class AnswerProcessorService {
     this.genAI = new GoogleGenerativeAI(config.GEMINI_API_KEY);
     this.model = this.genAI.getGenerativeModel({ model: config.AI_MODEL });
   }
-
   /**
    * Analyze answer and determine if clarification is needed
    */
@@ -31,11 +28,9 @@ class AnswerProcessorService {
       if (this.shouldSkipGemini(currentStepIndex, currentIntentKey, userAnswer, collectedAnswers)) {
         return this.handleSkippedAnalysis(currentStepIndex, currentIntentKey, userAnswer, collectedAnswers);
       }
-
       if (currentStepIndex === 4 && currentIntentKey === 'selected_platforms') {
         return this.validatePlatformSelection(userAnswer, collectedAnswers);
       }
-
       const conversationPrompt = this.buildConversationPrompt({
         userAnswer,
         currentStepIndex,
@@ -43,17 +38,13 @@ class AnswerProcessorService {
         currentQuestion,
         answeredSteps
       });
-
       const result = await this.model.generateContent(conversationPrompt);
       const response = await result.response;
       const text = response.text();
-
       const analysis = this.parseConversationResponse(text, currentStepIndex);
-
       if (this.shouldOverrideGeminiAnalysis(currentStepIndex, currentIntentKey, userAnswer, analysis)) {
         return this.getOverriddenAnalysis(analysis);
       }
-
       return analysis;
     } catch (error) {
       logger.error('Error analyzing answer', { 
@@ -64,7 +55,6 @@ class AnswerProcessorService {
       return this.getFallbackAnalysis(currentStepIndex);
     }
   }
-
   /**
    * Check if we should skip Gemini for this answer
    */
@@ -72,7 +62,6 @@ class AnswerProcessorService {
     const isTemplateCollection = stepIndex === 5 && intentKey && intentKey.endsWith('_template');
     return isTemplateCollection;
   }
-
   /**
    * Handle analysis for skipped Gemini calls
    */
@@ -81,14 +70,11 @@ class AnswerProcessorService {
       const basePlatformKey = intentKey.replace('_template', '');
       const selectedPlatforms = this.normalizePlatforms(collectedAnswers.selected_platforms || []);
       let completedActions = collectedAnswers.completed_platform_actions || [];
-      
       if (!completedActions.includes(basePlatformKey)) {
         completedActions = [...completedActions, basePlatformKey];
       }
-      
       const allPlatformsDone = selectedPlatforms.length > 0 && 
                                selectedPlatforms.every(p => completedActions.includes(p));
-      
       return {
         clarificationNeeded: false,
         message: null,
@@ -101,10 +87,8 @@ class AnswerProcessorService {
         }
       };
     }
-
     return this.getFallbackAnalysis(stepIndex);
   }
-
   /**
    * Validate platform selection
    */
@@ -112,13 +96,11 @@ class AnswerProcessorService {
     const answerLower = userAnswer.toLowerCase().trim();
     const isSkip = answerLower === 'skip';
     const validPlatforms = ['linkedin', 'email', 'whatsapp', 'voice', 'voice calls', 'voice call'];
-    
     const hasValidPlatform = validPlatforms.some(vp => answerLower.includes(vp));
     const answerParts = userAnswer.split(',').map(s => s.trim().toLowerCase());
     const hasValidPlatformInList = answerParts.some(part => 
       validPlatforms.some(vp => part.includes(vp) || vp.includes(part))
     );
-    
     if (!hasValidPlatform && !hasValidPlatformInList && !isSkip) {
       return {
         clarificationNeeded: true,
@@ -128,11 +110,9 @@ class AnswerProcessorService {
         nextStepIndex: 4
       };
     }
-    
     const platforms = answerParts.filter(part => 
       validPlatforms.some(vp => part.includes(vp) || vp.includes(part))
     );
-    
     return {
       clarificationNeeded: false,
       message: null,
@@ -145,7 +125,6 @@ class AnswerProcessorService {
       }
     };
   }
-
   /**
    * Check if Gemini analysis should be overridden
    */
@@ -154,13 +133,10 @@ class AnswerProcessorService {
       const actionKeywords = this.getActionKeywords(intentKey);
       const answerLower = userAnswer.toLowerCase().trim();
       const hasValidAction = actionKeywords.some(keyword => answerLower.includes(keyword));
-      
       return hasValidAction && analysis.clarificationNeeded;
     }
-    
     return false;
   }
-
   /**
    * Get overridden analysis
    */
@@ -172,14 +148,12 @@ class AnswerProcessorService {
       confidence: 'high'
     };
   }
-
   /**
    * Check if intent is platform action
    */
   isPlatformActionIntent(intentKey) {
     return ['linkedin_actions', 'email_actions', 'whatsapp_actions', 'voice_actions'].includes(intentKey);
   }
-
   /**
    * Get action keywords for validation
    */
@@ -192,7 +166,6 @@ class AnswerProcessorService {
     };
     return keywords[intentKey] || [];
   }
-
   /**
    * Build conversation prompt for Gemini
    */
@@ -200,14 +173,10 @@ class AnswerProcessorService {
     const safeUserAnswer = String(userAnswer || '').trim();
     const safeCurrentQuestion = String(currentQuestion || '').trim();
     const safeIntentKey = String(currentIntentKey || 'unknown');
-    
     const totalSteps = 11;
     const isLastStep = currentStepIndex >= totalSteps;
-
     const specialInstructions = this.getSpecialInstructions(currentStepIndex, safeIntentKey);
-
     return `You are MAYA AI – a guided campaign & workflow builder.
-
 CURRENT CONTEXT:
 - Current Step: ${currentStepIndex} of ${totalSteps}
 - Current Question: "${safeCurrentQuestion}"
@@ -218,15 +187,12 @@ YOUR TASK:
 1. Analyze if the user's answer is complete and relevant to the current question
 2. If the answer is incomplete/irrelevant → Set clarificationNeeded: true and provide a helpful message
 3. If the answer is complete → Proceed to next step sequentially (Step ${currentStepIndex + 1})
-
 CRITICAL RULES:
 - You MUST ask ALL ${totalSteps} steps in sequence (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
 - NEVER skip steps or mark as completed before Step ${totalSteps}
 - ONLY mark as completed when Step ${totalSteps} is answered
 - ALWAYS proceed to the next sequential step (${currentStepIndex + 1}) unless clarification is needed
-
 ${isLastStep ? `This is the LAST step (Step ${totalSteps}). If the answer is complete, mark as completed.` : `Next step will be Step ${currentStepIndex + 1}`}
-
 RESPOND IN VALID JSON FORMAT:
 {
   "clarificationNeeded": <boolean>,
@@ -234,7 +200,6 @@ RESPOND IN VALID JSON FORMAT:
   "confidence": "<high|medium|low>",
   "completed": <boolean - true ONLY if this is Step ${totalSteps} and answer is complete>
 }
-
 IMPORTANT:
 - Be friendly and conversational in your messages
 - If clarification needed, explain what's missing clearly
@@ -242,7 +207,6 @@ IMPORTANT:
 - Keep messages concise (1-2 sentences max)
 - NEVER skip steps - always go sequentially from ${currentStepIndex} to ${currentStepIndex + 1}`;
   }
-
   /**
    * Get special instructions based on step
    */
@@ -256,7 +220,6 @@ Do NOT ask about platform selection - that was already done in Step 4.
 Do NOT ask for clarification unless the answer is completely unrelated to actions.
 `;
     }
-
     if (stepIndex === 10 && (intentKey === 'campaign_days' || intentKey === 'working_days')) {
       return `
 IMPORTANT: You are on Step 10 - Campaign Settings, Sub-step: ${intentKey}.
@@ -267,7 +230,6 @@ Do NOT confuse answers between sub-steps. If the user answers the correct sub-st
 Do NOT ask for clarification unless the answer is completely unrelated to the current sub-step.
 `;
     }
-
     if (stepIndex === 6 || stepIndex === 7) {
       return `
 IMPORTANT: You are on Step ${stepIndex} - ${stepIndex === 6 ? 'Workflow Delays' : 'Workflow Conditions'}.
@@ -275,10 +237,8 @@ The user can say "Skip", "No delay", "No conditions" to proceed without configur
 Accept these as valid answers and proceed to the next step.
 `;
     }
-
     return '';
   }
-
   /**
    * Parse Gemini's conversation response
    */
@@ -305,7 +265,6 @@ Accept these as valid answers and proceed to the next step.
       };
     }
   }
-
   /**
    * Get fallback analysis
    */
@@ -317,19 +276,16 @@ Accept these as valid answers and proceed to the next step.
       completed: stepIndex >= 11
     };
   }
-
   /**
    * Normalize platform names
    */
   normalizePlatforms(platforms) {
     let platformList = [];
-    
     if (Array.isArray(platforms)) {
       platformList = platforms;
     } else if (typeof platforms === 'string') {
       platformList = platforms.split(',').map(s => s.trim()).filter(s => s.length > 0);
     }
-
     return platformList.map(p => {
       const pLower = p.toLowerCase().trim();
       if (pLower.includes('linkedin')) return 'linkedin';
@@ -340,5 +296,4 @@ Accept these as valid answers and proceed to the next step.
     }).filter(p => p);
   }
 }
-
-module.exports = new AnswerProcessorService();
+module.exports = new AnswerProcessorService();

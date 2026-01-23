@@ -4,10 +4,8 @@
  * All prompt templates extracted to this config file.
  * No hardcoded prompts in service files.
  */
-
 const onboardingConfig = require('./onboarding.config');
 const logger = require('../utils/logger');
-
 module.exports = {
   /**
    * Get prompt for a specific step
@@ -15,25 +13,20 @@ module.exports = {
   getStepPrompt(stepIndex, context = {}) {
     const prompts = this.getPrompts();
     const prompt = prompts.find(p => p.stepIndex === stepIndex);
-    
     if (!prompt) {
       throw new Error(`No prompt found for step ${stepIndex}`);
     }
-
     // Handle dynamic prompts
     if (prompt.isDynamic && prompt.generateDynamic) {
       return prompt.generateDynamic(context);
     }
-
     return prompt;
   },
-
   /**
    * Get all prompts
    */
   getPrompts() {
     const { platforms, campaignGoals, delayOptions, conditionOptions } = onboardingConfig;
-
     return [
       {
         stepIndex: 1,
@@ -82,10 +75,8 @@ module.exports = {
           const { platformName, platformIndex, totalPlatforms, askingForTemplate, templateForAction } = context;
           const platform = platforms.supported.find(p => p.normalized === platformName?.toLowerCase());
           const actions = platform ? onboardingConfig.platforms.actions[platform.normalized] : [];
-
           // Base header explaining order and current platform
           let base = `Platform ${platformIndex} of ${totalPlatforms}: ${platform?.displayName || platformName}\n\n`;
-
           // If we are currently requesting a template for a specific action, render template instructions
           if (askingForTemplate && templateForAction) {
             // Friendly instructions and examples
@@ -105,17 +96,13 @@ module.exports = {
                 autocall: 'Hello {first_name}, this is {agent} from {company}. I\'m calling about...'
               }
             };
-
             const platformKey = platform?.normalized || platformName?.toLowerCase();
             const sample = (examples[platformKey] && examples[platformKey][templateForAction]) || '';
-
             base += `We need a message/template for the action "${templateForAction}" on ${platform?.displayName || platformName}.\n\nPlease paste the message or script you want to use below.\n\nExample:\n${sample}\n\n(You can edit the example or paste your own template. This template is required to continue.)`;
             return base;
           }
-
           // Otherwise render action selection with dependency hints
           base += `We're configuring ${platform?.displayName || platformName} now. Complete the steps in order: Actions → Templates (if required) → Conditions → Delays.\n\nWhat ${platform?.displayName || platformName} actions do you want to include?\n\nOptions:\n${actions.map(a => `• ${a}`).join('\n')}\n\nYou can choose multiple.`;
-
           // Add brief dependency hints for common platforms (helpful nudge)
           if (platform?.normalized === 'linkedin') {
             base += `\n\nNote: "Send message" requires a connection first — we'll prompt for a connection message if you pick "Send message".`;
@@ -126,7 +113,6 @@ module.exports = {
           } else if (platform?.normalized === 'voice') {
             base += `\n\nNote: Auto call requires a call script. Follow-up calls require a previous call attempt.`;
           }
-
           return base;
         },
       },
@@ -178,7 +164,6 @@ module.exports = {
             // CRITICAL FIX: Ensure subStepIndex is always defined (default to 0 for campaign_days)
             const subStepIndex = context.subStepIndex !== undefined ? context.subStepIndex : 0;
             logger.debug(`[PromptsConfig] generateDynamic for step 10, subStepIndex: ${subStepIndex}, context keys: ${Object.keys(context).join(', ')}`);
-            
             if (subStepIndex === 0) {
               const options = onboardingConfig.campaignDurationOptions;
               logger.debug(`[PromptsConfig] campaignDurationOptions:`, options);
@@ -299,7 +284,6 @@ module.exports = {
           if (context.campaign_days) summaryLines.push(`• Campaign duration: ${context.campaign_days} days`);
           if (context.working_days) summaryLines.push(`• Working days: ${Array.isArray(context.working_days) ? context.working_days.join(', ') : context.working_days}`);
           if (context.leads_per_day) summaryLines.push(`• Leads per day: ${context.leads_per_day}`);
-          
           summaryLines.push('\nReady to launch? 🚀\n');
           summaryLines.push('When you create and start this campaign:');
           summaryLines.push('✓ Apollo will automatically generate leads based on your criteria');
@@ -310,7 +294,6 @@ module.exports = {
           summaryLines.push('• Yes, Create and Start Campaign');
           summaryLines.push('• Edit Campaign');
           summaryLines.push('• Go Back');
-          
           return {
             stepIndex: 11,
             intentKey: 'confirmation',
@@ -323,5 +306,4 @@ module.exports = {
       },
     ];
   },
-};
-
+};

@@ -3,9 +3,7 @@
  * 
  * Manages individual messages within conversations
  */
-
 const { query } = require('../utils/database');
-
 class AIMessage {
   /**
    * Create a new message
@@ -23,7 +21,6 @@ class AIMessage {
       if (!validRoles.includes(role)) {
         throw new Error(`Invalid role: ${role}. Must be 'user' or 'assistant'`);
       }
-
       const result = await query(`
         INSERT INTO ai_messages (
           conversation_id,
@@ -42,35 +39,30 @@ class AIMessage {
         tokensUsed,
         model
       ]);
-
       return result.rows[0];
     } catch (error) {
-      console.error('Error creating message:', error);
+      // ...existing code...
       throw error;
     }
   }
-
   /**
    * Get all messages for a conversation
    */
   static async findByConversation(conversationId, options = {}) {
     try {
       const { limit = 100, offset = 0, order = 'ASC' } = options;
-      
       const result = await query(`
         SELECT * FROM ai_messages
         WHERE conversation_id = $1
         ORDER BY created_at ${order}
         LIMIT $2 OFFSET $3
       `, [conversationId, limit, offset]);
-
       return result.rows;
     } catch (error) {
-      console.error('Error finding messages:', error);
+      // ...existing code...
       throw error;
     }
   }
-
   /**
    * Get message by ID
    */
@@ -80,14 +72,12 @@ class AIMessage {
         SELECT * FROM ai_messages
         WHERE id = $1
       `, [messageId]);
-
       return result.rows[0] || null;
     } catch (error) {
-      console.error('Error finding message:', error);
+      // ...existing code...
       throw error;
     }
   }
-
   /**
    * Get recent messages for a conversation (for context window)
    */
@@ -99,15 +89,13 @@ class AIMessage {
         ORDER BY created_at DESC
         LIMIT $2
       `, [conversationId, limit]);
-
       // Return in chronological order
       return result.rows.reverse();
     } catch (error) {
-      console.error('Error getting recent messages:', error);
+      // ...existing code...
       throw error;
     }
   }
-
   /**
    * Get total token usage for a conversation
    */
@@ -118,14 +106,12 @@ class AIMessage {
         FROM ai_messages
         WHERE conversation_id = $1
       `, [conversationId]);
-
       return parseInt(result.rows[0].total_tokens) || 0;
     } catch (error) {
-      console.error('Error getting total tokens:', error);
+      // ...existing code...
       throw error;
     }
   }
-
   /**
    * Get message count for a conversation
    */
@@ -136,14 +122,12 @@ class AIMessage {
         FROM ai_messages
         WHERE conversation_id = $1
       `, [conversationId]);
-
       return parseInt(result.rows[0].message_count) || 0;
     } catch (error) {
-      console.error('Error getting message count:', error);
+      // ...existing code...
       throw error;
     }
   }
-
   /**
    * Delete all messages for a conversation
    */
@@ -154,14 +138,12 @@ class AIMessage {
         WHERE conversation_id = $1
         RETURNING id
       `, [conversationId]);
-
       return result.rowCount;
     } catch (error) {
-      console.error('Error deleting messages:', error);
+      // ...existing code...
       throw error;
     }
   }
-
   /**
    * Get messages grouped by role
    */
@@ -177,13 +159,11 @@ class AIMessage {
         WHERE conversation_id = $1
         GROUP BY role
       `, [conversationId]);
-
       return result.rows;
     } catch (error) {
-      console.error('Error getting message stats:', error);
+      // ...existing code...
       throw error;
     }
   }
 }
-
-module.exports = AIMessage;
+module.exports = AIMessage;

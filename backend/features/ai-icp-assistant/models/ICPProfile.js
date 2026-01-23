@@ -3,9 +3,7 @@
  * 
  * Manages saved ICP (Ideal Customer Profile) configurations
  */
-
 const { query } = require('../utils/database');
-
 class ICPProfile {
   /**
    * Create a new ICP profile
@@ -40,14 +38,12 @@ class ICPProfile {
         searchParams ? JSON.stringify(searchParams) : null,
         sourceConversationId
       ]);
-
       return result.rows[0];
     } catch (error) {
-      console.error('Error creating ICP profile:', error);
+      // ...existing code...
       throw error;
     }
   }
-
   /**
    * Get profile by ID
    */
@@ -57,45 +53,38 @@ class ICPProfile {
         SELECT * FROM ai_icp_profiles
         WHERE id = $1 AND is_active = true
       `, [profileId]);
-
       return result.rows[0] || null;
     } catch (error) {
-      console.error('Error finding ICP profile:', error);
+      // ...existing code...
       throw error;
     }
   }
-
   /**
    * Get all profiles for a user
    */
   static async findByUser(userId, organizationId, options = {}) {
     try {
       const { includeInactive = false, limit = 50, offset = 0 } = options;
-      
       let sql = `
         SELECT * FROM ai_icp_profiles
         WHERE user_id = $1 AND organization_id = $2
       `;
       const params = [userId, organizationId];
-
       if (!includeInactive) {
         sql += ` AND is_active = true`;
       }
-
       sql += `
         ORDER BY usage_count DESC, updated_at DESC
         LIMIT $${params.length + 1} OFFSET $${params.length + 2}
       `;
       params.push(limit, offset);
-
       const result = await query(sql, params);
       return result.rows;
     } catch (error) {
-      console.error('Error finding user ICP profiles:', error);
+      // ...existing code...
       throw error;
     }
   }
-
   /**
    * Update profile
    */
@@ -105,7 +94,6 @@ class ICPProfile {
       const setClauses = [];
       const params = [profileId];
       let paramIndex = 2;
-
       Object.keys(updates).forEach(field => {
         if (allowedFields.includes(field)) {
           const value = ['icp_data', 'search_params'].includes(field) 
@@ -116,28 +104,23 @@ class ICPProfile {
           paramIndex++;
         }
       });
-
       if (setClauses.length === 0) {
         throw new Error('No valid fields to update');
       }
-
       setClauses.push('updated_at = CURRENT_TIMESTAMP');
-
       const sql = `
         UPDATE ai_icp_profiles
         SET ${setClauses.join(', ')}
         WHERE id = $1
         RETURNING *
       `;
-
       const result = await query(sql, params);
       return result.rows[0];
     } catch (error) {
-      console.error('Error updating ICP profile:', error);
+      // ...existing code...
       throw error;
     }
   }
-
   /**
    * Increment usage count
    */
@@ -146,14 +129,12 @@ class ICPProfile {
       await query(`
         SELECT increment_profile_usage($1)
       `, [profileId]);
-
       return this.findById(profileId);
     } catch (error) {
-      console.error('Error incrementing profile usage:', error);
+      // ...existing code...
       throw error;
     }
   }
-
   /**
    * Soft delete (deactivate) profile
    */
@@ -167,14 +148,12 @@ class ICPProfile {
         WHERE id = $1
         RETURNING *
       `, [profileId]);
-
       return result.rows[0];
     } catch (error) {
-      console.error('Error deactivating ICP profile:', error);
+      // ...existing code...
       throw error;
     }
   }
-
   /**
    * Reactivate profile
    */
@@ -188,14 +167,12 @@ class ICPProfile {
         WHERE id = $1
         RETURNING *
       `, [profileId]);
-
       return result.rows[0];
     } catch (error) {
-      console.error('Error activating ICP profile:', error);
+      // ...existing code...
       throw error;
     }
   }
-
   /**
    * Get most used profiles for an organization
    */
@@ -207,14 +184,12 @@ class ICPProfile {
         ORDER BY usage_count DESC, last_used_at DESC
         LIMIT $2
       `, [organizationId, limit]);
-
       return result.rows;
     } catch (error) {
-      console.error('Error getting most used profiles:', error);
+      // ...existing code...
       throw error;
     }
   }
-
   /**
    * Search profiles by name
    */
@@ -229,14 +204,12 @@ class ICPProfile {
         ORDER BY usage_count DESC
         LIMIT 20
       `, [userId, organizationId, `%${searchTerm}%`]);
-
       return result.rows;
     } catch (error) {
-      console.error('Error searching ICP profiles:', error);
+      // ...existing code...
       throw error;
     }
   }
-
   /**
    * Delete profile permanently
    */
@@ -247,13 +220,11 @@ class ICPProfile {
         WHERE id = $1
         RETURNING id
       `, [profileId]);
-
       return result.rowCount > 0;
     } catch (error) {
-      console.error('Error deleting ICP profile:', error);
+      // ...existing code...
       throw error;
     }
   }
 }
-
-module.exports = ICPProfile;
+module.exports = ICPProfile;

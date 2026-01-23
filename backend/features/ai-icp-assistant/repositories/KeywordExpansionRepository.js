@@ -2,10 +2,8 @@
  * Keyword Expansion Repository
  * LAD Architecture: Data Access Layer for AI Keyword Expansions
  */
-
 const { query } = require('../utils/database');
 const logger = require('../utils/logger');
-
 class KeywordExpansionRepository {
   /**
    * Create or update keyword expansion cache with tenant isolation
@@ -36,7 +34,6 @@ class KeywordExpansionRepository {
         last_used_at = CURRENT_TIMESTAMP
       RETURNING *
     `;
-
     try {
       const result = await query(sql, [
         originalKeyword.toLowerCase().trim(),
@@ -45,7 +42,6 @@ class KeywordExpansionRepository {
         model,
         tenantId
       ]);
-
       return result.rows[0];
     } catch (error) {
       logger.error('Repository error upserting keyword expansion', { 
@@ -56,7 +52,6 @@ class KeywordExpansionRepository {
       throw error;
     }
   }
-
   /**
    * Find cached expansion with tenant preference
    */
@@ -71,20 +66,17 @@ class KeywordExpansionRepository {
       ORDER BY tenant_id DESC NULLS LAST
       LIMIT 1
     `;
-
     try {
       const result = await query(sql, [
         originalKeyword.toLowerCase().trim(), 
         context, 
         tenantId
       ]);
-
       if (result.rows[0]) {
         // Update usage stats
         await this._incrementUsage(result.rows[0].id);
         return result.rows[0];
       }
-
       return null;
     } catch (error) {
       logger.error('Repository error finding cached keyword expansion', { 
@@ -95,7 +87,6 @@ class KeywordExpansionRepository {
       throw error;
     }
   }
-
   /**
    * Get all expansions for a tenant
    */
@@ -105,19 +96,16 @@ class KeywordExpansionRepository {
       WHERE tenant_id = $1 AND is_deleted = false
     `;
     const params = [tenantId];
-
     if (options.context) {
       sql += ` AND context = $${params.length + 1}`;
       params.push(options.context);
     }
-
     if (options.limit) {
       sql += ` ORDER BY usage_count DESC, last_used_at DESC LIMIT $${params.length + 1}`;
       params.push(options.limit);
     } else {
       sql += ` ORDER BY usage_count DESC, last_used_at DESC`;
     }
-
     try {
       const result = await query(sql, params);
       return result.rows;
@@ -129,7 +117,6 @@ class KeywordExpansionRepository {
       throw error;
     }
   }
-
   /**
    * Search expansions with tenant scoping
    */
@@ -144,19 +131,15 @@ class KeywordExpansionRepository {
         )
     `;
     const params = [tenantId, `%${searchTerm}%`];
-
     if (options.context) {
       sql += ` AND context = $${params.length + 1}`;
       params.push(options.context);
     }
-
     sql += ` ORDER BY tenant_id DESC NULLS LAST, usage_count DESC`;
-
     if (options.limit) {
       sql += ` LIMIT $${params.length + 1}`;
       params.push(options.limit);
     }
-
     try {
       const result = await query(sql, params);
       return result.rows;
@@ -169,7 +152,6 @@ class KeywordExpansionRepository {
       throw error;
     }
   }
-
   /**
    * Get popular keywords for tenant
    */
@@ -187,24 +169,19 @@ class KeywordExpansionRepository {
         AND usage_count > 1
     `;
     const params = [tenantId];
-
     if (options.context) {
       sql += ` AND context = $${params.length + 1}`;
       params.push(options.context);
     }
-
     if (options.minUsage) {
       sql += ` AND usage_count >= $${params.length + 1}`;
       params.push(options.minUsage);
     }
-
     sql += ` ORDER BY usage_count DESC, last_used_at DESC`;
-
     if (options.limit) {
       sql += ` LIMIT $${params.length + 1}`;
       params.push(options.limit);
     }
-
     try {
       const result = await query(sql, params);
       return result.rows;
@@ -216,7 +193,6 @@ class KeywordExpansionRepository {
       throw error;
     }
   }
-
   /**
    * Clear cache for tenant
    */
@@ -226,7 +202,6 @@ class KeywordExpansionRepository {
       SET is_deleted = true, deleted_at = CURRENT_TIMESTAMP
       WHERE tenant_id = $1 AND is_deleted = false
     `;
-
     try {
       const result = await query(sql, [tenantId]);
       return result.rowCount;
@@ -238,7 +213,6 @@ class KeywordExpansionRepository {
       throw error;
     }
   }
-
   /**
    * Soft delete expansion
    */
@@ -249,7 +223,6 @@ class KeywordExpansionRepository {
       WHERE id = $1 AND (tenant_id = $2 OR tenant_id IS NULL) AND is_deleted = false
       RETURNING id
     `;
-
     try {
       const result = await query(sql, [expansionId, tenantId]);
       return result.rows.length > 0;
@@ -262,7 +235,6 @@ class KeywordExpansionRepository {
       throw error;
     }
   }
-
   /**
    * Get usage statistics for tenant
    */
@@ -277,7 +249,6 @@ class KeywordExpansionRepository {
       FROM ai_keyword_expansions
       WHERE tenant_id = $1 AND is_deleted = false
     `;
-
     try {
       const result = await query(sql, [tenantId]);
       return result.rows[0];
@@ -289,7 +260,6 @@ class KeywordExpansionRepository {
       throw error;
     }
   }
-
   /**
    * Private method to increment usage counter
    */
@@ -301,7 +271,6 @@ class KeywordExpansionRepository {
         last_used_at = CURRENT_TIMESTAMP
       WHERE id = $1
     `;
-
     try {
       await query(sql, [expansionId]);
     } catch (error) {
@@ -313,5 +282,4 @@ class KeywordExpansionRepository {
     }
   }
 }
-
 module.exports = KeywordExpansionRepository;

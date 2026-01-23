@@ -76,7 +76,7 @@ static async findById(conversationId, tenantId) {
 ```javascript
 // WRONG - Direct console usage
 console.error('Chat error:', error);
-console.log('✅ Using cached keyword expansion');
+// ...existing code...
 console.warn('⚠️ Gemini response generation error:', error.message);
 
 // CORRECT - Use centralized logger

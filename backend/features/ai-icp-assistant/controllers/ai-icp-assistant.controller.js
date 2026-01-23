@@ -4,12 +4,10 @@
  * Handles HTTP request/response only.
  * No business logic - delegates to service layer.
  */
-
 const aiICPAssistantService = require('../services/ai-icp-assistant.service');
 const { v4: uuidv4 } = require('uuid');
 const logger = require('../utils/logger');
 const stepsConfig = require('../config/steps.config');
-
 class AICICPAssistantController {
   /**
    * GET /api/ai-icp-assistant/onboarding/icp-questions
@@ -20,13 +18,11 @@ class AICICPAssistantController {
       const { category } = req.query;
       const question = aiICPAssistantService.getFirstQuestion(category);
       const totalSteps = aiICPAssistantService.getTotalSteps();
-      
       // attach a stable message id so frontends can deduplicate repeated messages
       const messageId = uuidv4();
       const questionsWithId = [
         Object.assign({}, question, { messageId, generatedAt: new Date().toISOString() }),
       ];
-
       return res.json({
         success: true,
         questions: questionsWithId,
@@ -41,7 +37,6 @@ class AICICPAssistantController {
       });
     }
   }
-
   /**
    * GET /api/ai-icp-assistant/onboarding/icp-questions/:stepIndex
    * Get specific question by step index
@@ -50,9 +45,7 @@ class AICICPAssistantController {
     try {
       const { stepIndex } = req.params;
       const { category, context } = req.query;
-      
       const stepNum = req.validatedStepIndex || parseInt(stepIndex, 10);
-      
       let parsedContext = {};
       if (context) {
         try {
@@ -61,15 +54,12 @@ class AICICPAssistantController {
           logger.warn('[AICICPAssistantController] Failed to parse context:', e);
         }
       }
-      
       const question = aiICPAssistantService.getQuestionByStep(stepNum, {
         category,
         ...parsedContext,
       });
-
       const messageId = uuidv4();
       const questionWithId = Object.assign({}, question, { messageId, generatedAt: new Date().toISOString() });
-
       return res.json({
         success: true,
         question: questionWithId,
@@ -83,7 +73,6 @@ class AICICPAssistantController {
       });
     }
   }
-
   /**
    * POST /api/ai-icp-assistant/onboarding/icp-answer
    * Process user answer and get next step
@@ -98,15 +87,12 @@ class AICICPAssistantController {
         currentIntentKey,
         collectedAnswers = {},
       } = req.body;
-      
       // CRITICAL: Warn if collectedAnswers is empty at platform actions step or later
       if (currentStepIndex >= stepsConfig.PLATFORM_ACTIONS && Object.keys(collectedAnswers).length === 0) {
         logger.warn('[AICICPAssistantController] CRITICAL: collectedAnswers is EMPTY at Step', currentStepIndex);
         logger.warn('[AICICPAssistantController] Frontend MUST send back all previous answers in collectedAnswers');
       }
-      
       logger.debug('[AICICPAssistantController] processAnswer - Step:', currentStepIndex, 'intentKey:', currentIntentKey, 'collected keys:', Object.keys(collectedAnswers));
-      
       // Get current question to pass to service
       // For Step 5, we need special handling for platform actions
       let currentQuestion;
@@ -123,14 +109,11 @@ class AICICPAssistantController {
           intentKey: 'unknown',
         };
       }
-      
       // CRITICAL FIX: Use currentIntentKey from request if provided (frontend knows which question was asked)
       // Otherwise fall back to the generated question's intentKey
       // This ensures we process the answer for the correct platform
       const intentKeyToUse = currentIntentKey || currentQuestion.intentKey;
-      
       logger.debug(`[AICICPAssistantController] Using intentKey: ${intentKeyToUse} (from request: ${currentIntentKey}, from question: ${currentQuestion.intentKey})`);
-      
       const result = await aiICPAssistantService.processAnswer({
         userAnswer,
         currentStepIndex,
@@ -138,16 +121,13 @@ class AICICPAssistantController {
         currentQuestion: currentQuestion.question,
         collectedAnswers,
       });
-
       // Attach message id to nextQuestion so frontends can deduplicate
       const nextQuestion = result.nextQuestion
         ? Object.assign({}, result.nextQuestion, { messageId: uuidv4(), generatedAt: new Date().toISOString() })
         : null;
-
       // CRITICAL FIX: Always return updatedCollectedAnswers (use input if service doesn't provide it)
       // This ensures frontend always has the correct state, especially for completed_platform_actions
       const updatedCollectedAnswers = result.updatedCollectedAnswers || collectedAnswers;
-      
       return res.json({
         success: true,
         nextStepIndex: result.nextStepIndex,
@@ -167,6 +147,4 @@ class AICICPAssistantController {
     }
   }
 }
-
-module.exports = AICICPAssistantController;
-
+module.exports = AICICPAssistantController;

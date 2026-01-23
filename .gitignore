@@ -49,6 +49,12 @@ update-imports.js
 fix-*.js
 migrate-*.js
 
+# Test and debug files (but allow root test-server.js for CI)
+manual-sync.sh
+setup-github-repo.sh
+server.log
+sync-output.log
+
 # Test files (for local testing only)
 test-ui.html
 test-api.js

@@ -4,11 +4,9 @@
  * Analyzes user answers to determine intent and next steps.
  * Uses Gemini for complex analysis, but business rules are here.
  */
-
 const geminiClientService = require('./gemini-client.service');
 const onboardingConfig = require('../config/onboarding.config');
 const logger = require('../utils/logger');
-
 class IntentAnalyzerService {
   /**
    * Analyze user answer and determine next step
@@ -28,10 +26,8 @@ class IntentAnalyzerService {
         currentQuestion,
         collectedAnswers,
       });
-      
       const response = await geminiClientService.generateContent(prompt);
       const analysis = this.parseAnalysisResponse(response);
-      
       return {
         isValid: analysis.isValid !== false,
         clarificationNeeded: analysis.clarificationNeeded === true,
@@ -42,7 +38,6 @@ class IntentAnalyzerService {
       };
     } catch (error) {
       logger.error('[IntentAnalyzerService] Error analyzing answer:', error);
-      
       // Fallback: accept answer and proceed
       return {
         isValid: true,
@@ -54,7 +49,6 @@ class IntentAnalyzerService {
       };
     }
   }
-
   /**
    * Build analysis prompt for Gemini
    */
@@ -67,28 +61,22 @@ class IntentAnalyzerService {
   }) {
     const { steps } = onboardingConfig;
     const isLastStep = currentStepIndex >= steps.total;
-    
     return `You are MAYA AI — a guided campaign & workflow builder.
-
 CURRENT CONTEXT:
 - Current Step: ${currentStepIndex} of ${steps.total}
 - Current Question: "${currentQuestion}"
 - User's Answer: "${userAnswer}"
 - Current Intent: ${currentIntentKey}
-
 YOUR TASK:
 1. Analyze if the user's answer is complete and relevant to the current question
 2. If the answer is incomplete/irrelevant → Set clarificationNeeded: true and provide a helpful message
 3. If the answer is complete → Proceed to next step sequentially (Step ${currentStepIndex + 1})
-
 CRITICAL RULES:
 - You MUST ask ALL ${steps.total} steps in sequence
 - NEVER skip steps or mark as completed before Step ${steps.total}
 - ONLY mark as completed when Step ${steps.total} is answered
 - ALWAYS proceed to the next sequential step (${currentStepIndex + 1}) unless clarification is needed
-
 ${isLastStep ? 'This is the LAST step. If the answer is complete, mark as completed.' : `Next step will be Step ${currentStepIndex + 1}`}
-
 RESPOND IN VALID JSON FORMAT:
 {
   "isValid": boolean,
@@ -99,7 +87,6 @@ RESPOND IN VALID JSON FORMAT:
   "extractedData": {}
 }`;
   }
-
   /**
    * Parse Gemini response to extract analysis
    */
@@ -110,7 +97,6 @@ RESPOND IN VALID JSON FORMAT:
       if (jsonMatch) {
         return JSON.parse(jsonMatch[0]);
       }
-      
       // Fallback: return default
       return {
         isValid: true,
@@ -129,6 +115,4 @@ RESPOND IN VALID JSON FORMAT:
     }
   }
 }
-
-module.exports = new IntentAnalyzerService();
-
+module.exports = new IntentAnalyzerService();

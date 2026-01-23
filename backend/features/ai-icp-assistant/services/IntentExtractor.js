@@ -2,10 +2,10 @@
  * Intent Extractor
  * Extracts outreach intent from user messages
  */
+const logger = require('../utils/logger');
 
 let genAI = null;
 let GoogleGenerativeAI = null;
-
 try {
   GoogleGenerativeAI = require('@google/generative-ai').GoogleGenerativeAI;
   const geminiApiKey = process.env.GEMINI_API_KEY;
@@ -15,7 +15,6 @@ try {
 } catch (error) {
   genAI = null;
 }
-
 class IntentExtractor {
   /**
    * Extract outreach intent from message
@@ -24,7 +23,6 @@ class IntentExtractor {
     if (!genAI) {
       return this.extractIntentFallback(message, currentContext);
     }
-
     try {
       const ContextManager = require('./ContextManager');
       const contextSummary = ContextManager.formatContextForAI(currentContext);
@@ -32,17 +30,12 @@ class IntentExtractor {
         .slice(-5)
         .map(m => `${m.role}: ${m.content}`)
         .join('\n');
-
       const prompt = `Analyze this user message and extract outreach intent information.
-
 Current context:
 ${contextSummary}
-
 Recent conversation:
 ${historySummary || 'None'}
-
 User message: "${message}"
-
 Return ONLY a JSON object:
 {
   "outreachType": "inbound" | "outbound" | null,
@@ -58,63 +51,51 @@ Return ONLY a JSON object:
   "dealType": "smb" | "mid-market" | "enterprise" | null,
   "confidenceScore": 0-100
 }
-
 Rules:
 - Only extract NEW information (don't repeat what's already in context)
 - Extract arrays only if explicitly mentioned
 - confidenceScore: How confident you are (0-100)
-
 JSON response:`;
-
       const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
       const result = await model.generateContent(prompt);
       const response = await result.response;
       const responseText = response.text().trim();
-      
       const jsonMatch = responseText.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const intent = JSON.parse(jsonMatch[0]);
-        console.log('📋 Extracted intent:', JSON.stringify(intent, null, 2));
         return intent;
       }
     } catch (error) {
-      console.warn('Intent extraction error:', error.message);
+      logger.warn('Intent extraction error:', error.message);
     }
-
     return this.extractIntentFallback(message, currentContext);
   }
-
   /**
    * Fallback intent extraction (rule-based)
    */
   static extractIntentFallback(message, currentContext) {
     const lower = message.toLowerCase();
     const intent = {};
-
     if (lower.match(/\b(inbound|incoming|respond|reply|follow.?up|leads? that|requests?)\b/)) {
       intent.outreachType = 'inbound';
     } else if (lower.match(/\b(outbound|proactive|reach out|contact|find new|search for|look for)\b/)) {
       intent.outreachType = 'outbound';
     }
-
     if (lower.match(/\b(already have|have profiles?|have linkedin|have names?|specific people|these companies|these people|list of)\b/)) {
       intent.targetKnowledge = 'known';
     } else if (lower.match(/\b(find|search|discover|new prospects?|need to find|looking for)\b/)) {
       intent.targetKnowledge = 'discovery';
     }
-
     const linkedinMatches = message.match(/linkedin\.com\/in\/[\w-]+/gi);
     if (linkedinMatches) {
       intent.linkedinUrls = linkedinMatches;
       intent.targetKnowledge = 'known';
     }
-
     const rolePatterns = [
       /\b(ceo|cto|cfo|coo|cmo|chief executive|chief technology|chief financial|chief operating|chief marketing)\b/gi,
       /\b(vp|vice president|director|manager|head of|founder|owner|president)\b/gi,
       /\b(marketing director|sales director|operations director|hr director)\b/gi
     ];
-    
     const extractedRoles = [];
     rolePatterns.forEach(pattern => {
       const matches = message.match(pattern);
@@ -122,18 +103,15 @@ JSON response:`;
         extractedRoles.push(...matches.map(r => r.trim()));
       }
     });
-    
     if (extractedRoles.length > 0) {
       intent.roles = [...new Set(extractedRoles.map(r => r.charAt(0).toUpperCase() + r.slice(1).toLowerCase()))];
     }
-
     const locationPatterns = [
       /\b(dubai|abu dhabi|sharjah|uae|united arab emirates)\b/gi,
       /\b(new york|san francisco|los angeles|chicago|boston|seattle|austin|miami)\b/gi,
       /\b(london|paris|berlin|amsterdam|singapore|tokyo|sydney|toronto)\b/gi,
       /\b(usa|united states|uk|united kingdom|canada|australia|india)\b/gi
     ];
-    
     const extractedLocations = [];
     locationPatterns.forEach(pattern => {
       const matches = message.match(pattern);
@@ -141,28 +119,23 @@ JSON response:`;
         extractedLocations.push(...matches.map(l => l.trim()));
       }
     });
-    
     if (extractedLocations.length > 0) {
       intent.locations = [...new Set(extractedLocations.map(l => l.charAt(0).toUpperCase() + l.slice(1).toLowerCase()))];
     }
-
     const industryKeywords = [
       'technology', 'saas', 'software', 'fintech', 'healthcare', 'real estate',
       'construction', 'retail', 'manufacturing', 'education', 'consulting',
       'marketing', 'advertising', 'oil and gas', 'energy', 'logistics'
     ];
-    
     const extractedIndustries = [];
     industryKeywords.forEach(industry => {
       if (lower.includes(industry)) {
         extractedIndustries.push(industry.charAt(0).toUpperCase() + industry.slice(1));
       }
     });
-    
     if (extractedIndustries.length > 0) {
       intent.industries = extractedIndustries;
     }
-
     let confidence = 30;
     if (intent.outreachType) confidence += 20;
     if (intent.targetKnowledge) confidence += 20;
@@ -174,10 +147,8 @@ JSON response:`;
     if (intent.companySize) confidence += 5;
     if (intent.dealType) confidence += 5;
     intent.confidenceScore = Math.min(confidence, 80);
-
     return intent;
   }
-
   /**
    * Extract outreach type from message
    */
@@ -191,7 +162,6 @@ JSON response:`;
     }
     return null;
   }
-
   /**
    * Extract target knowledge from message
    */
@@ -231,7 +201,6 @@ JSON response:`;
     }
     return null;
   }
-
   /**
    * Extract inbound source from message
    */
@@ -244,7 +213,6 @@ JSON response:`;
     if (lower.match(/\b(webhook|api|integration)\b/)) return 'webhook';
     return null;
   }
-
   /**
    * Extract yes/no from message
    */
@@ -259,6 +227,4 @@ JSON response:`;
     return null;
   }
 }
-
 module.exports = IntentExtractor;
-

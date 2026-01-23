@@ -2,11 +2,9 @@
  * Stage Handlers
  * Handles stage-specific conversation flows
  */
-
 const IntentExtractor = require('./IntentExtractor');
 const ContextManager = require('./ContextManager');
 const GeminiResponseGenerator = require('./GeminiResponseGenerator');
-
 class StageHandlers {
   /**
    * Handle inbound flow questions
@@ -52,7 +50,6 @@ class StageHandlers {
         };
       }
     }
-
     if (context.inboundDataReady === null) {
       const hasData = IntentExtractor.extractYesNo(message);
       if (hasData !== null) {
@@ -108,7 +105,6 @@ class StageHandlers {
         };
       }
     }
-
     if (!context.inboundDataReady && !context.captureRules) {
       context.captureRules = message;
       context.stage = 'confirmation';
@@ -124,7 +120,6 @@ class StageHandlers {
         tokensUsed: null
       };
     }
-
     context.stage = 'confirmation';
     const confirmationMsg = this.generateConfirmationMessage(context);
     return {
@@ -138,7 +133,6 @@ class StageHandlers {
       tokensUsed: null
     };
   }
-
   /**
    * Handle outbound known target path
    */
@@ -160,10 +154,8 @@ class StageHandlers {
         tokensUsed: null
       };
     }
-
     const intentData = await IntentExtractor.extractOutreachIntent(message, conversationHistory, context);
     context = ContextManager.updateContext(context, intentData, message);
-
     const missing = [];
     if (context.companies.length === 0) {
       missing.push('companies');
@@ -172,7 +164,6 @@ class StageHandlers {
     } else if (context.locations.length === 0) {
       missing.push('locations');
     }
-
     if (missing.length > 0) {
       const response = await GeminiResponseGenerator.generateResponse({
         stage: 'outbound_known_target',
@@ -191,7 +182,6 @@ class StageHandlers {
         tokensUsed: null
       };
     }
-
     if (context.companies.length > 0 && context.roles.length > 0 && context.locations.length > 0) {
       context.inferredStrategy = 'company_search';
       context.stage = 'confirmation';
@@ -207,7 +197,6 @@ class StageHandlers {
         tokensUsed: null
       };
     }
-
     const response = await GeminiResponseGenerator.generateResponse({
       stage: 'outbound_known_target',
       context,
@@ -225,18 +214,15 @@ class StageHandlers {
       tokensUsed: null
     };
   }
-
   /**
    * Handle outbound ICP discovery flow
    */
   static async handleOutboundICPDiscovery(message, context, conversationHistory) {
     const intentData = await IntentExtractor.extractOutreachIntent(message, conversationHistory, context);
     context = ContextManager.updateContext(context, intentData, message);
-
     if (!context.problemStatement && message.trim().length > 10) {
       context.problemStatement = message;
     }
-
     // Check if all required fields are collected
     const hasAllData = context.problemStatement && 
                        context.roles.length > 0 && 
@@ -244,7 +230,6 @@ class StageHandlers {
                        context.companySize && 
                        context.locations.length > 0 && 
                        context.dealType;
-
     if (hasAllData) {
       context.inferredStrategy = 'people_search';
       context.stage = 'confirmation';
@@ -260,7 +245,6 @@ class StageHandlers {
         tokensUsed: null
       };
     }
-
     // Use Gemini to generate the next question based on what's missing
     const response = await GeminiResponseGenerator.generateResponse({
       stage: 'outbound_icp_discovery',
@@ -268,7 +252,6 @@ class StageHandlers {
       message,
       conversationHistory
     });
-
     return {
       success: true,
       response,
@@ -280,7 +263,6 @@ class StageHandlers {
       tokensUsed: null
     };
   }
-
   /**
    * Get question for known target path
    */
@@ -296,13 +278,11 @@ class StageHandlers {
     }
     return "Any company size or industry preference?";
   }
-
   /**
    * Generate confirmation message
    */
   static generateConfirmationMessage(context) {
     const parts = [];
-
     if (context.outreachType === 'inbound') {
       parts.push(`You're setting up inbound outreach.`);
       if (context.inboundSource) {
@@ -321,10 +301,8 @@ class StageHandlers {
         parts.push(`You need to capture: ${context.captureRules}`);
       }
     }
-
     if (context.outreachType === 'outbound') {
       parts.push(`You're setting up outbound outreach.`);
-
       if (context.targetKnowledge === 'known') {
         if (context.linkedinUrls.length > 0) {
           parts.push(`You have ${context.linkedinUrls.length} LinkedIn profile(s) to reach out to.`);
@@ -355,18 +333,11 @@ class StageHandlers {
         }
       }
     }
-
     const summary = parts.length > 0 ? parts.join('\n') : "I understand your outreach plan.";
-
     const text = `Perfect! Here's what I understood:
-
 ${summary}
-
 Does this look correct?`;
-
     return { text, context };
   }
 }
-
-module.exports = StageHandlers;
-
+module.exports = StageHandlers;

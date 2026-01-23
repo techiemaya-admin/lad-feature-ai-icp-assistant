@@ -53,4 +53,4 @@ class ResponseBuilder {
     return this.success(response, context, 'awaiting_confirmation', false);
   }
 }
-module.exports = ResponseBuilder;
+module.exports = ResponseBuilder;

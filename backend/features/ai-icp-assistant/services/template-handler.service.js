@@ -4,11 +4,9 @@
  * Handles template collection and validation logic.
  * Extracted from ICPOnboardingController to follow single responsibility.
  */
-
 const platformHandlerService = require('./platform-handler.service');
 const onboardingConfig = require('../config/onboarding.config');
 const stepsConfig = require('../config/steps.config');
-
 class TemplateHandlerService {
   /**
    * Check if a platform needs a template based on actions
@@ -16,7 +14,6 @@ class TemplateHandlerService {
   needsTemplate(platformKey, actions) {
     return platformHandlerService.requiresTemplate(platformKey, actions);
   }
-
   /**
    * Generate template question for a platform
    */
@@ -24,7 +21,6 @@ class TemplateHandlerService {
     const displayName = platformHandlerService.getPlatformDisplayName(platformKey);
     const platformLower = platformKey.toLowerCase();
     const actionsLower = String(actions).toLowerCase();
-    
     // User-friendly explanation based on platform and actions
     if (platformLower === 'voice') {
       let explanation = `You selected auto call actions on Voice Calls.\n\n`;
@@ -36,14 +32,12 @@ class TemplateHandlerService {
       explanation += `\n\nPlease provide your call script below (required):`;
       return explanation;
     }
-    
     if (platformLower === 'linkedin') {
       let explanation = `You selected "Send message (after accepted)" on LinkedIn.\n\n`;
       explanation += `Please write the message that will be sent after the connection is accepted.`;
       explanation += `\n\nPlease provide your message template below (required):`;
       return explanation;
     }
-    
     if (platformLower === 'whatsapp') {
       let explanation = `You selected WhatsApp message actions.\n\n`;
       if (actionsLower.includes('broadcast')) {
@@ -56,7 +50,6 @@ class TemplateHandlerService {
       explanation += `\n\nPlease provide your message template below (required):`;
       return explanation;
     }
-    
     if (platformLower === 'email') {
       let explanation = `You selected email actions.\n\n`;
       if (actionsLower.includes('follow-up')) {
@@ -67,17 +60,14 @@ class TemplateHandlerService {
       explanation += `\n\nPlease provide your email template below (required):`;
       return explanation;
     }
-    
     return `Great! You've selected ${displayName} message actions.\n\nPlease provide the message template you'd like to use:\n\nPlease provide your message template below (required):`;
   }
-
   /**
    * Create template question object
    */
   createTemplateQuestion(platformKey, actions = '') {
     const displayName = platformHandlerService.getPlatformDisplayName(platformKey);
     const normalizedKey = platformKey.toLowerCase();
-    
     return {
       question: this.generateTemplateQuestion(platformKey, actions),
       helperText: null,
@@ -89,7 +79,6 @@ class TemplateHandlerService {
       currentPlatform: normalizedKey,
     };
   }
-
   /**
    * Process template answer
    */
@@ -102,6 +91,4 @@ class TemplateHandlerService {
     return trimmed;
   }
 }
-
-module.exports = new TemplateHandlerService();
-
+module.exports = new TemplateHandlerService();

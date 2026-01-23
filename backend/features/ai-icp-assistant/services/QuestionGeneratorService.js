@@ -2,9 +2,7 @@
  * Question Generator Service
  * Handles question generation for ICP onboarding flow
  */
-
 const logger = require('../utils/logger');
-
 class QuestionGeneratorService {
   constructor() {
     this.campaignPrompts = [
@@ -108,7 +106,6 @@ class QuestionGeneratorService {
       }
     ];
   }
-
   /**
    * Generate question for given step
    */
@@ -118,21 +115,16 @@ class QuestionGeneratorService {
       if (!promptConfig) {
         throw new Error(`No prompt found for step ${stepIndex}`);
       }
-
       if (stepIndex === 11) {
         return this.generateConfirmationStep(context);
       }
-
       if (stepIndex === 5 && promptConfig.isDynamic) {
         return this.generatePlatformFeaturesStep(context);
       }
-
       if (stepIndex === 10 && promptConfig.subSteps) {
         return this.generateCampaignSettingsStep(context, promptConfig);
       }
-
       const cleanQuestionText = this.cleanQuestionText(promptConfig.prompt);
-
       return {
         question: cleanQuestionText,
         helperText: null,
@@ -148,7 +140,6 @@ class QuestionGeneratorService {
       return this.getFallbackQuestion(stepIndex);
     }
   }
-
   /**
    * Clean question text from step prefixes
    */
@@ -158,18 +149,15 @@ class QuestionGeneratorService {
     cleaned = cleaned.replace(/^Step\s+\d+\s+of\s+7\s+/i, '');
     return cleaned;
   }
-
   /**
    * Generate campaign settings step with sub-steps
    */
   generateCampaignSettingsStep(context, promptConfig) {
     const subStepIndex = context.subStepIndex || 0;
     const subStep = promptConfig.subSteps[subStepIndex];
-    
     if (!subStep) {
       return this.getFallbackQuestion(10);
     }
-
     if (subStep.key === 'campaign_days') {
       return {
         question: `${subStep.question}\n\nOptions:\n• 7 days (1 week)\n• 14 days (2 weeks)\n• 30 days (1 month)\n• 60 days (2 months)\n• Custom (Enter your own number)`,
@@ -183,7 +171,6 @@ class QuestionGeneratorService {
         totalSubSteps: promptConfig.subSteps.length
       };
     }
-
     if (subStep.key === 'working_days') {
       return {
         question: `${subStep.question}\n\nOptions:\n• Monday-Friday (Weekdays only)\n• All days (7 days a week)\n• Custom (Select specific days)`,
@@ -197,7 +184,6 @@ class QuestionGeneratorService {
         totalSubSteps: promptConfig.subSteps.length
       };
     }
-
     if (subStep.key === 'leads_per_day') {
       return {
         question: `${subStep.question}\n\nOptions:\n• 10\n• 25\n• 50\n• Max`,
@@ -211,7 +197,6 @@ class QuestionGeneratorService {
         totalSubSteps: promptConfig.subSteps.length
       };
     }
-
     return {
       question: subStep.question,
       helperText: null,
@@ -223,40 +208,32 @@ class QuestionGeneratorService {
       totalSubSteps: promptConfig.subSteps.length
     };
   }
-
   /**
    * Generate platform features step dynamically
    */
   generatePlatformFeaturesStep(context) {
     const selectedPlatforms = context.selected_platforms || [];
     const completedPlatformActions = context.completed_platform_actions || [];
-    
     const normalizedPlatforms = this.normalizePlatforms(selectedPlatforms);
-
     if (normalizedPlatforms.length === 0) {
       return this.generateQuestion(4);
     }
-
     const platformConfigs = this.getPlatformConfigs();
     const { platformKey, config, platformIndex, totalPlatforms } = this.findNextPlatform(
       normalizedPlatforms,
       completedPlatformActions,
       platformConfigs
     );
-
     if (!config) {
       return this.generateQuestion(6);
     }
-
     const platformDisplayNames = {
       linkedin: 'LinkedIn',
       email: 'Email',
       whatsapp: 'WhatsApp',
       voice: 'Voice Calls'
     };
-
     const platformDisplayName = platformDisplayNames[platformKey] || platformKey;
-
     return {
       question: `Platform ${platformIndex} of ${totalPlatforms}: ${platformDisplayName}\n\n${config.question}\n\nOptions:\n${config.options.map(opt => `• ${opt}`).join('\n')}\n\nYou can choose multiple.`,
       helperText: null,
@@ -271,19 +248,16 @@ class QuestionGeneratorService {
       totalPlatforms
     };
   }
-
   /**
    * Normalize platform names
    */
   normalizePlatforms(platforms) {
     let platformList = [];
-    
     if (Array.isArray(platforms)) {
       platformList = platforms;
     } else if (typeof platforms === 'string') {
       platformList = platforms.split(',').map(s => s.trim()).filter(s => s.length > 0);
     }
-
     return platformList.map(p => {
       const pLower = p.toLowerCase().trim();
       if (pLower.includes('linkedin')) return 'linkedin';
@@ -293,7 +267,6 @@ class QuestionGeneratorService {
       return p;
     }).filter(p => p);
   }
-
   /**
    * Get platform configuration
    */
@@ -327,7 +300,6 @@ class QuestionGeneratorService {
       }
     };
   }
-
   /**
    * Find next platform that needs configuration
    */
@@ -335,7 +307,6 @@ class QuestionGeneratorService {
     for (let i = 0; i < normalizedPlatforms.length; i++) {
       const platform = normalizedPlatforms[i];
       const platformKey = platform.toLowerCase();
-      
       if (platformConfigs[platformKey] && !completedPlatformActions.includes(platformKey)) {
         return {
           platformKey,
@@ -345,7 +316,6 @@ class QuestionGeneratorService {
         };
       }
     }
-
     return {
       platformKey: null,
       config: null,
@@ -353,7 +323,6 @@ class QuestionGeneratorService {
       totalPlatforms: normalizedPlatforms.length
     };
   }
-
   /**
    * Generate confirmation step with summary
    */
@@ -368,7 +337,6 @@ class QuestionGeneratorService {
       }
       return [];
     };
-    
     const {
       icp_industries = [],
       icp_locations = [],
@@ -383,19 +351,15 @@ class QuestionGeneratorService {
       workflow_conditions = '',
       leads_per_day = '10'
     } = context;
-
     const industries = toArray(icp_industries);
     const locations = toArray(icp_locations);
     const roles = toArray(icp_roles);
     const platforms = toArray(selected_platforms);
     const features = toArray(platform_features);
     const wDays = Array.isArray(working_days) ? working_days : (working_days ? [working_days] : []);
-
     const delaysDisplay = this.getDisplayValue(workflow_delays, ['skip', 'no delay', 'none'], 'No delays');
     const conditionsDisplay = this.getDisplayValue(workflow_conditions, ['skip', 'no conditions', 'none'], 'No conditions');
-
     const summary = `Here's your campaign setup 👇
-
 • Campaign name: ${campaign_name || 'Not specified'}
 • Target customers: ${industries.length > 0 ? industries.join(', ') : 'Not specified'}
 • Location: ${locations.length > 0 ? locations.join(', ') : 'Not specified'}
@@ -408,21 +372,16 @@ class QuestionGeneratorService {
 • Campaign duration: ${campaign_days || 'Not specified'} days
 • Working days: ${wDays.length > 0 ? wDays.join(', ') : (working_days || 'Not specified')}
 • Leads per day: ${leads_per_day}
-
 Ready to launch? 🚀
-
 When you create and start this campaign:
 ✓ Apollo will automatically generate leads based on your criteria
 ✓ LinkedIn actions will begin executing immediately
 ✓ You'll be redirected to the campaigns page to monitor progress
-
 Would you like to create and start this campaign now?
-
 Options:
 • Yes, Create and Start Campaign
 • Edit Campaign
 • Go Back`;
-
     return {
       question: summary,
       helperText: null,
@@ -433,7 +392,6 @@ Options:
       options: ['Yes, Create and Start Campaign', 'Edit Campaign', 'Go Back']
     };
   }
-
   /**
    * Get display value with skip handling
    */
@@ -445,7 +403,6 @@ Options:
     }
     return value;
   }
-
   /**
    * Get fallback question
    */
@@ -463,5 +420,4 @@ Options:
     };
   }
 }
-
-module.exports = new QuestionGeneratorService();
+module.exports = new QuestionGeneratorService();

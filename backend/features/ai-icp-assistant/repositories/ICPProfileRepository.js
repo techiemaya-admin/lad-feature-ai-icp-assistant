@@ -2,10 +2,8 @@
  * ICP Profile Repository
  * LAD Architecture: Data Access Layer for ICP Profiles
  */
-
 const { query } = require('../utils/database');
 const logger = require('../utils/logger');
-
 class ICPProfileRepository {
   /**
    * Create a new ICP profile with tenant isolation
@@ -31,7 +29,6 @@ class ICPProfileRepository {
       ) VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
     `;
-
     try {
       const result = await query(sql, [
         userId,
@@ -42,7 +39,6 @@ class ICPProfileRepository {
         searchParams ? JSON.stringify(searchParams) : null,
         sourceConversationId
       ]);
-
       return result.rows[0];
     } catch (error) {
       logger.error('Repository error creating ICP profile', { 
@@ -54,7 +50,6 @@ class ICPProfileRepository {
       throw error;
     }
   }
-
   /**
    * Find profile by ID with tenant validation
    */
@@ -63,7 +58,6 @@ class ICPProfileRepository {
       SELECT * FROM ai_icp_profiles
       WHERE id = $1 AND tenant_id = $2 AND is_deleted = false
     `;
-
     try {
       const result = await query(sql, [profileId, tenantId]);
       return result.rows[0] || null;
@@ -76,7 +70,6 @@ class ICPProfileRepository {
       throw error;
     }
   }
-
   /**
    * Find profiles by user with tenant scoping
    */
@@ -86,19 +79,16 @@ class ICPProfileRepository {
       WHERE user_id = $1 AND tenant_id = $2 AND is_deleted = false
     `;
     const params = [userId, tenantId];
-
     if (options.isActive !== undefined) {
       sql += ` AND is_active = $${params.length + 1}`;
       params.push(options.isActive);
     }
-
     if (options.limit) {
       sql += ` ORDER BY last_used_at DESC NULLS LAST, created_at DESC LIMIT $${params.length + 1}`;
       params.push(options.limit);
     } else {
       sql += ` ORDER BY last_used_at DESC NULLS LAST, created_at DESC`;
     }
-
     try {
       const result = await query(sql, params);
       return result.rows;
@@ -111,7 +101,6 @@ class ICPProfileRepository {
       throw error;
     }
   }
-
   /**
    * Find profiles by tenant (admin view)
    */
@@ -127,24 +116,20 @@ class ICPProfileRepository {
       WHERE p.tenant_id = $1 AND p.is_deleted = false
     `;
     const params = [tenantId];
-
     if (options.isActive !== undefined) {
       sql += ` AND p.is_active = $${params.length + 1}`;
       params.push(options.isActive);
     }
-
     if (options.userId) {
       sql += ` AND p.user_id = $${params.length + 1}`;
       params.push(options.userId);
     }
-
     if (options.limit) {
       sql += ` ORDER BY p.usage_count DESC, p.last_used_at DESC NULLS LAST LIMIT $${params.length + 1}`;
       params.push(options.limit);
     } else {
       sql += ` ORDER BY p.usage_count DESC, p.last_used_at DESC NULLS LAST`;
     }
-
     try {
       const result = await query(sql, params);
       return result.rows;
@@ -156,7 +141,6 @@ class ICPProfileRepository {
       throw error;
     }
   }
-
   /**
    * Update profile with tenant validation
    */
@@ -169,18 +153,15 @@ class ICPProfileRepository {
       'is_active'
     ];
     const validUpdates = {};
-    
     // Filter only allowed fields
     Object.keys(updates).forEach(key => {
       if (allowedFields.includes(key)) {
         validUpdates[key] = updates[key];
       }
     });
-
     if (Object.keys(validUpdates).length === 0) {
       throw new Error('No valid fields provided for update');
     }
-
     // Handle JSON fields
     if (validUpdates.icp_data) {
       validUpdates.icp_data = JSON.stringify(validUpdates.icp_data);
@@ -188,20 +169,16 @@ class ICPProfileRepository {
     if (validUpdates.search_params) {
       validUpdates.search_params = JSON.stringify(validUpdates.search_params);
     }
-
     const setClause = Object.keys(validUpdates)
       .map((key, index) => `${key} = $${index + 3}`)
       .join(', ');
-
     const sql = `
       UPDATE ai_icp_profiles
       SET ${setClause}, updated_at = CURRENT_TIMESTAMP
       WHERE id = $1 AND tenant_id = $2 AND is_deleted = false
       RETURNING *
     `;
-
     const params = [profileId, tenantId, ...Object.values(validUpdates)];
-
     try {
       const result = await query(sql, params);
       return result.rows[0] || null;
@@ -214,7 +191,6 @@ class ICPProfileRepository {
       throw error;
     }
   }
-
   /**
    * Increment usage counter
    */
@@ -228,7 +204,6 @@ class ICPProfileRepository {
       WHERE id = $1 AND tenant_id = $2 AND is_deleted = false
       RETURNING usage_count, last_used_at
     `;
-
     try {
       const result = await query(sql, [profileId, tenantId]);
       return result.rows[0] || null;
@@ -241,7 +216,6 @@ class ICPProfileRepository {
       throw error;
     }
   }
-
   /**
    * Soft delete profile with tenant validation
    */
@@ -252,7 +226,6 @@ class ICPProfileRepository {
       WHERE id = $1 AND tenant_id = $2 AND is_deleted = false
       RETURNING id
     `;
-
     try {
       const result = await query(sql, [profileId, tenantId]);
       return result.rows.length > 0;
@@ -265,7 +238,6 @@ class ICPProfileRepository {
       throw error;
     }
   }
-
   /**
    * Search profiles by name or content within tenant
    */
@@ -281,24 +253,19 @@ class ICPProfileRepository {
         )
     `;
     const params = [tenantId, `%${searchTerm}%`];
-
     if (options.userId) {
       sql += ` AND user_id = $${params.length + 1}`;
       params.push(options.userId);
     }
-
     if (options.isActive !== undefined) {
       sql += ` AND is_active = $${params.length + 1}`;
       params.push(options.isActive);
     }
-
     sql += ` ORDER BY usage_count DESC, last_used_at DESC NULLS LAST`;
-
     if (options.limit) {
       sql += ` LIMIT $${params.length + 1}`;
       params.push(options.limit);
     }
-
     try {
       const result = await query(sql, params);
       return result.rows;
@@ -311,7 +278,6 @@ class ICPProfileRepository {
       throw error;
     }
   }
-
   /**
    * Get most popular profiles for tenant
    */
@@ -327,24 +293,19 @@ class ICPProfileRepository {
         AND p.usage_count > 0
     `;
     const params = [tenantId];
-
     if (options.minUsage) {
       sql += ` AND p.usage_count >= $${params.length + 1}`;
       params.push(options.minUsage);
     }
-
     if (options.isActive !== undefined) {
       sql += ` AND p.is_active = $${params.length + 1}`;
       params.push(options.isActive);
     }
-
     sql += ` ORDER BY p.usage_count DESC, p.last_used_at DESC`;
-
     if (options.limit) {
       sql += ` LIMIT $${params.length + 1}`;
       params.push(options.limit);
     }
-
     try {
       const result = await query(sql, params);
       return result.rows;
@@ -356,7 +317,6 @@ class ICPProfileRepository {
       throw error;
     }
   }
-
   /**
    * Get usage statistics for tenant
    */
@@ -372,7 +332,6 @@ class ICPProfileRepository {
       FROM ai_icp_profiles
       WHERE tenant_id = $1 AND is_deleted = false
     `;
-
     try {
       const result = await query(sql, [tenantId]);
       return result.rows[0];
@@ -384,7 +343,6 @@ class ICPProfileRepository {
       throw error;
     }
   }
-
   /**
    * Deactivate old unused profiles (cleanup job)
    */
@@ -401,7 +359,6 @@ class ICPProfileRepository {
         )
       RETURNING id, name
     `;
-
     try {
       const result = await query(sql, [tenantId]);
       return result.rows;
@@ -415,5 +372,4 @@ class ICPProfileRepository {
     }
   }
 }
-
 module.exports = ICPProfileRepository;

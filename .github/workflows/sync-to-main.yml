@@ -98,15 +98,7 @@ jobs:
       - name: Commit and push to LAD-Backend
         working-directory: lad-backend
         run: |
-          # Pull latest changes to avoid conflicts
-          echo "📥 Pulling latest changes..."
-          git pull origin develop --rebase || {
-            echo "⚠️ Rebase conflict detected"
-            git rebase --abort
-            exit 1
-          }
-          
-          # Stage changes
+          # Stage changes first
           git add features/ai-icp-assistant/
           
           # Check if there are changes
@@ -119,14 +111,14 @@ jobs:
           echo "📝 Changes to be committed:"
           git diff --staged --stat
           
-          # Commit
+          # Commit changes
           git commit -m "feat(ai-icp-assistant): auto-sync from feature repo" \
             -m "Synced from: ${{ github.repository }}@${{ github.sha }}" \
             -m "Triggered by: ${{ github.actor }}" \
             -m "Timestamp: $(date -u +%Y-%m-%d\ %H:%M:%S\ UTC)" \
             -m "Workflow: ${{ github.workflow }}"
           
-          # Push with retry logic
+          # Push with retry logic using merge strategy (safer than rebase)
           echo "📤 Pushing to LAD-Backend..."
           for attempt in {1..3}; do
             if git push origin develop; then
@@ -136,15 +128,28 @@ jobs:
             
             echo "⚠️ Push failed, retrying ($attempt/3)..."
             sleep 2
-            git pull origin develop --rebase || {
-              echo "❌ Rebase failed on retry"
-              git rebase --abort
-              exit 1
-            }
+            
+            # Pull with merge strategy (safer than rebase for automation)
+            if ! git pull origin develop --no-rebase; then
+              echo "⚠️ Merge conflict detected, attempting auto-resolution..."
+              
+              # Accept incoming changes for ai-icp-assistant (our changes win)
+              git checkout --ours features/ai-icp-assistant/
+              git add features/ai-icp-assistant/
+              
+              # Complete the merge
+              git commit --no-edit || true
+            fi
           done
           
-          echo "❌ Failed to push after 3 attempts"
-          exit 1
+          # Final push attempt
+          if git push origin develop; then
+            echo "✅ Push successful after conflict resolution"
+            exit 0
+          else
+            echo "❌ Failed to push after 3 attempts and conflict resolution"
+            exit 1
+          fi
 
   sync-frontend:
     runs-on: ubuntu-latest
@@ -256,15 +261,7 @@ jobs:
         if: env.HAS_SDK == 'true'
         working-directory: lad-frontend
         run: |
-          # Pull latest
-          echo "📥 Pulling latest changes..."
-          git pull origin develop --rebase || {
-            echo "⚠️ Rebase conflict detected"
-            git rebase --abort
-            exit 1
-          }
-          
-          # Stage all changes
+          # Stage all changes first
           git add sdk/features/ai-icp-assistant/
           if [ "${{ env.HAS_COMPONENTS }}" = "true" ]; then
             git add web/src/features/ai-icp-assistant/
@@ -280,14 +277,14 @@ jobs:
           echo "📝 Changes to be committed:"
           git diff --staged --stat
           
-          # Commit
+          # Commit changes
           git commit -m "feat(ai-icp-assistant): auto-sync SDK from feature repo" \
             -m "Synced from: ${{ github.repository }}@${{ github.sha }}" \
             -m "Triggered by: ${{ github.actor }}" \
             -m "Timestamp: $(date -u +%Y-%m-%d\ %H:%M:%S\ UTC)" \
             -m "Workflow: ${{ github.workflow }}"
           
-          # Push with retry
+          # Push with retry using merge strategy
           echo "📤 Pushing to LAD-Frontend..."
           for attempt in {1..3}; do
             if git push origin develop; then
@@ -297,12 +294,33 @@ jobs:
             
             echo "⚠️ Push failed, retrying ($attempt/3)..."
             sleep 2
-            git pull origin develop --rebase || {
-              echo "❌ Rebase failed on retry"
-              git rebase --abort
-              exit 1
-            }
+            
+            # Pull with merge strategy (safer than rebase for automation)
+            if ! git pull origin develop --no-rebase; then
+              echo "⚠️ Merge conflict detected, attempting auto-resolution..."
+              
+              # Accept incoming changes for ai-icp-assistant (our changes win)
+              git checkout --ours sdk/features/ai-icp-assistant/
+              git add sdk/features/ai-icp-assistant/
+              
+              if [ "${{ env.HAS_COMPONENTS }}" = "true" ]; then
+                git checkout --ours web/src/features/ai-icp-assistant/
+                git add web/src/features/ai-icp-assistant/
+              fi
+              
+              # Complete the merge
+              git commit --no-edit || true
+            fi
           done
+          
+          # Final push attempt
+          if git push origin develop; then
+            echo "✅ Push successful after conflict resolution"
+            exit 0
+          else
+            echo "❌ Failed to push after 3 attempts and conflict resolution"
+            exit 1
+          fi
           
           echo "❌ Failed to push after 3 attempts"
           exit 1

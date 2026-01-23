@@ -2,6 +2,8 @@
  * Intent Extractor
  * Extracts outreach intent from user messages
  */
+const logger = require('../utils/logger');
+
 let genAI = null;
 let GoogleGenerativeAI = null;
 try {
@@ -64,7 +66,7 @@ JSON response:`;
         return intent;
       }
     } catch (error) {
-      console.warn('Intent extraction error:', error.message);
+      logger.warn('Intent extraction error:', error.message);
     }
     return this.extractIntentFallback(message, currentContext);
   }
@@ -225,4 +227,4 @@ JSON response:`;
     return null;
   }
 }
-module.exports = IntentExtractor;
+module.exports = IntentExtractor;

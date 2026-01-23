@@ -2,14 +2,12 @@
  * AI ICP Assistant Feature Module
  * Export all public APIs for the AI ICP Assistant feature
  */
-
 // ICP Questions API
 export {
   fetchICPQuestions,
   fetchICPQuestionByStep,
   processICPAnswer,
 } from './api';
-
 // Leads Upload API
 export {
   downloadLeadsTemplate,
@@ -20,7 +18,6 @@ export {
   getPlatformQuestions,
   validateLeadsForExecution,
 } from './api';
-
 // ICP Types
 export type {
   ICPQuestion,
@@ -28,7 +25,6 @@ export type {
   ICPAnswerRequest,
   ICPAnswerResponse,
 } from './types';
-
 // Leads Types
 export type {
   LeadsTemplateColumn,
@@ -45,18 +41,15 @@ export type {
   LeadsValidation,
   LeadsFlowContext,
 } from './types';
-
 // ICP Hooks
 export {
   useItem,
   useItems,
   useConversation,
 } from './hooks';
-
 // Leads Upload Hook
 export { useLeadsUpload } from './hooks/useLeadsUpload';
 export type { LeadsUploadState } from './hooks/useLeadsUpload';
-
 // Legacy service (if exists)
 export { 
   AIICPAssistantService,
@@ -66,7 +59,6 @@ export {
   type ChatResponse,
   type ICPData
 } from './services/aiICPAssistantService';
-
 // New Maya AI Service
 export { mayaAI, default as mayaAIService } from './services/mayaAIService';
 export type {
@@ -74,5 +66,4 @@ export type {
   MayaResponse,
   OnboardingContext,
   WorkflowNode,
-} from './types';
-
+} from './types';

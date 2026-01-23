@@ -5,12 +5,10 @@
  * Extracted from ai-icp-assistant.service.js to follow single responsibility.
  * NO HTTP logic, NO database access - pure business logic.
  */
-
 const questionGeneratorService = require('./question-generator.service');
 const platformProgressionService = require('./platform-progression.service');
 const templateHandlerService = require('./template-handler.service');
 const logger = require('../utils/logger');
-
 class TemplateProcessorService {
   /**
    * Process template answer
@@ -22,35 +20,27 @@ class TemplateProcessorService {
     const selectedPlatforms = platformHandlerService.normalizePlatforms(
       collectedAnswers.selected_platforms || []
     );
-    
     logger.debug(`[TemplateProcessor] Processing template for: ${normalizedPlatformKey}`);
-    
     // Validate platform is selected
     if (!selectedPlatforms.includes(normalizedPlatformKey)) {
       return this._handlePlatformMismatch(selectedPlatforms, collectedAnswers);
     }
-    
     const templateValue = templateHandlerService.processTemplateAnswer(userAnswer);
-    
     const updatedAnswers = {
       ...collectedAnswers,
       [currentIntentKey]: templateValue,
     };
-    
     // Mark platform as completed
     const completedActions = (updatedAnswers.completed_platform_actions || [])
       .map(p => String(p).toLowerCase());
-    
     if (!completedActions.includes(normalizedPlatformKey)) {
       updatedAnswers.completed_platform_actions = [...completedActions, normalizedPlatformKey];
     }
-    
     // Check if all platforms are done
     const allDone = platformProgressionService.areAllPlatformsCompleted(
       selectedPlatforms,
       updatedAnswers.completed_platform_actions
     );
-    
     if (allDone) {
       const nextQuestion = questionGeneratorService.generateQuestion(6, updatedAnswers);
       return {
@@ -62,13 +52,11 @@ class TemplateProcessorService {
         updatedCollectedAnswers: updatedAnswers,
       };
     }
-    
     // Find next platform
     const nextPlatform = platformProgressionService.findNextPlatform(
       selectedPlatforms,
       updatedAnswers.completed_platform_actions
     );
-    
     if (nextPlatform) {
       // Check if next platform needs template
       const nextActionKey = `${nextPlatform}_actions`;
@@ -76,11 +64,9 @@ class TemplateProcessorService {
       const hasNextActions = updatedAnswers[nextActionKey] !== undefined && 
                             updatedAnswers[nextActionKey] !== '';
       const hasNextTemplate = updatedAnswers[nextTemplateKey] !== undefined;
-      
       if (hasNextActions && !hasNextTemplate) {
         const actionAnswer = String(updatedAnswers[nextActionKey] || '');
         const needsTemplate = templateHandlerService.needsTemplate(nextPlatform, actionAnswer);
-        
         if (needsTemplate) {
           const templateQuestion = templateHandlerService.createTemplateQuestion(
             nextPlatform,
@@ -96,14 +82,12 @@ class TemplateProcessorService {
           };
         }
       }
-      
       // Ask for actions for next platform
       const nextQuestion = questionGeneratorService.generatePlatformActionsQuestion(
         selectedPlatforms,
         updatedAnswers.completed_platform_actions,
         updatedAnswers
       );
-      
       return {
         clarificationNeeded: false,
         message: null,
@@ -113,7 +97,6 @@ class TemplateProcessorService {
         updatedCollectedAnswers: updatedAnswers,
       };
     }
-    
     // Fallback: move to next step
     const nextQuestion = questionGeneratorService.generateQuestion(6, updatedAnswers);
     return {
@@ -125,7 +108,6 @@ class TemplateProcessorService {
       updatedCollectedAnswers: updatedAnswers,
     };
   }
-
   /**
    * Handle platform mismatch error
    */
@@ -133,7 +115,6 @@ class TemplateProcessorService {
     const completedActions = (collectedAnswers.completed_platform_actions || [])
       .map(p => String(p).toLowerCase());
     const nextPlatform = selectedPlatforms.find(p => !completedActions.includes(p));
-    
     if (nextPlatform) {
       const nextQuestion = questionGeneratorService.generatePlatformActionsQuestion(
         selectedPlatforms,
@@ -149,7 +130,6 @@ class TemplateProcessorService {
         updatedCollectedAnswers: collectedAnswers,
       };
     }
-    
     return {
       clarificationNeeded: false,
       message: null,
@@ -160,6 +140,4 @@ class TemplateProcessorService {
     };
   }
 }
-
-module.exports = new TemplateProcessorService();
-
+module.exports = new TemplateProcessorService();

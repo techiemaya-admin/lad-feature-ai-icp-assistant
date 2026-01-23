@@ -2,9 +2,7 @@
  * Campaign Prompts Configuration
  * ENTERPRISE: All campaign prompts centralized, zero hardcoded values
  */
-
 const config = require('../../utils/config');
-
 class CampaignPromptsConfig {
   static getCampaignPrompts() {
     return [
@@ -108,7 +106,6 @@ class CampaignPromptsConfig {
       }
     ];
   }
-
   static getPlatformConfigs() {
     return {
       linkedin: {
@@ -139,7 +136,6 @@ class CampaignPromptsConfig {
       }
     };
   }
-
   static getActionKeywords() {
     return {
       linkedin_actions: ['visit', 'profile', 'follow', 'connection', 'request', 'message', 'send'],
@@ -148,14 +144,11 @@ class CampaignPromptsConfig {
       voice_actions: ['call', 'trigger', 'script']
     };
   }
-
   static getValidPlatforms() {
     return ['linkedin', 'email', 'whatsapp', 'voice', 'voice calls', 'voice call'];
   }
-
   static getTotalSteps() {
     return this.getCampaignPrompts().length;
   }
 }
-
 module.exports = CampaignPromptsConfig;

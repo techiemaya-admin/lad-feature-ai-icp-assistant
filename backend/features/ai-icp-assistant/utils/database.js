@@ -2,19 +2,15 @@
  * Database Connection Utility
  * LAD Architecture: Each feature manages its own database connection
  */
-
 const { Pool } = require('pg');
-
 // PRODUCTION VALIDATION: Fail fast if required env vars missing
 if (process.env.NODE_ENV === 'production') {
   const required = ['POSTGRES_HOST', 'POSTGRES_USER', 'POSTGRES_PASSWORD'];
   const missing = required.filter(key => !process.env[key]);
-  
   if (missing.length > 0) {
     throw new Error(`Missing required database environment variables in production: ${missing.join(', ')}`);
   }
 }
-
 // Create PostgreSQL pool
 const pool = new Pool({
   host: process.env.DB_HOST || process.env.POSTGRES_HOST,
@@ -26,18 +22,15 @@ const pool = new Pool({
   idleTimeoutMillis: parseInt(process.env.DB_POOL_IDLE_TIMEOUT || '30000'),
   connectionTimeoutMillis: 5000,
 });
-
 // Get the schema to use
 const schema = process.env.DB_SCHEMA || 'lad_dev';
-
 // Set search_path for all connections
 pool.on('connect', (client) => {
   client.query(`SET search_path TO ${schema}, public`);
 });
-
 // Export pool and query function
 module.exports = {
   pool,
   query: (text, params) => pool.query(text, params),
   schema
-};
+};

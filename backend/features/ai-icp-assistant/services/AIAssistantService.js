@@ -159,4 +159,4 @@ class AIAssistantService {
   static isConfirmationResponse(message) { return MessageHelper.isConfirmationResponse(message); }
   static handleConfirmation(isConfirmed, context, conversationId) { return MessageHelper.handleConfirmation(isConfirmed, context, conversationId); }
 }
-module.exports = AIAssistantService;
+module.exports = AIAssistantService;

@@ -4,9 +4,7 @@
  * Database model for ICP onboarding questions.
  * All ICP prompts are stored in the database - no hardcoded text.
  */
-
 const { query } = require('../utils/database');
-
 class ICPQuestion {
   /**
    * Get all active ICP questions for a category, ordered by step_index
@@ -34,11 +32,9 @@ class ICPQuestion {
         AND is_active = true
       ORDER BY intent_key ASC
     `;
-    
     const result = await query(sql, [category]);
     return result.rows;
   }
-
   /**
    * Get a specific question by ID
    * @param {string} id - Question UUID
@@ -62,11 +58,9 @@ class ICPQuestion {
       FROM ${process.env.DB_SCHEMA || 'public'}.icp_questions_prompt
       WHERE id = $1
     `;
-    
     const result = await query(sql, [id]);
     return result.rows[0] || null;
   }
-
   /**
    * Get question by step_index and category
    * @param {number} stepIndex - Step index (1-7)
@@ -97,11 +91,9 @@ class ICPQuestion {
       WHERE row_num = $1
       LIMIT 1
     `;
-    
     const result = await query(sql, [stepIndex, category]);
     return result.rows[0] || null;
   }
-
   /**
    * Get question by intent_key
    * @param {string} intentKey - Intent key (e.g. 'ideal_customer')
@@ -129,11 +121,9 @@ class ICPQuestion {
         AND is_active = true
       LIMIT 1
     `;
-    
     const result = await query(sql, [intentKey, category]);
     return result.rows[0] || null;
   }
-
   /**
    * Get total number of active questions for a category
    * @param {string} category - Category filter
@@ -145,11 +135,8 @@ class ICPQuestion {
       FROM ${process.env.DB_SCHEMA || 'public'}.icp_questions_prompt
       WHERE category = $1 AND is_active = true
     `;
-    
     const result = await query(sql, [category]);
     return parseInt(result.rows[0].count, 10);
   }
 }
-
-module.exports = ICPQuestion;
-
+module.exports = ICPQuestion;

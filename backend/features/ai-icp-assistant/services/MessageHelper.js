@@ -70,4 +70,4 @@ class MessageHelper {
     }
   }
 }
-module.exports = MessageHelper;
+module.exports = MessageHelper;

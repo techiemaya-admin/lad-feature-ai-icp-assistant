@@ -3,10 +3,8 @@
  * LAD Architecture: Business Logic Layer
  * Uses Repository Pattern for Data Access
  */
-
 const { AIConversationRepository } = require('../repositories');
 const logger = require('../utils/logger');
-
 class AIConversation {
   /**
    * Create a new conversation
@@ -17,10 +15,8 @@ class AIConversation {
       if (!userId || !tenantId) {
         throw new Error('userId and tenantId are required');
       }
-
       // Business logic: Validate metadata structure
       const validatedMetadata = this.validateMetadata(metadata);
-      
       return await AIConversationRepository.create({
         userId,
         tenantId,
@@ -36,7 +32,6 @@ class AIConversation {
       throw error;
     }
   }
-
   /**
    * Get conversation by ID with tenant validation
    */
@@ -45,7 +40,6 @@ class AIConversation {
       if (!conversationId || !tenantId) {
         throw new Error('conversationId and tenantId are required');
       }
-
       return await AIConversationRepository.findById(conversationId, tenantId);
     } catch (error) {
       logger.error('Model error finding conversation', { 
@@ -56,7 +50,6 @@ class AIConversation {
       throw error;
     }
   }
-
   /**
    * Get all conversations for a user with tenant scoping
    */
@@ -65,13 +58,11 @@ class AIConversation {
       if (!userId || !tenantId) {
         throw new Error('userId and tenantId are required');
       }
-
       // Business logic: Apply default limits for performance
       const safeOptions = {
         ...options,
         limit: options.limit || 50 // Default limit for performance
       };
-
       return await AIConversationRepository.findByUser(userId, tenantId, safeOptions);
     } catch (error) {
       logger.error('Model error finding user conversations', { 
@@ -82,7 +73,6 @@ class AIConversation {
       throw error;
     }
   }
-
   /**
    * Update conversation with business logic validation
    */
@@ -91,10 +81,8 @@ class AIConversation {
       if (!conversationId || !tenantId) {
         throw new Error('conversationId and tenantId are required');
       }
-
       // Business logic: Validate updates
       const validatedUpdates = this.validateUpdates(updates);
-
       return await AIConversationRepository.update(conversationId, tenantId, validatedUpdates);
     } catch (error) {
       logger.error('Model error updating conversation', { 
@@ -105,7 +93,6 @@ class AIConversation {
       throw error;
     }
   }
-
   /**
    * Archive conversation (business logic: mark as completed)
    */
@@ -114,7 +101,6 @@ class AIConversation {
       if (!conversationId || !tenantId) {
         throw new Error('conversationId and tenantId are required');
       }
-
       return await AIConversationRepository.archive(conversationId, tenantId);
     } catch (error) {
       logger.error('Model error archiving conversation', { 
@@ -125,7 +111,6 @@ class AIConversation {
       throw error;
     }
   }
-
   /**
    * Delete conversation (soft delete)
    */
@@ -134,7 +119,6 @@ class AIConversation {
       if (!conversationId || !tenantId) {
         throw new Error('conversationId and tenantId are required');
       }
-
       return await AIConversationRepository.softDelete(conversationId, tenantId);
     } catch (error) {
       logger.error('Model error deleting conversation', { 
@@ -145,7 +129,6 @@ class AIConversation {
       throw error;
     }
   }
-
   /**
    * Get conversation statistics
    */
@@ -154,7 +137,6 @@ class AIConversation {
       if (!conversationId || !tenantId) {
         throw new Error('conversationId and tenantId are required');
       }
-
       return await AIConversationRepository.getStats(conversationId, tenantId);
     } catch (error) {
       logger.error('Model error getting conversation stats', { 
@@ -165,14 +147,12 @@ class AIConversation {
       throw error;
     }
   }
-
   /**
    * Update ICP data for conversation (legacy method for backward compatibility)
    */
   static async updateICPData(conversationId, tenantId, icpData) {
     return await this.update(conversationId, tenantId, { icp_data: icpData });
   }
-
   /**
    * Mark search as triggered (legacy method)
    */
@@ -183,7 +163,6 @@ class AIConversation {
       status: 'completed'
     });
   }
-
   /**
    * Business Logic: Validate metadata structure
    */
@@ -191,44 +170,35 @@ class AIConversation {
     if (!metadata || typeof metadata !== 'object') {
       return {};
     }
-
     // Ensure metadata doesn't contain sensitive information
     const allowedKeys = ['stage', 'preferences', 'ui_state', 'custom_fields'];
     const validatedMetadata = {};
-
     Object.keys(metadata).forEach(key => {
       if (allowedKeys.includes(key)) {
         validatedMetadata[key] = metadata[key];
       }
     });
-
     return validatedMetadata;
   }
-
   /**
    * Business Logic: Validate update fields
    */
   static validateUpdates(updates) {
     const validatedUpdates = { ...updates };
-
     // Validate specific fields
     if (validatedUpdates.metadata) {
       validatedUpdates.metadata = this.validateMetadata(validatedUpdates.metadata);
     }
-
     if (validatedUpdates.status) {
       const validStatuses = ['active', 'archived', 'completed'];
       if (!validStatuses.includes(validatedUpdates.status)) {
         throw new Error('Invalid status value');
       }
     }
-
     if (validatedUpdates.title && validatedUpdates.title.length > 255) {
       validatedUpdates.title = validatedUpdates.title.substring(0, 255);
     }
-
     return validatedUpdates;
   }
 }
-
-module.exports = AIConversation;
+module.exports = AIConversation;

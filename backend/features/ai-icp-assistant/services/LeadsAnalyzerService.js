@@ -2,11 +2,9 @@
  * Leads Analyzer Service
  * Uses AI to analyze uploaded leads and generate insights
  */
-
 const GeminiResponseGenerator = require('./GeminiResponseGenerator');
 const LeadsTemplateService = require('./LeadsTemplateService');
 const logger = require('../utils/logger');
-
 class LeadsAnalyzerService {
   /**
    * Analyze leads data and generate AI insights
@@ -17,17 +15,13 @@ class LeadsAnalyzerService {
     try {
       const basicAnalysis = LeadsTemplateService.analyzeLeadsData(leads);
       const platforms = LeadsTemplateService.detectPlatforms(leads);
-
       if (!basicAnalysis.success) {
         return basicAnalysis;
       }
-
       // Build context for AI analysis
       const analysisContext = this.buildAnalysisContext(leads, basicAnalysis, platforms);
-
       // Generate AI summary using Gemini
       const aiSummary = await this.generateAISummary(analysisContext);
-
       return {
         success: true,
         basicAnalysis,
@@ -45,7 +39,6 @@ class LeadsAnalyzerService {
       };
     }
   }
-
   /**
    * Build context for AI analysis
    */
@@ -60,7 +53,6 @@ class LeadsAnalyzerService {
       hasEmail: !!lead.email,
       hasPhone: !!lead.phone
     }));
-
     return {
       totalLeads: analysis.totalLeads,
       industries: analysis.industries,
@@ -72,34 +64,28 @@ class LeadsAnalyzerService {
       sampleLeads
     };
   }
-
   /**
    * Generate AI summary of the leads data
    */
   static async generateAISummary(context) {
     try {
       const prompt = `Analyze this B2B leads data and provide a concise 2-3 sentence summary:
-
 Total Leads: ${context.totalLeads}
 Top Industries: ${context.industries.map(i => `${i.name} (${i.percentage}%)`).join(', ') || 'Not specified'}
 Top Job Titles: ${context.jobTitles.slice(0, 5).map(j => j.name).join(', ') || 'Not specified'}
 Top Locations: ${context.locations.map(l => l.name).join(', ') || 'Not specified'}
 Unique Companies: ${context.uniqueCompanies}
-
 Platform Data Coverage:
 - LinkedIn URLs: ${context.platformCoverage.linkedin?.percentage || 0}%
 - Email Addresses: ${context.platformCoverage.email?.percentage || 0}%
 - Phone Numbers: ${context.platformCoverage.voice?.percentage || 0}%
 - WhatsApp: ${context.platformCoverage.whatsapp?.percentage || 0}%
-
 Sample Leads:
 ${context.sampleLeads.map(l => `- ${l.name} | ${l.title} @ ${l.company} | ${l.industry}`).join('\n')}
-
 Provide a brief, actionable summary focusing on:
 1. The target audience profile
 2. Best outreach channels based on available data
 3. One key insight or recommendation`;
-
       const response = await GeminiResponseGenerator.generateDirectResponse(prompt);
       return response || this.getFallbackSummary(context);
     } catch (error) {
@@ -107,7 +93,6 @@ Provide a brief, actionable summary focusing on:
       return this.getFallbackSummary(context);
     }
   }
-
   /**
    * Fallback summary if AI fails
    */
@@ -115,11 +100,9 @@ Provide a brief, actionable summary focusing on:
     const topIndustry = context.industries[0]?.name || 'various industries';
     const topRole = context.jobTitles[0]?.name || 'professionals';
     const bestChannel = this.getBestChannel(context.platformCoverage);
-
     return `Your ${context.totalLeads} leads primarily target ${topRole} in ${topIndustry}. ` +
       `${bestChannel.text} Based on your data, we recommend focusing on ${bestChannel.platform} outreach for best results.`;
   }
-
   /**
    * Get best channel recommendation
    */
@@ -129,17 +112,14 @@ Provide a brief, actionable summary focusing on:
       { platform: 'LinkedIn', percentage: coverage.linkedin?.percentage || 0, text: 'LinkedIn profile data is available.' },
       { platform: 'phone', percentage: coverage.voice?.percentage || 0, text: 'Phone numbers are available for calls.' }
     ];
-
     const best = channels.sort((a, b) => b.percentage - a.percentage)[0];
     return best.percentage > 0 ? best : { platform: 'multi-channel', text: 'Consider enriching your data.' };
   }
-
   /**
    * Get recommended actions based on analysis
    */
   static getRecommendedActions(platforms, analysis) {
     const actions = [];
-
     // Platform-specific recommendations
     if (platforms.available.includes('linkedin') && platforms.coverage.linkedin.percentage >= 50) {
       actions.push({
@@ -149,7 +129,6 @@ Provide a brief, actionable summary focusing on:
         reason: `${platforms.coverage.linkedin.percentage}% of leads have LinkedIn profiles`
       });
     }
-
     if (platforms.available.includes('email') && platforms.coverage.email.percentage >= 50) {
       actions.push({
         platform: 'email',
@@ -158,7 +137,6 @@ Provide a brief, actionable summary focusing on:
         reason: `${platforms.coverage.email.percentage}% of leads have email addresses`
       });
     }
-
     if (platforms.available.includes('voice') && platforms.coverage.voice.percentage >= 30) {
       actions.push({
         platform: 'voice',
@@ -167,7 +145,6 @@ Provide a brief, actionable summary focusing on:
         reason: `${platforms.coverage.voice.percentage}% of leads have phone numbers`
       });
     }
-
     // Enrichment recommendations
     if (platforms.unavailable.includes('linkedin') && platforms.available.includes('email')) {
       actions.push({
@@ -177,7 +154,6 @@ Provide a brief, actionable summary focusing on:
         reason: 'Missing LinkedIn data - consider enrichment to add connection requests'
       });
     }
-
     if (platforms.unavailable.includes('email') && platforms.available.includes('linkedin')) {
       actions.push({
         platform: 'enrichment',
@@ -186,10 +162,8 @@ Provide a brief, actionable summary focusing on:
         reason: 'Missing email data - consider enrichment for email outreach'
       });
     }
-
     return actions;
   }
-
   /**
    * Generate platform-specific questions based on available data
    * @param {Object} platforms - Platform detection results
@@ -197,7 +171,6 @@ Provide a brief, actionable summary focusing on:
    */
   static generatePlatformQuestions(platforms) {
     const questions = [];
-
     // Only ask about available platforms
     if (platforms.available.includes('linkedin')) {
       questions.push({
@@ -212,7 +185,6 @@ Provide a brief, actionable summary focusing on:
         ],
         coverage: platforms.coverage.linkedin.percentage
       });
-
       questions.push({
         id: 'linkedin_message',
         platform: 'linkedin',
@@ -220,7 +192,6 @@ Provide a brief, actionable summary focusing on:
         type: 'boolean'
       });
     }
-
     if (platforms.available.includes('email')) {
       questions.push({
         id: 'email_action',
@@ -233,7 +204,6 @@ Provide a brief, actionable summary focusing on:
         ],
         coverage: platforms.coverage.email.percentage
       });
-
       questions.push({
         id: 'email_followups',
         platform: 'email',
@@ -244,7 +214,6 @@ Provide a brief, actionable summary focusing on:
         default: 2
       });
     }
-
     if (platforms.available.includes('voice')) {
       questions.push({
         id: 'voice_action',
@@ -259,7 +228,6 @@ Provide a brief, actionable summary focusing on:
         coverage: platforms.coverage.voice.percentage
       });
     }
-
     if (platforms.available.includes('whatsapp')) {
       questions.push({
         id: 'whatsapp_action',
@@ -273,7 +241,6 @@ Provide a brief, actionable summary focusing on:
         coverage: platforms.coverage.whatsapp.percentage
       });
     }
-
     // Add sequencing question if multiple platforms available
     if (platforms.available.length > 1) {
       questions.push({
@@ -286,7 +253,6 @@ Provide a brief, actionable summary focusing on:
           label: LeadsTemplateService.getPlatformEmoji(p) + ' ' + p.charAt(0).toUpperCase() + p.slice(1)
         }))
       });
-
       questions.push({
         id: 'delay_between',
         platform: 'multi',
@@ -297,10 +263,8 @@ Provide a brief, actionable summary focusing on:
         default: 2
       });
     }
-
     return questions;
   }
-
   /**
    * Validate leads for campaign execution
    */
@@ -308,11 +272,9 @@ Provide a brief, actionable summary focusing on:
     const issues = [];
     const valid = [];
     const invalid = [];
-
     for (let i = 0; i < leads.length; i++) {
       const lead = leads[i];
       const leadIssues = [];
-
       // Check required data for each selected platform
       for (const platform of selectedPlatforms) {
         switch (platform) {
@@ -338,14 +300,12 @@ Provide a brief, actionable summary focusing on:
             break;
         }
       }
-
       if (leadIssues.length > 0) {
         invalid.push({ index: i, lead, issues: leadIssues });
       } else {
         valid.push(lead);
       }
     }
-
     return {
       valid,
       invalid,
@@ -355,7 +315,6 @@ Provide a brief, actionable summary focusing on:
       canExecute: valid.length > 0
     };
   }
-
   /**
    * Simple email validation
    */
@@ -363,5 +322,4 @@ Provide a brief, actionable summary focusing on:
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   }
 }
-
-module.exports = LeadsAnalyzerService;
+module.exports = LeadsAnalyzerService;

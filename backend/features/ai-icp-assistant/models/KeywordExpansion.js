@@ -3,7 +3,6 @@
  * LAD Architecture: Business Logic Layer
  * Uses Repository Pattern for Data Access
  */
-
 const { KeywordExpansionRepository } = require('../repositories');
 const logger = require('../utils/logger');
 class KeywordExpansion {
@@ -21,10 +20,8 @@ class KeywordExpansion {
       if (!originalKeyword || !expandedKeywords) {
         throw new Error('originalKeyword and expandedKeywords are required');
       }
-
       // Business logic: Validate expanded keywords array
       const validatedKeywords = this.validateKeywords(expandedKeywords);
-      
       return await KeywordExpansionRepository.upsert({
         originalKeyword,
         expandedKeywords: validatedKeywords,
@@ -41,7 +38,6 @@ class KeywordExpansion {
       throw error;
     }
   }
-
   /**
    * Get cached expansion
    */
@@ -55,7 +51,6 @@ class KeywordExpansion {
         ORDER BY organization_id DESC NULLS LAST
         LIMIT 1
       `, [originalKeyword.toLowerCase().trim(), context, organizationId]);
-
       if (result.rows[0]) {
         // Update usage stats
         await query(`
@@ -66,38 +61,32 @@ class KeywordExpansion {
           WHERE id = $1
         `, [result.rows[0].id]);
       }
-
       return result.rows[0] || null;
     } catch (error) {
       logger.error('Error finding cached keyword expansion:', error);
       throw error;
     }
   }
-
   /**
    * Get all cached expansions for an organization
    */
   static async findByOrganization(organizationId, options = {}) {
     try {
       const { context = null, limit = 100, offset = 0 } = options;
-      
       let sql = `
         SELECT * FROM ai_keyword_expansions
         WHERE organization_id = $1
       `;
       const params = [organizationId];
-
       if (context) {
         sql += ` AND context = $${params.length + 1}`;
         params.push(context);
       }
-
       sql += `
         ORDER BY usage_count DESC, last_used_at DESC
         LIMIT $${params.length + 1} OFFSET $${params.length + 2}
       `;
       params.push(limit, offset);
-
       const result = await query(sql, params);
       return result.rows;
     } catch (error) {
@@ -105,7 +94,6 @@ class KeywordExpansion {
       throw error;
     }
   }
-
   /**
    * Get most used keywords (analytics)
    */
@@ -121,18 +109,15 @@ class KeywordExpansion {
         FROM ai_keyword_expansions
       `;
       const params = [];
-
       if (organizationId) {
         sql += ` WHERE organization_id = $1`;
         params.push(organizationId);
       }
-
       sql += `
         ORDER BY usage_count DESC
         LIMIT $${params.length + 1}
       `;
       params.push(limit);
-
       const result = await query(sql, params);
       return result.rows;
     } catch (error) {
@@ -140,7 +125,6 @@ class KeywordExpansion {
       throw error;
     }
   }
-
   /**
    * Search cached keywords
    */
@@ -151,18 +135,15 @@ class KeywordExpansion {
         WHERE original_keyword ILIKE $1
       `;
       const params = [`%${searchTerm}%`];
-
       if (organizationId) {
         sql += ` AND (organization_id = $${params.length + 1} OR organization_id IS NULL)`;
         params.push(organizationId);
       }
-
       sql += `
         ORDER BY usage_count DESC
         LIMIT $${params.length + 1}
       `;
       params.push(limit);
-
       const result = await query(sql, params);
       return result.rows;
     } catch (error) {
@@ -170,7 +151,6 @@ class KeywordExpansion {
       throw error;
     }
   }
-
   /**
    * Delete old/unused cache entries
    */
@@ -182,14 +162,12 @@ class KeywordExpansion {
           AND usage_count < $1
         RETURNING id
       `, [minUsageCount]);
-
       return result.rowCount;
     } catch (error) {
       logger.error('Error pruning old keyword expansions:', error);
       throw error;
     }
   }
-
   /**
    * Get cache statistics
    */
@@ -206,12 +184,10 @@ class KeywordExpansion {
         FROM ai_keyword_expansions
       `;
       const params = [];
-
       if (organizationId) {
         sql += ` WHERE organization_id = $1`;
         params.push(organizationId);
       }
-
       const result = await query(sql, params);
       return result.rows[0];
     } catch (error) {
@@ -219,7 +195,6 @@ class KeywordExpansion {
       throw error;
     }
   }
-
   /**
    * Delete by ID
    */
@@ -230,7 +205,6 @@ class KeywordExpansion {
         WHERE id = $1
         RETURNING id
       `, [expansionId]);
-
       return result.rowCount > 0;
     } catch (error) {
       logger.error('Error deleting keyword expansion:', error);
@@ -238,5 +212,4 @@ class KeywordExpansion {
     }
   }
 }
-
-module.exports = KeywordExpansion;
+module.exports = KeywordExpansion;

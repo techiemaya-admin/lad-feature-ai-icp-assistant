@@ -2,9 +2,7 @@
  * Leads Template Service
  * Generates CSV templates and parses uploaded lead data
  */
-
 const logger = require('../utils/logger');
-
 class LeadsTemplateService {
   /**
    * Template columns with metadata for smart detection
@@ -25,7 +23,6 @@ class LeadsTemplateService {
     { key: 'whatsapp', label: 'WhatsApp Number', required: false, example: '+1234567890', platform: 'whatsapp' },
     { key: 'twitter_url', label: 'Twitter/X URL', required: false, example: 'https://twitter.com/johndoe', platform: 'twitter' }
   ];
-
   /**
    * Platform detection mapping
    */
@@ -36,14 +33,12 @@ class LeadsTemplateService {
     whatsapp: ['whatsapp', 'whatsapp_number', 'wa_number'],
     twitter: ['twitter_url', 'twitter', 'x_url']
   };
-
   /**
    * Generate CSV template content
    */
   static generateTemplate() {
     const headers = this.TEMPLATE_COLUMNS.map(col => col.label);
     const examples = this.TEMPLATE_COLUMNS.map(col => col.example);
-    
     const csvContent = [
       headers.join(','),
       examples.join(','),
@@ -52,7 +47,6 @@ class LeadsTemplateService {
       Array(headers.length).fill('').join(','),
       Array(headers.length).fill('').join(',')
     ].join('\n');
-
     return {
       content: csvContent,
       filename: 'leads_template.csv',
@@ -60,7 +54,6 @@ class LeadsTemplateService {
       columns: this.TEMPLATE_COLUMNS
     };
   }
-
   /**
    * Parse uploaded CSV data
    * @param {string} csvContent - Raw CSV content
@@ -72,30 +65,24 @@ class LeadsTemplateService {
       if (lines.length < 2) {
         throw new Error('CSV must have at least a header row and one data row');
       }
-
       const headers = this.parseCSVLine(lines[0]).map(h => this.normalizeHeader(h));
       const leads = [];
       const errors = [];
-
       for (let i = 1; i < lines.length; i++) {
         const values = this.parseCSVLine(lines[i]);
         if (values.every(v => !v || v.trim() === '')) continue; // Skip empty rows
-
         const lead = {};
         headers.forEach((header, index) => {
           lead[header] = values[index]?.trim() || '';
         });
-
         // Validate required fields
         const hasName = lead.first_name || lead.last_name || lead.name || lead.full_name;
         if (!hasName) {
           errors.push(`Row ${i + 1}: Missing name fields`);
           continue;
         }
-
         leads.push(lead);
       }
-
       return {
         success: true,
         leads,
@@ -114,7 +101,6 @@ class LeadsTemplateService {
       };
     }
   }
-
   /**
    * Parse a single CSV line handling quoted values
    */
@@ -122,7 +108,6 @@ class LeadsTemplateService {
     const result = [];
     let current = '';
     let inQuotes = false;
-
     for (let i = 0; i < line.length; i++) {
       const char = line[i];
       if (char === '"') {
@@ -137,7 +122,6 @@ class LeadsTemplateService {
     result.push(current);
     return result;
   }
-
   /**
    * Normalize header to standard key format
    */
@@ -147,7 +131,6 @@ class LeadsTemplateService {
       .trim()
       .replace(/\s+/g, '_')
       .replace(/[^a-z0-9_]/g, '');
-
     // Map common variations
     const mappings = {
       'firstname': 'first_name',
@@ -161,10 +144,8 @@ class LeadsTemplateService {
       'linkedinurl': 'linkedin_url',
       'companysize': 'company_size'
     };
-
     return mappings[normalized] || normalized;
   }
-
   /**
    * Detect available platforms from leads data
    * @param {Array} leads - Parsed leads array
@@ -178,10 +159,8 @@ class LeadsTemplateService {
         coverage: {}
       };
     }
-
     const platformCoverage = {};
     const totalLeads = leads.length;
-
     // Check each platform
     for (const [platform, fields] of Object.entries(this.PLATFORM_FIELDS)) {
       let count = 0;
@@ -198,15 +177,12 @@ class LeadsTemplateService {
         available: count > 0
       };
     }
-
     const available = Object.entries(platformCoverage)
       .filter(([, data]) => data.available)
       .map(([platform]) => platform);
-
     const unavailable = Object.entries(platformCoverage)
       .filter(([, data]) => !data.available)
       .map(([platform]) => platform);
-
     return {
       available,
       unavailable,
@@ -214,7 +190,6 @@ class LeadsTemplateService {
       totalLeads
     };
   }
-
   /**
    * Analyze leads data for ICP insights
    * @param {Array} leads - Parsed leads array
@@ -224,7 +199,6 @@ class LeadsTemplateService {
     if (!leads || leads.length === 0) {
       return { success: false, error: 'No leads to analyze' };
     }
-
     const analysis = {
       totalLeads: leads.length,
       industries: {},
@@ -233,39 +207,32 @@ class LeadsTemplateService {
       companySizes: {},
       companies: new Set()
     };
-
     for (const lead of leads) {
       // Count industries
       if (lead.industry) {
         analysis.industries[lead.industry] = (analysis.industries[lead.industry] || 0) + 1;
       }
-
       // Count job titles
       if (lead.job_title) {
         analysis.jobTitles[lead.job_title] = (analysis.jobTitles[lead.job_title] || 0) + 1;
       }
-
       // Count locations
       if (lead.location) {
         analysis.locations[lead.location] = (analysis.locations[lead.location] || 0) + 1;
       }
-
       // Count company sizes
       if (lead.company_size) {
         analysis.companySizes[lead.company_size] = (analysis.companySizes[lead.company_size] || 0) + 1;
       }
-
       // Collect unique companies
       if (lead.company) {
         analysis.companies.add(lead.company);
       }
     }
-
     // Convert to sorted arrays
     const sortByCount = obj => Object.entries(obj)
       .sort((a, b) => b[1] - a[1])
       .map(([name, count]) => ({ name, count, percentage: Math.round((count / leads.length) * 100) }));
-
     return {
       success: true,
       totalLeads: leads.length,
@@ -277,7 +244,6 @@ class LeadsTemplateService {
       topCompanies: [...analysis.companies].slice(0, 10)
     };
   }
-
   /**
    * Generate AI summary of leads data
    * @param {Object} analysis - Analysis results from analyzeLeadsData
@@ -286,22 +252,18 @@ class LeadsTemplateService {
    */
   static generateLeadsSummary(analysis, platforms) {
     const lines = [];
-
     // Lead count
     lines.push(`📊 **${analysis.totalLeads} leads** uploaded successfully.`);
-
     // Industry breakdown
     if (analysis.industries.length > 0) {
       const topIndustry = analysis.industries[0];
       lines.push(`🏢 Top industry: **${topIndustry.name}** (${topIndustry.percentage}%)`);
     }
-
     // Job titles
     if (analysis.jobTitles.length > 0) {
       const roles = analysis.jobTitles.slice(0, 3).map(j => j.name).join(', ');
       lines.push(`👤 Key roles: ${roles}`);
     }
-
     // Platform availability
     if (platforms.available.length > 0) {
       const platformText = platforms.available.map(p => {
@@ -310,14 +272,11 @@ class LeadsTemplateService {
       }).join(', ');
       lines.push(`📱 Available channels: ${platformText}`);
     }
-
     if (platforms.unavailable.length > 0) {
       lines.push(`⚠️ Missing data for: ${platforms.unavailable.join(', ')}`);
     }
-
     return lines.join('\n');
   }
-
   /**
    * Get emoji for platform
    */
@@ -332,5 +291,4 @@ class LeadsTemplateService {
     return emojis[platform] || '📱';
   }
 }
-
-module.exports = LeadsTemplateService;
+module.exports = LeadsTemplateService;

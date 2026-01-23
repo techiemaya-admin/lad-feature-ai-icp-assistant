@@ -1,7 +1,6 @@
 /**
  * ICP Onboarding Questions Types
  */
-
 export interface ICPQuestion {
   id: string;
   stepIndex: number;
@@ -21,13 +20,11 @@ export interface ICPQuestion {
   isActive: boolean;
   displayOrder?: number;
 }
-
 export interface ICPQuestionsResponse {
   success: boolean;
   questions: ICPQuestion[];
   totalSteps: number;
 }
-
 export interface ICPAnswerRequest {
   sessionId?: string;
   currentStepIndex: number;
@@ -36,7 +33,6 @@ export interface ICPAnswerRequest {
   category?: string;
   collectedAnswers?: Record<string, any>;
 }
-
 export interface ICPAnswerResponse {
   success: boolean;
   nextStepIndex: number | null;
@@ -49,17 +45,14 @@ export interface ICPAnswerResponse {
   updatedCollectedAnswers?: Record<string, any>;
   error?: string;
 }
-
 /**
  * Maya AI Assistant Types (Legacy)
  */
-
 export interface MayaMessage {
   role: 'user' | 'ai';
   content: string;
   timestamp: Date;
 }
-
 export interface MayaResponse {
   text: string;
   options?: { label: string; value: string }[] | null;
@@ -75,7 +68,6 @@ export interface MayaResponse {
   schedule?: string;
   searchResults?: any[];
 }
-
 export interface OnboardingContext {
   selectedPath: 'automation' | 'leads' | null;
   selectedPlatforms: string[];
@@ -87,7 +79,6 @@ export interface OnboardingContext {
   workflowNodes: any[];
   currentState?: 'STATE_1' | 'STATE_2' | 'STATE_3' | 'STATE_4' | 'STATE_5';
 }
-
 export interface WorkflowNode {
   id: string;
   type: string;
@@ -101,11 +92,9 @@ export interface WorkflowNode {
     variables: string[];
   };
 }
-
 /**
  * Leads Upload Types
  */
-
 export interface LeadsTemplateColumn {
   key: string;
   label: string;
@@ -113,7 +102,6 @@ export interface LeadsTemplateColumn {
   example: string;
   platform?: string;
 }
-
 export interface ParsedLead {
   first_name?: string;
   last_name?: string;
@@ -131,26 +119,22 @@ export interface ParsedLead {
   twitter_url?: string;
   [key: string]: string | undefined;
 }
-
 export interface PlatformCoverage {
   count: number;
   percentage: number;
   available: boolean;
 }
-
 export interface PlatformDetection {
   available: string[];
   unavailable: string[];
   coverage: Record<string, PlatformCoverage>;
   totalLeads?: number;
 }
-
 export interface LeadsAnalysisItem {
   name: string;
   count: number;
   percentage: number;
 }
-
 export interface LeadsAnalysis {
   success: boolean;
   totalLeads: number;
@@ -161,7 +145,6 @@ export interface LeadsAnalysis {
   uniqueCompanies: number;
   topCompanies: string[];
 }
-
 export interface LeadsUploadResponse {
   success: boolean;
   message: string;
@@ -177,12 +160,10 @@ export interface LeadsUploadResponse {
   };
   error?: string;
 }
-
 export interface PlatformQuestionOption {
   value: string;
   label: string;
 }
-
 export interface PlatformQuestion {
   id: string;
   platform: string;
@@ -195,7 +176,6 @@ export interface PlatformQuestion {
   coverage?: number;
   availablePlatforms?: PlatformQuestionOption[];
 }
-
 export interface PlatformQuestionsResponse {
   success: boolean;
   data: {
@@ -205,14 +185,12 @@ export interface PlatformQuestionsResponse {
     coverage: Record<string, PlatformCoverage>;
   };
 }
-
 export interface RecommendedAction {
   platform: string;
   action: string;
   priority: 'high' | 'medium' | 'low';
   reason: string;
 }
-
 export interface LeadsAIAnalysisResponse {
   success: boolean;
   data: {
@@ -224,7 +202,6 @@ export interface LeadsAIAnalysisResponse {
     excludedPlatforms: string[];
   };
 }
-
 export interface LeadsValidation {
   valid: ParsedLead[];
   invalid: Array<{ index: number; lead: ParsedLead; issues: string[] }>;
@@ -233,7 +210,6 @@ export interface LeadsValidation {
   invalidCount: number;
   canExecute: boolean;
 }
-
 /**
  * Leads-based Context Extension
  */
@@ -248,6 +224,4 @@ export interface LeadsFlowContext {
   platformActions: Record<string, string>;
   sequenceOrder: string[];
   delayBetween: number;
-}
-
-
+}

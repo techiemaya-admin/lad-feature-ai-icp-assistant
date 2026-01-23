@@ -388,7 +388,7 @@ if (searchResults && searchResults.length > 0) {
 ### Gemini AI Unavailable
 ```javascript
 if (!genAI) {
-  console.log('⚠️ Gemini AI not available, using fallback');
+  // ...existing code...
   // Automatically falls back to pattern matching
 }
 ```
@@ -398,7 +398,7 @@ if (!genAI) {
 try {
   const params = JSON.parse(geminiResponse);
 } catch (parseError) {
-  console.log('⚠️ Failed to parse AI response, using fallback');
+  // ...existing code...
   params = extractICPFromMessage(message);
 }
 ```
@@ -499,10 +499,7 @@ A: Check console logs for AI extraction results. The system will try pattern mat
 ### Debug Logs
 ```javascript
 // Enable debug logging
-console.log('🧠 Using Gemini AI...');
-console.log('✅ Gemini AI extracted params:', params);
-console.log('📊 User has X companies loaded - checking for actions...');
-console.log('✅ Action command detected and handled');
+// ...existing code...
 ```
 
 ### Contact

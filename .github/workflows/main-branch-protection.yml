@@ -89,7 +89,7 @@ jobs:
               labels: ['bug', 'urgent', 'ci-failure']
             });
             
-            console.log('Created issue:', issue.data.number);
+            # ...existing code...
 
   sync-to-main-repos:
     name: Sync to Main Repositories

@@ -2,11 +2,9 @@
  * Leads Upload Controller
  * Handles CSV template download and leads file upload
  */
-
 const LeadsTemplateService = require('../services/LeadsTemplateService');
 const LeadsAnalyzerService = require('../services/LeadsAnalyzerService');
 const logger = require('../utils/logger');
-
 class LeadsUploadController {
   /**
    * GET /api/ai-icp-assistant/leads/template
@@ -15,7 +13,6 @@ class LeadsUploadController {
   static async downloadTemplate(req, res) {
     try {
       const template = LeadsTemplateService.generateTemplate();
-
       res.setHeader('Content-Type', template.mimeType);
       res.setHeader('Content-Disposition', `attachment; filename="${template.filename}"`);
       res.send(template.content);
@@ -27,7 +24,6 @@ class LeadsUploadController {
       });
     }
   }
-
   /**
    * GET /api/ai-icp-assistant/leads/template/columns
    * Get template column definitions (for UI)
@@ -35,7 +31,6 @@ class LeadsUploadController {
   static async getTemplateColumns(req, res) {
     try {
       const template = LeadsTemplateService.generateTemplate();
-
       res.json({
         success: true,
         columns: template.columns,
@@ -49,7 +44,6 @@ class LeadsUploadController {
       });
     }
   }
-
   /**
    * POST /api/ai-icp-assistant/leads/upload
    * Upload and parse CSV file
@@ -58,7 +52,6 @@ class LeadsUploadController {
   static async uploadLeads(req, res) {
     try {
       let csvContent;
-
       // Handle multipart file upload
       if (req.file) {
         csvContent = req.file.buffer.toString('utf-8');
@@ -71,17 +64,14 @@ class LeadsUploadController {
           error: 'No file or CSV content provided'
         });
       }
-
       // Parse CSV
       const parseResult = LeadsTemplateService.parseCSV(csvContent);
-
       if (!parseResult.success) {
         return res.status(400).json({
           success: false,
           error: parseResult.error
         });
       }
-
       if (parseResult.validLeads === 0) {
         return res.status(400).json({
           success: false,
@@ -89,16 +79,12 @@ class LeadsUploadController {
           details: parseResult.errors
         });
       }
-
       // Detect platforms
       const platforms = LeadsTemplateService.detectPlatforms(parseResult.leads);
-
       // Basic analysis
       const analysis = LeadsTemplateService.analyzeLeadsData(parseResult.leads);
-
       // Generate summary
       const summary = LeadsTemplateService.generateLeadsSummary(analysis, platforms);
-
       res.json({
         success: true,
         message: `Successfully parsed ${parseResult.validLeads} leads`,
@@ -121,7 +107,6 @@ class LeadsUploadController {
       });
     }
   }
-
   /**
    * POST /api/ai-icp-assistant/leads/analyze
    * Deep AI analysis of uploaded leads
@@ -129,23 +114,19 @@ class LeadsUploadController {
   static async analyzeLeads(req, res) {
     try {
       const { leads } = req.body;
-
       if (!leads || !Array.isArray(leads) || leads.length === 0) {
         return res.status(400).json({
           success: false,
           error: 'No leads provided for analysis'
         });
       }
-
       const analysis = await LeadsAnalyzerService.analyzeWithAI(leads);
-
       if (!analysis.success) {
         return res.status(400).json({
           success: false,
           error: analysis.error
         });
       }
-
       res.json({
         success: true,
         data: analysis
@@ -158,7 +139,6 @@ class LeadsUploadController {
       });
     }
   }
-
   /**
    * POST /api/ai-icp-assistant/leads/platform-questions
    * Get platform-specific questions based on available lead data
@@ -166,7 +146,6 @@ class LeadsUploadController {
   static async getPlatformQuestions(req, res) {
     try {
       const { leads, platforms: providedPlatforms } = req.body;
-
       let platforms;
       if (providedPlatforms) {
         platforms = providedPlatforms;
@@ -178,9 +157,7 @@ class LeadsUploadController {
           error: 'Provide either leads array or platforms object'
         });
       }
-
       const questions = LeadsAnalyzerService.generatePlatformQuestions(platforms);
-
       res.json({
         success: true,
         data: {
@@ -198,7 +175,6 @@ class LeadsUploadController {
       });
     }
   }
-
   /**
    * POST /api/ai-icp-assistant/leads/validate
    * Validate leads for campaign execution
@@ -206,23 +182,19 @@ class LeadsUploadController {
   static async validateLeads(req, res) {
     try {
       const { leads, selectedPlatforms } = req.body;
-
       if (!leads || !Array.isArray(leads)) {
         return res.status(400).json({
           success: false,
           error: 'No leads provided'
         });
       }
-
       if (!selectedPlatforms || !Array.isArray(selectedPlatforms)) {
         return res.status(400).json({
           success: false,
           error: 'No platforms selected'
         });
       }
-
       const validation = LeadsAnalyzerService.validateForExecution(leads, selectedPlatforms);
-
       res.json({
         success: true,
         data: validation
@@ -236,5 +208,4 @@ class LeadsUploadController {
     }
   }
 }
-
-module.exports = LeadsUploadController;
+module.exports = LeadsUploadController;

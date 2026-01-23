@@ -2,9 +2,7 @@
  * Tenant Validation Middleware
  * LAD Architecture: Security layer for multi-tenancy
  */
-
 const logger = require('../utils/logger');
-
 /**
  * Middleware to validate tenant context is available
  */
@@ -17,7 +15,6 @@ const validateTenantContext = (req, res, next) => {
         code: 'MISSING_USER_CONTEXT'
       });
     }
-
     if (!req.user.tenantId) {
       logger.warn('Missing tenant context in user', { 
         userId: req.user.id, 
@@ -29,17 +26,14 @@ const validateTenantContext = (req, res, next) => {
         code: 'MISSING_TENANT_CONTEXT'
       });
     }
-
     // Add tenant validation to request context
     req.tenantId = req.user.tenantId;
     req.userId = req.user.id;
-
     logger.debug('Tenant context validated', { 
       userId: req.userId, 
       tenantId: req.tenantId, 
       path: req.path 
     });
-
     next();
   } catch (error) {
     logger.error('Tenant validation middleware error', { 
@@ -52,7 +46,6 @@ const validateTenantContext = (req, res, next) => {
     });
   }
 };
-
 /**
  * Middleware to validate resource access within tenant
  */
@@ -60,12 +53,10 @@ const validateResourceAccess = (resourceIdParam = 'id') => {
   return (req, res, next) => {
     try {
       const resourceId = req.params[resourceIdParam];
-      
       if (resourceId) {
         // Store for logging and audit
         req.resourceId = resourceId;
         req.resourceType = req.baseUrl.split('/').pop(); // e.g., 'conversations', 'profiles'
-        
         logger.debug('Resource access validation', {
           userId: req.userId,
           tenantId: req.tenantId,
@@ -74,7 +65,6 @@ const validateResourceAccess = (resourceIdParam = 'id') => {
           method: req.method
         });
       }
-
       next();
     } catch (error) {
       logger.error('Resource access validation error', { 
@@ -89,7 +79,6 @@ const validateResourceAccess = (resourceIdParam = 'id') => {
     }
   };
 };
-
 /**
  * Middleware for role-based access control
  */
@@ -107,9 +96,7 @@ const validateRBACPermission = (requiredPermission) => {
           code: 'MISSING_CAPABILITIES'
         });
       }
-
       const hasPermission = req.user.capabilities.includes(requiredPermission);
-      
       if (!hasPermission) {
         logger.warn('RBAC permission denied', { 
           userId: req.userId, 
@@ -124,13 +111,11 @@ const validateRBACPermission = (requiredPermission) => {
           required: requiredPermission
         });
       }
-
       logger.debug('RBAC permission granted', { 
         userId: req.userId, 
         tenantId: req.tenantId,
         permission: requiredPermission 
       });
-
       next();
     } catch (error) {
       logger.error('RBAC validation error', { 
@@ -144,7 +129,6 @@ const validateRBACPermission = (requiredPermission) => {
     }
   };
 };
-
 /**
  * Audit middleware for sensitive operations
  */
@@ -163,11 +147,9 @@ const auditOperation = (operation) => {
       userAgent: req.get('User-Agent'),
       timestamp: new Date().toISOString()
     });
-
     next();
   };
 };
-
 module.exports = {
   validateTenantContext,
   validateResourceAccess,

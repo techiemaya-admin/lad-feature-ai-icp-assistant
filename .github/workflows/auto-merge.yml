@@ -41,7 +41,7 @@ jobs:
             });
 
             const approvals = reviews.filter(r => r.state === 'APPROVED').length;
-            console.log(`PR has ${approvals} approval(s)`);
+            # ...existing code...
 
             // Check if all checks passed
             const { data: checks } = await github.rest.checks.listForRef({
@@ -54,13 +54,13 @@ jobs:
               c.conclusion === 'failure' || c.conclusion === 'cancelled'
             );
 
-            console.log(`Failed checks: ${failedChecks.length}`);
+            # ...existing code...
 
             // Check if PR is mergeable
             const mergeable = pr.mergeable;
             const mergeableState = pr.mergeable_state;
 
-            console.log(`Mergeable: ${mergeable}, State: ${mergeableState}`);
+            # ...existing code...
 
             const canMerge = approvals >= 1 && failedChecks.length === 0 && mergeable;
 
@@ -92,7 +92,7 @@ jobs:
                 commit_message: context.payload.pull_request.body || '',
               });
 
-              console.log('✅ PR merged successfully');
+              # ...existing code...
 
               // Add comment
               await github.rest.issues.createComment({
@@ -110,9 +110,9 @@ jobs:
                     repo: context.repo.repo,
                     ref: `heads/${context.payload.pull_request.head.ref}`,
                   });
-                  console.log('✅ Branch deleted');
+                  # ...existing code...
                 } catch (error) {
-                  console.log('⚠️  Could not delete branch:', error.message);
+                  # ...existing code...
                 }
               }
             } catch (error) {

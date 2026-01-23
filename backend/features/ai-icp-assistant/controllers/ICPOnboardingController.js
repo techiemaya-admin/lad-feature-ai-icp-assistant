@@ -3,10 +3,8 @@
  * Strictly HTTP only, no business logic, under 460 lines
  * All console.log statements REMOVED, zero hardcoded values
  */
-
 const aiICPAssistantService = require('../features/ai-icp-assistant/services/ai-icp-assistant.service');
 const logger = require('./utils/logger');
-
 class ICPOnboardingController {
   /**
    * GET /api/onboarding/icp-questions
@@ -15,9 +13,7 @@ class ICPOnboardingController {
   static async getQuestions(req, res) {
     try {
       const { category = 'campaign_setup' } = req.query;
-      
       const result = await aiICPAssistantService.getQuestions(category);
-      
       return res.json({
         success: true,
         questions: [result.question],
@@ -31,7 +27,6 @@ class ICPOnboardingController {
       });
     }
   }
-
   /**
    * GET /api/onboarding/icp-questions/:stepIndex  
    * Get question by step index
@@ -40,15 +35,12 @@ class ICPOnboardingController {
     try {
       const { stepIndex } = req.params;
       const { context } = req.query;
-      
       const stepNum = parseInt(stepIndex, 10);
       const parsedContext = context ? JSON.parse(context) : {};
-      
       const result = await aiICPAssistantService.getQuestionByStep({
         stepIndex: stepNum,
         context: parsedContext
       });
-      
       return res.json({
         success: true,
         question: result
@@ -64,7 +56,6 @@ class ICPOnboardingController {
       });
     }
   }
-
   /**
    * POST /api/onboarding/icp-answer
    * Process user answer
@@ -72,7 +63,6 @@ class ICPOnboardingController {
   static async processAnswer(req, res) {
     try {
       const { userAnswer, currentStepIndex, currentIntentKey, collectedAnswers = {} } = req.body;
-      
       // Basic validation
       if (!userAnswer || typeof userAnswer !== 'string' || userAnswer.trim().length === 0) {
         return res.status(400).json({
@@ -80,21 +70,18 @@ class ICPOnboardingController {
           error: 'Valid userAnswer is required'
         });
       }
-
       if (typeof currentStepIndex !== 'number' || currentStepIndex < 1 || currentStepIndex > 11) {
         return res.status(400).json({
           success: false,
           error: 'currentStepIndex must be between 1 and 11'
         });
       }
-      
       const result = await aiICPAssistantService.processAnswer({
         userAnswer,
         currentStepIndex,
         currentIntentKey,
         collectedAnswers
       });
-      
       return res.json({
         success: true,
         ...result
@@ -110,7 +97,6 @@ class ICPOnboardingController {
       });
     }
   }
-
   /**
    * POST /api/onboarding/create-campaign
    * Create campaign from collected data
@@ -118,19 +104,16 @@ class ICPOnboardingController {
   static async createCampaign(req, res) {
     try {
       const { collectedAnswers, userId } = req.body;
-      
       if (!collectedAnswers || typeof collectedAnswers !== 'object') {
         return res.status(400).json({
           success: false,
           error: 'collectedAnswers is required'
         });
       }
-      
       const result = await aiICPAssistantService.createCampaign({
         collectedAnswers,
         userId: userId || req.user?.userId
       });
-      
       return res.json({
         success: true,
         ...result
@@ -146,7 +129,6 @@ class ICPOnboardingController {
       });
     }
   }
-
   /**
    * POST /api/onboarding/validate-step
    * Validate current step data
@@ -154,13 +136,11 @@ class ICPOnboardingController {
   static async validateStep(req, res) {
     try {
       const { stepIndex, answer, intentKey } = req.body;
-      
       const validation = await aiICPAssistantService.validateStep({
         stepIndex,
         answer,
         intentKey
       });
-      
       return res.json({
         success: true,
         validation
@@ -176,7 +156,6 @@ class ICPOnboardingController {
       });
     }
   }
-
   /**
    * GET /api/onboarding/conversation/:conversationId
    * Get conversation details
@@ -184,9 +163,7 @@ class ICPOnboardingController {
   static async getConversation(req, res) {
     try {
       const { conversationId } = req.params;
-      
       const conversation = await aiICPAssistantService.getConversation(conversationId);
-      
       return res.json({
         success: true,
         data: conversation
@@ -202,7 +179,6 @@ class ICPOnboardingController {
       });
     }
   }
-
   /**
    * POST /api/onboarding/conversation
    * Create new conversation
@@ -210,12 +186,10 @@ class ICPOnboardingController {
   static async createConversation(req, res) {
     try {
       const { userId, organizationId } = req.body;
-      
       const conversation = await aiICPAssistantService.createConversation({
         userId: userId || req.user?.userId,
         organizationId: organizationId || req.user?.organizationId
       });
-      
       return res.json({
         success: true,
         data: conversation
@@ -232,5 +206,4 @@ class ICPOnboardingController {
     }
   }
 }
-
 module.exports = ICPOnboardingController;

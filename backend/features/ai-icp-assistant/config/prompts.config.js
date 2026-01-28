@@ -39,9 +39,9 @@ module.exports = {
       {
         stepIndex: 2,
         intentKey: 'icp_locations',
-        prompt: 'Where are these customers located?\n\n(Example: India, Dubai, USA, Remote)',
+        prompt: 'Where are these customers located?\n\n(Example: India, Dubai, USA)',
         title: 'Location',
-        expectedInput: 'Country, city, region, or remote',
+        expectedInput: 'Country, city, or region',
         allowSkip: false,
       },
       {

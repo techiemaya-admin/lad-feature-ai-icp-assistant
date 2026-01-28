@@ -41,7 +41,6 @@ jobs:
             });
 
             const approvals = reviews.filter(r => r.state === 'APPROVED').length;
-            # ...existing code...
 
             // Check if all checks passed
             const { data: checks } = await github.rest.checks.listForRef({
@@ -54,13 +53,9 @@ jobs:
               c.conclusion === 'failure' || c.conclusion === 'cancelled'
             );
 
-            # ...existing code...
-
             // Check if PR is mergeable
             const mergeable = pr.mergeable;
             const mergeableState = pr.mergeable_state;
-
-            # ...existing code...
 
             const canMerge = approvals >= 1 && failedChecks.length === 0 && mergeable;
 
@@ -92,8 +87,6 @@ jobs:
                 commit_message: context.payload.pull_request.body || '',
               });
 
-              # ...existing code...
-
               // Add comment
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
@@ -110,9 +103,8 @@ jobs:
                     repo: context.repo.repo,
                     ref: `heads/${context.payload.pull_request.head.ref}`,
                   });
-                  # ...existing code...
                 } catch (error) {
-                  # ...existing code...
+                  console.log('Could not delete branch:', error.message);
                 }
               }
             } catch (error) {

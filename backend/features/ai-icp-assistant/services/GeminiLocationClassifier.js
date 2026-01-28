@@ -17,7 +17,6 @@ Use proper spelling and formatting for all locations:
 - **Countries**: Use full country names (e.g., "United States", not "USA" or "US"; "United Arab Emirates", not "UAE")
 - **Cities**: Use correct spelling (e.g., "New York", "San Francisco", "Los Angeles", "Dubai", "Mumbai", "Singapore")
 - **Regions**: Use standard region names (e.g., "North America", "Europe", "Asia Pacific", "Middle East")
-- **Remote**: Keep as "Remote" or "Worldwide" if applicable
 ## Common Corrections
 Spelling Fixes:
 - "Dubay" → "Dubai"
@@ -172,9 +171,7 @@ IMPORTANT: Never mention spelling corrections or mistakes in the reasoning. Inst
       'New York',
       'San Francisco',
       'Bangalore',
-      'Mumbai',
-      'Remote',
-      'Worldwide'
+      'Mumbai'
     ];
     const normalizedQuery = query.toLowerCase().trim();
     if (!normalizedQuery) {
@@ -194,4 +191,4 @@ IMPORTANT: Never mention spelling corrections or mistakes in the reasoning. Inst
     };
   }
 }
-module.exports = new GeminiLocationClassifier();
+module.exports = new GeminiLocationClassifier();

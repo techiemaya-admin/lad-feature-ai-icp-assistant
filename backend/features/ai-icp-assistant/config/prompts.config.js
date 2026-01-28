@@ -39,9 +39,9 @@ module.exports = {
       {
         stepIndex: 2,
         intentKey: 'icp_locations',
-        prompt: 'Where are these customers located?\n\n(Example: India, Dubai, USA, Remote)',
+        prompt: 'Where are these customers located?\n\n(Example: India, Dubai, USA)',
         title: 'Location',
-        expectedInput: 'Country, city, region, or remote',
+        expectedInput: 'Country, city, or region',
         allowSkip: false,
       },
       {
@@ -188,7 +188,7 @@ module.exports = {
                 // Simplify: just use the label as-is, or format it nicely
                 const displayLabel = label.includes('(') ? label : `${opt.value} days (${label})`;
                 return `• ${displayLabel}`;
-              }).filter(opt => opt.length > 0).join('\n')}\n• Custom (Enter your own number)\n\n(Choose a recommended duration or enter a custom number)`;
+              }).filter(opt => opt.length > 0).join('\n')}\n\n(Choose a recommended duration or enter a custom number)`;
               logger.debug(`[PromptsConfig] Generated campaign_days question text (length: ${questionText.length})`);
               return {
                 stepIndex: 10,
@@ -196,7 +196,7 @@ module.exports = {
                 prompt: questionText,
                 title: 'Campaign Settings',
                 questionType: 'select',
-                options: options.map(opt => opt.label || opt.value).concat(['Custom']),
+                options: options.map(opt => opt.label || opt.value),
                 allowSkip: false,
               };
             } else if (subStepIndex === 1) {
@@ -306,4 +306,4 @@ module.exports = {
       },
     ];
   },
-};
+};

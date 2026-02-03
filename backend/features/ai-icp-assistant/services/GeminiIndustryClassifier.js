@@ -158,18 +158,70 @@ Respond ONLY with valid JSON (no markdown, no code blocks):
       'retail': { apollo_industry: 'Retail', confidence: 'high', reasoning: 'Perfect match for retail business.' },
       'saas': { apollo_industry: 'Computer Software', confidence: 'high', reasoning: 'SaaS companies are software businesses.' },
       'healthcare': { apollo_industry: 'Hospital & Health Care', confidence: 'high', reasoning: 'Healthcare provider.' },
+      'hospital': { apollo_industry: 'Hospital & Health Care', confidence: 'high', reasoning: 'Hospital and healthcare provider.' },
+      'hospitals': { apollo_industry: 'Hospital & Health Care', confidence: 'high', reasoning: 'Hospital and healthcare provider.' },
+      'medical': { apollo_industry: 'Hospital & Health Care', confidence: 'high', reasoning: 'Medical and healthcare services.' },
+      'clinic': { apollo_industry: 'Hospital & Health Care', confidence: 'high', reasoning: 'Medical clinic and healthcare.' },
+      'health': { apollo_industry: 'Hospital & Health Care', confidence: 'high', reasoning: 'Healthcare services.' },
+      'pharmacy': { apollo_industry: 'Pharmaceuticals', confidence: 'high', reasoning: 'Pharmacy and pharmaceutical services.' },
+      'pharmaceutical': { apollo_industry: 'Pharmaceuticals', confidence: 'high', reasoning: 'Pharmaceutical company.' },
       'manufacturing': { apollo_industry: 'Manufacturing', confidence: 'high', reasoning: 'Manufacturing company.' },
       'fintech': { apollo_industry: 'Financial Services', confidence: 'high', reasoning: 'Financial technology company.' },
+      'finance': { apollo_industry: 'Financial Services', confidence: 'high', reasoning: 'Financial services company.' },
+      'energy': { apollo_industry: 'Oil & Energy', confidence: 'high', reasoning: 'Energy industry company.' },
+      'oil': { apollo_industry: 'Oil & Energy', confidence: 'high', reasoning: 'Oil and energy sector.' },
+      'gas': { apollo_industry: 'Oil & Energy', confidence: 'high', reasoning: 'Gas and energy sector.' },
+      'utility': { apollo_industry: 'Oil & Energy', confidence: 'high', reasoning: 'Utilities and energy sector.' },
+      'power': { apollo_industry: 'Oil & Energy', confidence: 'high', reasoning: 'Power and energy sector.' },
+      'renewable': { apollo_industry: 'Oil & Energy', confidence: 'high', reasoning: 'Renewable energy sector.' },
       'ecommerce': { apollo_industry: 'Retail', confidence: 'high', reasoning: 'E-commerce is retail business.' },
       'e-commerce': { apollo_industry: 'Retail', confidence: 'high', reasoning: 'E-commerce is retail business.' },
       'logistics': { apollo_industry: 'Logistics and Supply Chain', confidence: 'high', reasoning: 'Logistics company.' },
       'telecom': { apollo_industry: 'Telecommunications', confidence: 'high', reasoning: 'Telecommunications company.' },
+      'telecommunications': { apollo_industry: 'Telecommunications', confidence: 'high', reasoning: 'Telecommunications company.' },
       'insurance': { apollo_industry: 'Insurance', confidence: 'high', reasoning: 'Insurance company.' },
       'banking': { apollo_industry: 'Banking', confidence: 'high', reasoning: 'Banking institution.' },
+      'bank': { apollo_industry: 'Banking', confidence: 'high', reasoning: 'Banking institution.' },
       'pharma': { apollo_industry: 'Pharmaceuticals', confidence: 'high', reasoning: 'Pharmaceutical company.' },
       'automotive': { apollo_industry: 'Automotive', confidence: 'high', reasoning: 'Automotive industry.' },
+      'car': { apollo_industry: 'Automotive', confidence: 'high', reasoning: 'Automotive industry.' },
+      'automobile': { apollo_industry: 'Automotive', confidence: 'high', reasoning: 'Automotive industry.' },
       'hotel': { apollo_industry: 'Hospitality', confidence: 'high', reasoning: 'Hospitality business.' },
-      'restaurant': { apollo_industry: 'Hospitality', confidence: 'high', reasoning: 'Food service and hospitality.' }
+      'hotels': { apollo_industry: 'Hospitality', confidence: 'high', reasoning: 'Hospitality business.' },
+      'restaurant': { apollo_industry: 'Hospitality', confidence: 'high', reasoning: 'Food service and hospitality.' },
+      'restaurants': { apollo_industry: 'Hospitality', confidence: 'high', reasoning: 'Food service and hospitality.' },
+      'hospitality': { apollo_industry: 'Hospitality', confidence: 'high', reasoning: 'Hospitality business.' },
+      'education': { apollo_industry: 'Education Management', confidence: 'high', reasoning: 'Education services.' },
+      'school': { apollo_industry: 'Education Management', confidence: 'high', reasoning: 'Education services.' },
+      'university': { apollo_industry: 'Higher Education', confidence: 'high', reasoning: 'Higher education institution.' },
+      'college': { apollo_industry: 'Higher Education', confidence: 'high', reasoning: 'Higher education institution.' },
+      'construction': { apollo_industry: 'Construction', confidence: 'high', reasoning: 'Construction company.' },
+      'real estate': { apollo_industry: 'Real Estate', confidence: 'high', reasoning: 'Real estate business.' },
+      'property': { apollo_industry: 'Real Estate', confidence: 'high', reasoning: 'Property and real estate.' },
+      'legal': { apollo_industry: 'Legal Services', confidence: 'high', reasoning: 'Legal services.' },
+      'law': { apollo_industry: 'Legal Services', confidence: 'high', reasoning: 'Legal services.' },
+      'lawyer': { apollo_industry: 'Legal Services', confidence: 'high', reasoning: 'Legal services.' },
+      'consulting': { apollo_industry: 'Professional Services', confidence: 'high', reasoning: 'Professional consulting services.' },
+      'professional services': { apollo_industry: 'Professional Services', confidence: 'high', reasoning: 'Professional services company.' },
+      'gym': { apollo_industry: 'Health, Wellness and Fitness', confidence: 'high', reasoning: 'Fitness and wellness business.' },
+      'fitness': { apollo_industry: 'Health, Wellness and Fitness', confidence: 'high', reasoning: 'Fitness and wellness business.' },
+      'wellness': { apollo_industry: 'Health, Wellness and Fitness', confidence: 'high', reasoning: 'Wellness and health business.' },
+      'software': { apollo_industry: 'Computer Software', confidence: 'high', reasoning: 'Software company.' },
+      'technology': { apollo_industry: 'Information Technology and Services', confidence: 'high', reasoning: 'Technology services company.' },
+      'it': { apollo_industry: 'Information Technology and Services', confidence: 'high', reasoning: 'IT services company.' },
+      'media': { apollo_industry: 'Media & Entertainment', confidence: 'high', reasoning: 'Media and entertainment company.' },
+      'entertainment': { apollo_industry: 'Media & Entertainment', confidence: 'high', reasoning: 'Entertainment industry.' },
+      'food': { apollo_industry: 'Food & Beverages', confidence: 'high', reasoning: 'Food and beverage industry.' },
+      'beverage': { apollo_industry: 'Food & Beverages', confidence: 'high', reasoning: 'Food and beverage industry.' },
+      'agriculture': { apollo_industry: 'Farming', confidence: 'high', reasoning: 'Agriculture and farming.' },
+      'farming': { apollo_industry: 'Farming', confidence: 'high', reasoning: 'Farming and agriculture.' },
+      'aviation': { apollo_industry: 'Airlines/Aviation', confidence: 'high', reasoning: 'Aviation industry.' },
+      'airline': { apollo_industry: 'Airlines/Aviation', confidence: 'high', reasoning: 'Airline industry.' },
+      'shipping': { apollo_industry: 'Maritime', confidence: 'high', reasoning: 'Maritime and shipping.' },
+      'maritime': { apollo_industry: 'Maritime', confidence: 'high', reasoning: 'Maritime industry.' },
+      'nonprofit': { apollo_industry: 'Nonprofit Organization Management', confidence: 'high', reasoning: 'Nonprofit organization.' },
+      'ngo': { apollo_industry: 'Nonprofit Organization Management', confidence: 'high', reasoning: 'Non-governmental organization.' },
+      'government': { apollo_industry: 'Government Administration', confidence: 'high', reasoning: 'Government administration.' }
     };
     
     // Check exact match first
@@ -182,18 +234,63 @@ Respond ONLY with valid JSON (no markdown, no code blocks):
     }
     
     // Check if input starts with or contains critical keywords
+    // This catches phrases like "hospital management", "healthcare industry", etc.
     const criticalKeywords = [
-      { keyword: 'retail', industry: 'Retail' },
-      { keyword: 'ecommerce', industry: 'Retail' },
-      { keyword: 'e-commerce', industry: 'Retail' }
+      // Healthcare
+      { keyword: 'hospital', industry: 'Hospital & Health Care', reasoning: 'Hospital and healthcare services.' },
+      { keyword: 'healthcare', industry: 'Hospital & Health Care', reasoning: 'Healthcare services.' },
+      { keyword: 'medical', industry: 'Hospital & Health Care', reasoning: 'Medical services.' },
+      { keyword: 'clinic', industry: 'Hospital & Health Care', reasoning: 'Medical clinic.' },
+      { keyword: 'doctor', industry: 'Hospital & Health Care', reasoning: 'Medical services.' },
+      { keyword: 'nursing', industry: 'Hospital & Health Care', reasoning: 'Healthcare and nursing.' },
+      // Retail
+      { keyword: 'retail', industry: 'Retail', reasoning: 'Retail business.' },
+      { keyword: 'ecommerce', industry: 'Retail', reasoning: 'E-commerce and retail.' },
+      { keyword: 'e-commerce', industry: 'Retail', reasoning: 'E-commerce and retail.' },
+      { keyword: 'store', industry: 'Retail', reasoning: 'Retail store.' },
+      { keyword: 'shop', industry: 'Retail', reasoning: 'Retail business.' },
+      // Hospitality
+      { keyword: 'hotel', industry: 'Hospitality', reasoning: 'Hospitality industry.' },
+      { keyword: 'restaurant', industry: 'Hospitality', reasoning: 'Restaurant and hospitality.' },
+      { keyword: 'tourism', industry: 'Hospitality', reasoning: 'Tourism and hospitality.' },
+      { keyword: 'travel', industry: 'Hospitality', reasoning: 'Travel and hospitality.' },
+      // Construction & Real Estate
+      { keyword: 'construction', industry: 'Construction', reasoning: 'Construction industry.' },
+      { keyword: 'real estate', industry: 'Real Estate', reasoning: 'Real estate business.' },
+      { keyword: 'property', industry: 'Real Estate', reasoning: 'Property and real estate.' },
+      // Education
+      { keyword: 'school', industry: 'Education Management', reasoning: 'Education services.' },
+      { keyword: 'education', industry: 'Education Management', reasoning: 'Education services.' },
+      { keyword: 'university', industry: 'Higher Education', reasoning: 'Higher education.' },
+      { keyword: 'college', industry: 'Higher Education', reasoning: 'Higher education.' },
+      // Finance
+      { keyword: 'bank', industry: 'Banking', reasoning: 'Banking institution.' },
+      { keyword: 'insurance', industry: 'Insurance', reasoning: 'Insurance services.' },
+      { keyword: 'finance', industry: 'Financial Services', reasoning: 'Financial services.' },
+      // Manufacturing
+      { keyword: 'manufacturing', industry: 'Manufacturing', reasoning: 'Manufacturing company.' },
+      { keyword: 'factory', industry: 'Manufacturing', reasoning: 'Manufacturing and factory.' },
+      // Energy
+      { keyword: 'oil', industry: 'Oil & Energy', reasoning: 'Oil and energy sector.' },
+      { keyword: 'energy', industry: 'Oil & Energy', reasoning: 'Energy sector.' },
+      { keyword: 'petroleum', industry: 'Oil & Energy', reasoning: 'Petroleum and energy.' },
+      // Logistics
+      { keyword: 'logistics', industry: 'Logistics and Supply Chain', reasoning: 'Logistics company.' },
+      { keyword: 'supply chain', industry: 'Logistics and Supply Chain', reasoning: 'Supply chain and logistics.' },
+      { keyword: 'transport', industry: 'Logistics and Supply Chain', reasoning: 'Transportation and logistics.' },
+      // Legal
+      { keyword: 'law', industry: 'Legal Services', reasoning: 'Legal services.' },
+      { keyword: 'legal', industry: 'Legal Services', reasoning: 'Legal services.' },
+      { keyword: 'lawyer', industry: 'Legal Services', reasoning: 'Legal services.' },
+      { keyword: 'attorney', industry: 'Legal Services', reasoning: 'Legal services.' }
     ];
     
-    for (const { keyword, industry } of criticalKeywords) {
+    for (const { keyword, industry, reasoning } of criticalKeywords) {
       if (input.includes(keyword)) {
         return {
           apollo_industry: industry,
           confidence: 'high',
-          reasoning: `Matches ${industry} industry.`,
+          reasoning: reasoning,
           alternative_industries: [],
           isFallback: true
         };

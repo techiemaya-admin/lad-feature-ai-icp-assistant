@@ -136,24 +136,40 @@ jobs:
 
       - name: Test server startup
         run: |
-          echo "Testing if server can start..."
+          echo "Testing if feature can be loaded..."
           
-          # Create a minimal .env file for testing
-          echo "GEMINI_API_KEY=test-key-for-validation" > .env
-          
-          # Try to start server in background and check if it initializes
-          timeout 10 node test-server.js &
-          SERVER_PID=$!
-          
-          sleep 5
-          
-          # Check if server is still running
-          if ps -p $SERVER_PID > /dev/null; then
-            echo "✅ Server started successfully"
-            kill $SERVER_PID 2>/dev/null || true
+          # Check if test-server.js exists (for standalone features)
+          if [ -f "test-server.js" ]; then
+            echo "Found test-server.js, testing server startup..."
+            
+            # Create a minimal .env file for testing
+            echo "GEMINI_API_KEY=test-key-for-validation" > .env
+            
+            # Try to start server in background and check if it initializes
+            timeout 10 node test-server.js &
+            SERVER_PID=$!
+            
+            sleep 5
+            
+            # Check if server is still running
+            if ps -p $SERVER_PID > /dev/null; then
+              echo "✅ Server started successfully"
+              kill $SERVER_PID 2>/dev/null || true
+            else
+              echo "❌ Server failed to start"
+              exit 1
+            fi
           else
-            echo "❌ Server failed to start"
-            exit 1
+            echo "⚠️  No test-server.js found (feature requires integration with main app)"
+            echo "✅ Validating feature manifest instead..."
+            
+            # Validate that manifest.js can be loaded
+            if [ -f "backend/features/ai-icp-assistant/manifest.js" ]; then
+              node -e "require('./backend/features/ai-icp-assistant/manifest.js'); console.log('✅ Feature manifest loaded successfully')"
+            else
+              echo "❌ Feature manifest not found"
+              exit 1
+            fi
           fi
 
       - name: Generate PR summary

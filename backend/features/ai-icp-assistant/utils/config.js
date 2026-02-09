@@ -12,6 +12,6 @@ const config = {
   AI_MODEL: process.env.AI_MODEL || 'gemini-pro',
   MAX_TOKENS: parseInt(process.env.MAX_TOKENS) || 2048,
   // Database
-  DB_SCHEMA: process.env.DB_SCHEMA || 'public',
+  DB_SCHEMA: process.env.POSTGRES_SCHEMA || process.env.DB_SCHEMA || 'public',
 };
-module.exports = config;
+module.exports = config;

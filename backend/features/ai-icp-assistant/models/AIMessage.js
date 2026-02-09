@@ -9,7 +9,8 @@ class AIMessage {
    * Create a new message
    */
   static async create({ 
-    conversationId, 
+    conversationId,
+    tenantId,
     role, 
     content, 
     messageData = {}, 
@@ -24,15 +25,17 @@ class AIMessage {
       const result = await query(`
         INSERT INTO ai_messages (
           conversation_id,
+          tenant_id,
           role,
           content,
           message_data,
           tokens_used,
           model
-        ) VALUES ($1, $2, $3, $4, $5, $6)
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING *
       `, [
         conversationId,
+        tenantId,
         role,
         content,
         JSON.stringify(messageData),
@@ -166,4 +169,4 @@ class AIMessage {
     }
   }
 }
-module.exports = AIMessage;
+module.exports = AIMessage;

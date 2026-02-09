@@ -30,16 +30,18 @@ class AIMessageRepository {
       const sql = `
         INSERT INTO ai_messages (
           conversation_id,
+          tenant_id,
           role,
           content,
           message_data,
           tokens_used,
           model
-        ) VALUES ($1, $2, $3, $4, $5, $6)
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING *
       `;
       const result = await query(sql, [
         conversationId,
+        tenantId,
         role,
         content,
         JSON.stringify(messageData),

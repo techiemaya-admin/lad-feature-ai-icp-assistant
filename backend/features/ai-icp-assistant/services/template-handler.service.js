@@ -33,10 +33,20 @@ class TemplateHandlerService {
       return explanation;
     }
     if (platformLower === 'linkedin') {
-      let explanation = `You selected "Send message (after accepted)" on LinkedIn.\n\n`;
-      explanation += `Please write the message that will be sent after the connection is accepted.`;
-      explanation += `\n\nPlease provide your message template below (required):`;
-      return explanation;
+      // Check if this is for connection request or message after accepted
+      if (actionsLower.includes('connection') && actionsLower.includes('request')) {
+        let explanation = `You selected "Send connection request" on LinkedIn.\n\n`;
+        explanation += `Would you like to include a personalized connection message?\n\n`;
+        explanation += `LinkedIn connection messages are limited to 300 characters. You can use {{first_name}}, {{company}}, {{title}} for personalization.\n\n`;
+        explanation += `Example: "Hi {{first_name}}, I noticed you work at {{company}}. I'd love to connect and share insights about our industry."\n\n`;
+        explanation += `Please provide your connection message below (or type "skip" to send without a message):`;
+        return explanation;
+      } else {
+        let explanation = `You selected "Send message (after accepted)" on LinkedIn.\n\n`;
+        explanation += `Please write the message that will be sent after the connection is accepted.`;
+        explanation += `\n\nPlease provide your message template below (required):`;
+        return explanation;
+      }
     }
     if (platformLower === 'whatsapp') {
       let explanation = `You selected WhatsApp message actions.\n\n`;
@@ -81,14 +91,27 @@ class TemplateHandlerService {
   }
   /**
    * Process template answer
+   * @param {string} userAnswer - The user's template answer
+   * @param {string} platformKey - The platform (e.g., 'linkedin')
+   * @param {string} actions - The selected actions (to determine if skip is allowed)
    */
-  processTemplateAnswer(userAnswer) {
-    // Templates are required - no skip option
+  processTemplateAnswer(userAnswer, platformKey = '', actions = '') {
     const trimmed = String(userAnswer || '').trim();
+    
+    // For LinkedIn connection requests, allow "skip" to send without message
+    if (platformKey && platformKey.toLowerCase() === 'linkedin') {
+      const actionsLower = String(actions).toLowerCase();
+      const isConnectionRequest = actionsLower.includes('connection') && actionsLower.includes('request');
+      
+      if (isConnectionRequest && trimmed.toLowerCase() === 'skip') {
+        return null; // Return null to indicate no message
+      }
+    }
+    
     if (!trimmed || trimmed.length === 0) {
       throw new Error('Template is required. Please provide a message template.');
     }
     return trimmed;
   }
 }
-module.exports = new TemplateHandlerService();
+module.exports = new TemplateHandlerService();

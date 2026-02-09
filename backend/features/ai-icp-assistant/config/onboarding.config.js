@@ -30,7 +30,7 @@ module.exports = {
     actions: {
       linkedin: [
         'Visit profile',
-        'Follow profile',
+        //'Follow profile',
         'Send connection request',
         'Send message (after accepted)',
       ],
@@ -55,7 +55,9 @@ module.exports = {
     templateRequired: {
       linkedin: (actions) => {
         const a = actions.toLowerCase();
-        return a.includes('message') && (a.includes('after accepted') || a.includes('send message'));
+        // Ask for connection message when sending connection request OR message after accepted
+        return (a.includes('connection') && a.includes('request')) || 
+               (a.includes('message') && (a.includes('after accepted') || a.includes('send message')));
       },
       whatsapp: (actions) => {
         const a = actions.toLowerCase();
@@ -120,4 +122,4 @@ module.exports = {
     minAnswerLength: 1,
     maxAnswerLength: 10000,
   },
-};
+};

@@ -29,7 +29,8 @@ module.exports = {
     'profiles/:id',
     'expand-keywords',
     'conversations/:id',
-    'reset'
+    'reset',
+    '/messages/batch-save'
   ],
   // Database tables
   tables: [
@@ -53,4 +54,4 @@ module.exports = {
     'conversation_history',
     'db_driven_icp_onboarding'  // Database-driven ICP questions system
   ]
-};
+};

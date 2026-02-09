@@ -459,5 +459,96 @@ class AIAssistantController {
       });
     }
   }
+
+  /**
+   * Save AI Campaign Chat Messages (batch save)
+   * POST /api/ai-icp-assistant/messages/batch-save
+   * 
+   * Saves buffered conversation messages from localStorage to database
+   */
+  static async saveCampaignChatMessages(req, res) {
+    try {
+      const { sessionId, messages, conversationId = null } = req.body;
+      const userId = req.user?.userId;
+      const tenantId = req.user?.tenantId;
+
+      if (!messages || !Array.isArray(messages) || messages.length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Messages array is required and cannot be empty'
+        });
+      }
+
+      // Get or create conversation
+      let conversation;
+      if (conversationId) {
+        conversation = await AIConversationRepository.findById(conversationId, tenantId);
+        if (!conversation || conversation.user_id !== userId) {
+          return res.status(404).json({
+            success: false,
+            error: 'Conversation not found'
+          });
+        }
+      } else {
+        // Create new conversation for this session
+        conversation = await AIConversationRepository.create({
+          userId,
+          tenantId,
+          title: `ICP Onboarding - ${sessionId || 'default'}`,
+          metadata: { sessionId, source: 'icp_onboarding' }
+        });
+      }
+
+      // Save all messages
+      const savedMessages = [];
+      for (const msg of messages) {
+        // Extract campaign dates from collectedAnswers for easier querying
+        const messageData = {
+          ...msg.messageData,
+          stepIndex: msg.stepIndex,
+          timestamp: msg.timestamp,
+          source: 'icp_buffer'
+        };
+        
+        // If collectedAnswers contains campaign scheduling data, promote it to top level
+        if (msg.messageData?.collectedAnswers) {
+          const collected = msg.messageData.collectedAnswers;
+          if (collected.timestamp) messageData.start_date = collected.timestamp;
+          if (collected.working_days) messageData.working_days = collected.working_days;
+          if (collected.campaign_days) messageData.campaign_days = collected.campaign_days;
+        }
+        
+        const savedMessage = await AIMessageRepository.create({
+          conversationId: conversation.id,
+          tenantId,
+          role: msg.role === 'user' ? 'user' : 'assistant',
+          content: msg.content,
+          messageData
+        });
+        savedMessages.push(savedMessage);
+      }
+
+      logger.info('Saved campaign chat messages', {
+        userId,
+        tenantId,
+        conversationId: conversation.id,
+        sessionId,
+        messageCount: savedMessages.length
+      });
+
+      res.json({
+        success: true,
+        conversationId: conversation.id,
+        savedCount: savedMessages.length,
+        messages: savedMessages
+      });
+    } catch (error) {
+      logger.error('Save campaign chat messages error', { error, userId: req.user?.userId, tenantId: req.user?.tenantId });
+      res.status(500).json({
+        success: false,
+        error: 'Failed to save campaign chat messages'
+      });
+    }
+  }
 }
-module.exports = AIAssistantController;
+module.exports = AIAssistantController;

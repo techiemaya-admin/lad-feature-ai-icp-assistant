@@ -27,7 +27,7 @@ class ICPQuestion {
         '{"required": true}'::jsonb as "validationRules",
         is_active as "isActive",
         1 as "displayOrder"
-      FROM ${process.env.DB_SCHEMA || 'public'}.icp_questions_prompt
+      FROM ${process.env.POSTGRES_SCHEMA || process.env.DB_SCHEMA || 'public'}.icp_questions_prompt
       WHERE category = $1 
         AND is_active = true
       ORDER BY intent_key ASC
@@ -55,7 +55,7 @@ class ICPQuestion {
         '{"required": true}'::jsonb as "validationRules",
         is_active as "isActive",
         1 as "displayOrder"
-      FROM ${process.env.DB_SCHEMA || 'public'}.icp_questions_prompt
+      FROM ${process.env.POSTGRES_SCHEMA || process.env.DB_SCHEMA || 'public'}.icp_questions_prompt
       WHERE id = $1
     `;
     const result = await query(sql, [id]);
@@ -84,7 +84,7 @@ class ICPQuestion {
           '{"required": true}'::jsonb as "validationRules",
           is_active as "isActive",
           1 as "displayOrder"
-        FROM ${process.env.DB_SCHEMA || 'public'}.icp_questions_prompt
+        FROM ${process.env.POSTGRES_SCHEMA || process.env.DB_SCHEMA || 'public'}.icp_questions_prompt
         WHERE category = $2 AND is_active = true
       )
       SELECT * FROM numbered_questions
@@ -115,7 +115,7 @@ class ICPQuestion {
         '{"required": true}'::jsonb as "validationRules",
         is_active as "isActive",
         1 as "displayOrder"
-      FROM ${process.env.DB_SCHEMA || 'public'}.icp_questions_prompt
+      FROM ${process.env.POSTGRES_SCHEMA || process.env.DB_SCHEMA || 'public'}.icp_questions_prompt
       WHERE intent_key = $1 
         AND category = $2
         AND is_active = true
@@ -132,11 +132,11 @@ class ICPQuestion {
   static async count(category = 'lead_generation') {
     const sql = `
       SELECT COUNT(*) as count
-      FROM ${process.env.DB_SCHEMA || 'public'}.icp_questions_prompt
+      FROM ${process.env.POSTGRES_SCHEMA || process.env.DB_SCHEMA || 'public'}.icp_questions_prompt
       WHERE category = $1 AND is_active = true
     `;
     const result = await query(sql, [category]);
     return parseInt(result.rows[0].count, 10);
   }
 }
-module.exports = ICPQuestion;
+module.exports = ICPQuestion;

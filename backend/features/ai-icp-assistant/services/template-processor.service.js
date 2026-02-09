@@ -25,7 +25,15 @@ class TemplateProcessorService {
     if (!selectedPlatforms.includes(normalizedPlatformKey)) {
       return this._handlePlatformMismatch(selectedPlatforms, collectedAnswers);
     }
-    const templateValue = templateHandlerService.processTemplateAnswer(userAnswer);
+    // Get the actions for this platform to pass to template processor
+    const actionsKey = `${normalizedPlatformKey}_actions`;
+    const platformActions = collectedAnswers[actionsKey] || '';
+    
+    const templateValue = templateHandlerService.processTemplateAnswer(
+      userAnswer, 
+      normalizedPlatformKey, 
+      platformActions
+    );
     const updatedAnswers = {
       ...collectedAnswers,
       [currentIntentKey]: templateValue,
@@ -140,4 +148,4 @@ class TemplateProcessorService {
     };
   }
 }
-module.exports = new TemplateProcessorService();
+module.exports = new TemplateProcessorService();

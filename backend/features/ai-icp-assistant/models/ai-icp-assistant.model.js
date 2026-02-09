@@ -26,7 +26,7 @@ class AICICPAssistantModel {
         '{"required": true}'::jsonb as "validationRules",
         is_active as "isActive",
         1 as "displayOrder"
-      FROM ${process.env.DB_SCHEMA || 'public'}.icp_questions_prompt
+      FROM ${process.env.POSTGRES_SCHEMA || process.env.DB_SCHEMA || 'public'}.icp_questions_prompt
       WHERE category = $1 
         AND is_active = true
       ORDER BY intent_key ASC
@@ -54,7 +54,7 @@ class AICICPAssistantModel {
           '{"required": true}'::jsonb as "validationRules",
           is_active as "isActive",
           1 as "displayOrder"
-        FROM ${process.env.DB_SCHEMA || 'public'}.icp_questions_prompt
+        FROM ${process.env.POSTGRES_SCHEMA || process.env.DB_SCHEMA || 'public'}.icp_questions_prompt
         WHERE category = $2 AND is_active = true
       )
       SELECT * FROM numbered_questions
@@ -83,7 +83,7 @@ class AICICPAssistantModel {
         '{"required": true}'::jsonb as "validationRules",
         is_active as "isActive",
         1 as "displayOrder"
-      FROM ${process.env.DB_SCHEMA || 'public'}.icp_questions_prompt
+      FROM ${process.env.POSTGRES_SCHEMA || process.env.DB_SCHEMA || 'public'}.icp_questions_prompt
       WHERE intent_key = $1 
         AND category = $2
         AND is_active = true
@@ -99,11 +99,11 @@ class AICICPAssistantModel {
     const categoryFilter = category || onboardingConfig.defaultCategory;
     const sql = `
       SELECT COUNT(*) as count
-      FROM ${process.env.DB_SCHEMA || 'public'}.icp_questions_prompt
+      FROM ${process.env.POSTGRES_SCHEMA || process.env.DB_SCHEMA || 'public'}.icp_questions_prompt
       WHERE category = $1 AND is_active = true
     `;
     const result = await query(sql, [categoryFilter]);
     return parseInt(result.rows[0].count, 10);
   }
 }
-module.exports = AICICPAssistantModel;
+module.exports = AICICPAssistantModel;

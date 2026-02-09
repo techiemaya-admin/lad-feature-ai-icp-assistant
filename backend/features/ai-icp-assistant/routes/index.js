@@ -52,6 +52,12 @@ router.get('/conversations/:id', authenticateToken, validateUuidParam('id'), AIA
  * Reset/archive active conversation
  */
 router.post('/reset', authenticateToken, AIAssistantController.resetConversation);
+
+/**
+ * POST /api/ai-icp-assistant/messages/batch-save
+ * Batch save buffered campaign chat messages from localStorage
+ */
+router.post('/messages/batch-save', authenticateToken, AIAssistantController.saveCampaignChatMessages);
 // ============================================================================
 // Keyword Expansion Routes
 // ============================================================================
@@ -146,4 +152,4 @@ router.use('/', aiICPAssistantRoutes);
 // Inbound lead data analysis and dynamic question generation
 const inboundRoutes = require('./inbound.routes');
 router.use('/inbound', inboundRoutes);
-module.exports = router;
+module.exports = router;

@@ -23,7 +23,7 @@ const pool = new Pool({
   connectionTimeoutMillis: 5000,
 });
 // Get the schema to use
-const schema = process.env.DB_SCHEMA || 'lad_dev';
+const schema = process.env.POSTGRES_SCHEMA || process.env.DB_SCHEMA || 'lad_dev';
 // Set search_path for all connections
 pool.on('connect', (client) => {
   client.query(`SET search_path TO ${schema}, public`);
@@ -33,4 +33,4 @@ module.exports = {
   pool,
   query: (text, params) => pool.query(text, params),
   schema
-};
+};

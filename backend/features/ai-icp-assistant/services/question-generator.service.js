@@ -94,7 +94,7 @@ class QuestionGeneratorService {
     // Check if user already has some actions selected for this platform
     const actionKey = `${nextPlatform}_actions`;
     const existingActions = context[actionKey];
-    const preSelectedActions = existingActions 
+    const preSelectedActions = existingActions
       ? String(existingActions).split(',').map(a => a.trim()).filter(a => a.length > 0)
       : actions; // Pre-select ALL actions if none selected yet
     return {
@@ -133,7 +133,7 @@ class QuestionGeneratorService {
     const campaignGoal = collectedAnswers.campaign_goal || 'Not specified';
     const campaignName = collectedAnswers.campaign_name || 'Not specified';
     const campaignDays = collectedAnswers.campaign_days || 'Not specified';
-    const workingDays = Array.isArray(collectedAnswers.working_days) 
+    const workingDays = Array.isArray(collectedAnswers.working_days)
       ? collectedAnswers.working_days.join(', ')
       : (collectedAnswers.working_days || 'Not specified');
     const leadsPerDay = collectedAnswers.leads_per_day || '10';
@@ -149,7 +149,7 @@ class QuestionGeneratorService {
 • Leads per day: ${leadsPerDay}
 Ready to launch? 🚀
 When you create and start this campaign:
-✓ Apollo will automatically generate leads based on your criteria
+✓ The system will automatically generate leads based on your criteria
 ✓ LinkedIn actions will begin executing immediately
 ✓ You'll be redirected to the campaigns page to monitor progress
 Would you like to create and start this campaign now?
@@ -168,4 +168,4 @@ Options:
     };
   }
 }
-module.exports = new QuestionGeneratorService();
+module.exports = new QuestionGeneratorService();

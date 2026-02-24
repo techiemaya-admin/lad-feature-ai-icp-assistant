@@ -286,7 +286,7 @@ module.exports = {
           if (context.leads_per_day) summaryLines.push(`• Leads per day: ${context.leads_per_day}`);
           summaryLines.push('\nReady to launch? 🚀\n');
           summaryLines.push('When you create and start this campaign:');
-          summaryLines.push('✓ Apollo will automatically generate leads based on your criteria');
+          summaryLines.push('✓ The system will automatically generate leads based on your criteria');
           summaryLines.push('✓ LinkedIn actions will begin executing immediately');
           summaryLines.push('✓ You\'ll be redirected to the campaigns page to monitor progress\n');
           summaryLines.push('Would you like to create and start this campaign now?\n');

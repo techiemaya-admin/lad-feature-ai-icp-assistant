@@ -87,7 +87,7 @@ class AICICPAssistantService {
       });
     }
     // DEBUG: Log what we received
-    logger.info('[AICICPAssistantService] processAnswer called:', { 
+    logger.info('[AICICPAssistantService] processAnswer called:', {
       userAnswer,
       currentIntentKey,
       hasPendingClassification: !!collectedAnswers.pendingClassification,
@@ -112,8 +112,8 @@ class AICICPAssistantService {
       const rawConfirmation = userAnswer.toLowerCase().trim();
       const cleanedConfirmation = cleanUserInput(userAnswer);
       // Check if user wants to type different location
-      if (rawConfirmation === 'other' || rawConfirmation === 'no' || rawConfirmation === 'different' || 
-          rawConfirmation.includes('type different') || rawConfirmation.includes('different location')) {
+      if (rawConfirmation === 'other' || rawConfirmation === 'no' || rawConfirmation === 'different' ||
+        rawConfirmation.includes('type different') || rawConfirmation.includes('different location')) {
         const cleanedAnswers = { ...collectedAnswers };
         delete cleanedAnswers.pendingLocation;
         return {
@@ -128,9 +128,9 @@ class AICICPAssistantService {
       // Check if user selected the primary location or affirmed
       const primaryLocation = pending.primary_location.toLowerCase();
       const isPrimarySelection = cleanedConfirmation === primaryLocation ||
-                                 cleanedConfirmation.includes(primaryLocation) ||
-                                 rawConfirmation.includes('recommended') ||
-                                 rawConfirmation.startsWith('✓');
+        cleanedConfirmation.includes(primaryLocation) ||
+        rawConfirmation.includes('recommended') ||
+        rawConfirmation.startsWith('✓');
       const affirmativeResponses = ['yes', 'y', 'yep', 'yeah', 'yup', 'correct', 'right', 'ok', 'okay', 'sure', 'confirm', 'confirmed'];
       const isAffirmative = affirmativeResponses.some(resp => rawConfirmation === resp || rawConfirmation.startsWith(resp + ','));
       if (isPrimarySelection || isAffirmative) {
@@ -160,7 +160,7 @@ class AICICPAssistantService {
         ];
         let matchedLocation = allSuggestions.find(loc => loc.toLowerCase() === cleanedConfirmation);
         if (!matchedLocation) {
-          matchedLocation = allSuggestions.find(loc => 
+          matchedLocation = allSuggestions.find(loc =>
             loc.toLowerCase().includes(cleanedConfirmation) || cleanedConfirmation.includes(loc.toLowerCase())
           );
         }
@@ -197,8 +197,8 @@ class AICICPAssistantService {
       const rawConfirmation = userAnswer.toLowerCase().trim();
       const cleanedConfirmation = cleanUserInput(userAnswer);
       // Check if user wants to type different role
-      if (rawConfirmation === 'other' || rawConfirmation === 'no' || rawConfirmation === 'different' || 
-          rawConfirmation.includes('type different') || rawConfirmation.includes('different role')) {
+      if (rawConfirmation === 'other' || rawConfirmation === 'no' || rawConfirmation === 'different' ||
+        rawConfirmation.includes('type different') || rawConfirmation.includes('different role')) {
         const cleanedAnswers = { ...collectedAnswers };
         delete cleanedAnswers.pendingRole;
         return {
@@ -213,9 +213,9 @@ class AICICPAssistantService {
       // Check if user selected the primary role or affirmed
       const primaryRole = pending.primary_role.toLowerCase();
       const isPrimarySelection = cleanedConfirmation === primaryRole ||
-                                 cleanedConfirmation.includes(primaryRole) ||
-                                 rawConfirmation.includes('recommended') ||
-                                 rawConfirmation.startsWith('✓');
+        cleanedConfirmation.includes(primaryRole) ||
+        rawConfirmation.includes('recommended') ||
+        rawConfirmation.startsWith('✓');
       const affirmativeResponses = ['yes', 'y', 'yep', 'yeah', 'yup', 'correct', 'right', 'ok', 'okay', 'sure', 'confirm', 'confirmed'];
       const isAffirmative = affirmativeResponses.some(resp => rawConfirmation === resp || rawConfirmation.startsWith(resp + ','));
       if (isPrimarySelection || isAffirmative) {
@@ -245,7 +245,7 @@ class AICICPAssistantService {
         ];
         let matchedRole = allSuggestions.find(role => role.toLowerCase() === cleanedConfirmation);
         if (!matchedRole) {
-          matchedRole = allSuggestions.find(role => 
+          matchedRole = allSuggestions.find(role =>
             role.toLowerCase().includes(cleanedConfirmation) || cleanedConfirmation.includes(role.toLowerCase())
           );
         }
@@ -282,17 +282,17 @@ class AICICPAssistantService {
       const pending = collectedAnswers.pendingClassification;
       const rawConfirmation = userAnswer.toLowerCase().trim();
       const cleanedConfirmation = cleanUserInput(userAnswer);
-      logger.info('[AICICPAssistantService] Parsed user input:', { 
-        raw: userAnswer, 
-        cleaned: cleanedConfirmation 
+      logger.info('[AICICPAssistantService] Parsed user input:', {
+        raw: userAnswer,
+        cleaned: cleanedConfirmation
       });
       // Check if user wants to type different industry FIRST (before other checks)
-      if (rawConfirmation === 'other' || 
-          rawConfirmation === 'no' || 
-          rawConfirmation === 'different' || 
-          rawConfirmation.includes('type different') ||
-          rawConfirmation.includes('different industry') ||
-          rawConfirmation.includes('let me type')) {
+      if (rawConfirmation === 'other' ||
+        rawConfirmation === 'no' ||
+        rawConfirmation === 'different' ||
+        rawConfirmation.includes('type different') ||
+        rawConfirmation.includes('different industry') ||
+        rawConfirmation.includes('let me type')) {
         // User wants to type a different industry
         logger.info('[AICICPAssistantService] User wants to type different industry:', { userInput: userAnswer });
         const cleanedAnswers = { ...collectedAnswers };
@@ -309,9 +309,9 @@ class AICICPAssistantService {
       // Check if user selected the primary industry (cleaned input matches the apollo industry)
       const primaryIndustry = pending.apollo_industry.toLowerCase();
       const isPrimarySelection = cleanedConfirmation === primaryIndustry ||
-                                 cleanedConfirmation.includes(primaryIndustry) ||
-                                 rawConfirmation.includes('recommended') ||
-                                 rawConfirmation.startsWith('✓');
+        cleanedConfirmation.includes(primaryIndustry) ||
+        rawConfirmation.includes('recommended') ||
+        rawConfirmation.startsWith('✓');
       // Recognize affirmative responses naturally
       const affirmativeResponses = ['yes', 'y', 'yep', 'yeah', 'yup', 'correct', 'right', 'ok', 'okay', 'sure', 'confirm', 'confirmed'];
       const isAffirmative = affirmativeResponses.some(resp => rawConfirmation === resp || rawConfirmation.startsWith(resp + ','));
@@ -345,12 +345,12 @@ class AICICPAssistantService {
           ...(pending.alternative_industries || [])
         ];
         // Try exact match first (case-insensitive, using cleaned input)
-        let matchedIndustry = allSuggestions.find(ind => 
+        let matchedIndustry = allSuggestions.find(ind =>
           ind.toLowerCase() === cleanedConfirmation
         );
         // If no exact match, check if cleaned input is contained in any suggestion
         if (!matchedIndustry) {
-          matchedIndustry = allSuggestions.find(ind => 
+          matchedIndustry = allSuggestions.find(ind =>
             ind.toLowerCase().includes(cleanedConfirmation) || cleanedConfirmation.includes(ind.toLowerCase())
           );
         }
@@ -390,10 +390,10 @@ class AICICPAssistantService {
         const classification = await geminiIndustryClassifier.classifyIndustry(userAnswer);
         if (classification.apollo_industry) {
           processedAnswer = classification.apollo_industry;
-          logger.info('[AICICPAssistantService] Industry classified:', { 
+          logger.info('[AICICPAssistantService] Industry classified:', {
             original: userAnswer,
             classified: processedAnswer,
-            confidence: classification.confidence 
+            confidence: classification.confidence
           });
           // Ask user for confirmation with clickable options
           const confidenceEmoji = classification.confidence === 'high' ? '✅' : classification.confidence === 'medium' ? '⚠️' : '❓';
@@ -421,7 +421,7 @@ class AICICPAssistantService {
             reasoning: classification.reasoning,
             alternative_industries: classification.alternative_industries
           };
-          logger.info('[AICICPAssistantService] Returning industry confirmation with options:', { 
+          logger.info('[AICICPAssistantService] Returning industry confirmation with options:', {
             options: options.map(o => o.text),
             pendingClassification: pendingClassificationData.apollo_industry
           });
@@ -450,10 +450,10 @@ class AICICPAssistantService {
         const classification = await geminiLocationClassifier.classifyLocation(userAnswer);
         if (classification.primary_location) {
           processedAnswer = classification.primary_location;
-          logger.info('[AICICPAssistantService] Location classified:', { 
+          logger.info('[AICICPAssistantService] Location classified:', {
             original: userAnswer,
             classified: processedAnswer,
-            confidence: classification.confidence 
+            confidence: classification.confidence
           });
           // Ask user for confirmation with clickable options
           const confidenceEmoji = classification.confidence === 'high' ? '✅' : classification.confidence === 'medium' ? '⚠️' : '❓';
@@ -480,7 +480,7 @@ class AICICPAssistantService {
             reasoning: classification.reasoning,
             alternative_locations: classification.alternative_locations
           };
-          logger.info('[AICICPAssistantService] Returning location confirmation with options:', { 
+          logger.info('[AICICPAssistantService] Returning location confirmation with options:', {
             options: options.map(o => o.text),
             pendingLocation: pendingLocationData.primary_location
           });
@@ -509,10 +509,10 @@ class AICICPAssistantService {
         const classification = await geminiDecisionMakersClassifier.classifyDecisionMakers(userAnswer);
         if (classification.primary_role) {
           processedAnswer = classification.primary_role;
-          logger.info('[AICICPAssistantService] Decision maker classified:', { 
+          logger.info('[AICICPAssistantService] Decision maker classified:', {
             original: userAnswer,
             classified: processedAnswer,
-            confidence: classification.confidence 
+            confidence: classification.confidence
           });
           // Ask user for confirmation with clickable options
           const confidenceEmoji = classification.confidence === 'high' ? '✅' : classification.confidence === 'medium' ? '⚠️' : '❓';
@@ -540,7 +540,7 @@ class AICICPAssistantService {
             alternative_roles: classification.alternative_roles,
             role_category: classification.role_category
           };
-          logger.info('[AICICPAssistantService] Returning role confirmation with options:', { 
+          logger.info('[AICICPAssistantService] Returning role confirmation with options:', {
             options: options.map(o => o.text),
             pendingRole: pendingRoleData.primary_role
           });
@@ -724,4 +724,4 @@ class AICICPAssistantService {
     return onboardingConfig.steps.total;
   }
 }
-module.exports = new AICICPAssistantService();
+module.exports = new AICICPAssistantService();

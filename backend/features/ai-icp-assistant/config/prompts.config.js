@@ -172,10 +172,10 @@ module.exports = {
                 return {
                   stepIndex: 10,
                   intentKey: 'campaign_days',
-                  prompt: 'How many days should this campaign run?\n\nOptions:\n• 7 days (1 week)\n• 14 days (2 weeks)\n• 30 days (1 month)\n• 60 days (2 months)\n• Custom (Enter your own number)\n\n(Choose a recommended duration or enter a custom number)',
+                  prompt: 'How many days should this campaign run?\n\nOptions:\n• 1 day (Test)\n• 7 days (1 week)\n• 14 days (2 weeks)\n• 30 days (1 month)\n• 60 days (2 months)\n• Custom (Enter your own number)\n\n(Choose a recommended duration or enter a custom number)',
                   title: 'Campaign Settings',
                   questionType: 'select',
-                  options: ['7', '14', '30', '60', 'Custom'],
+                  options: ['1', '7', '14', '30', '60', 'Custom'],
                   allowSkip: false,
                 };
               }
@@ -243,10 +243,10 @@ module.exports = {
             return {
               stepIndex: 10,
               intentKey: 'campaign_days',
-              prompt: 'How many days should this campaign run?\n\nOptions:\n• 7 days (1 week)\n• 14 days (2 weeks)\n• 30 days (1 month)\n• 60 days (2 months)\n• Custom (Enter your own number)\n\n(Choose a recommended duration or enter a custom number)',
+              prompt: 'How many days should this campaign run?\n\nOptions:\n• 1 day (Test)\n• 7 days (1 week)\n• 14 days (2 weeks)\n• 30 days (1 month)\n• 60 days (2 months)\n• Custom (Enter your own number)\n\n(Choose a recommended duration or enter a custom number)',
               title: 'Campaign Settings',
               questionType: 'select',
-              options: ['7', '14', '30', '60', 'Custom'],
+              options: ['1', '7', '14', '30', '60', 'Custom'],
               allowSkip: false,
             };
           } catch (error) {
@@ -254,10 +254,10 @@ module.exports = {
             return {
               stepIndex: 10,
               intentKey: 'campaign_days',
-              prompt: 'How many days should this campaign run?\n\nOptions:\n• 7 days (1 week)\n• 14 days (2 weeks)\n• 30 days (1 month)\n• 60 days (2 months)\n• Custom (Enter your own number)\n\n(Choose a recommended duration or enter a custom number)',
+              prompt: 'How many days should this campaign run?\n\nOptions:\n• 1 day (Test)\n• 7 days (1 week)\n• 14 days (2 weeks)\n• 30 days (1 month)\n• 60 days (2 months)\n• Custom (Enter your own number)\n\n(Choose a recommended duration or enter a custom number)',
               title: 'Campaign Settings',
               questionType: 'select',
-              options: ['7', '14', '30', '60', 'Custom'],
+              options: ['1', '7', '14', '30', '60', 'Custom'],
               allowSkip: false,
             };
           }

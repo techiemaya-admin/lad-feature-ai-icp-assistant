@@ -4,8 +4,8 @@
   "description": "AI-powered ICP Assistant feature for LAD platform",
   "main": "backend/features/ai-icp-assistant/manifest.js",
   "scripts": {
-    "start": "node backend/features/ai-icp-assistant/manifest.js",
-    "dev": "nodemon backend/features/ai-icp-assistant/manifest.js",
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js",
     "test": "echo \"No tests specified\"",
     "merge:backend": "./scripts/merge-to-backend.sh",
     "merge:frontend": "./scripts/merge-to-frontend.sh"
@@ -27,11 +27,16 @@
   "dependencies": {
     "@google/generative-ai": "^0.1.0",
     "axios": "^1.13.2",
-    "cors": "^2.8.5",
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
     "dotenv": "^16.6.1",
     "express": "^4.22.1",
+    "jsonwebtoken": "^9.0.3",
     "multer": "^2.0.2",
-    "pg": "^8.16.3",
+    "pg": "^8.18.0",
+    "socket.io": "^4.8.3",
+    "stripe": "^20.3.1",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

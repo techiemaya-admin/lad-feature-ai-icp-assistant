@@ -27,7 +27,7 @@ class StageHandlers {
           assistantContext: context,
           status: 'collecting_info',
           readyForExecution: false,
-          model: 'gemini-2.0-flash',
+          model: 'gemini-2.5-flash',
           tokensUsed: null
         };
       } else {
@@ -45,7 +45,7 @@ class StageHandlers {
           assistantContext: context,
           status: 'collecting_info',
           readyForExecution: false,
-          model: 'gemini-2.0-flash',
+          model: 'gemini-2.5-flash',
           tokensUsed: null
         };
       }
@@ -64,7 +64,7 @@ class StageHandlers {
             assistantContext: context,
             status: 'awaiting_confirmation',
             readyForExecution: false,
-            model: 'gemini-2.0-flash',
+            model: 'gemini-2.5-flash',
             tokensUsed: null
           };
         } else {
@@ -81,7 +81,7 @@ class StageHandlers {
             assistantContext: context,
             status: 'collecting_info',
             readyForExecution: false,
-            model: 'gemini-2.0-flash',
+            model: 'gemini-2.5-flash',
             tokensUsed: null
           };
         }
@@ -100,7 +100,7 @@ class StageHandlers {
           assistantContext: context,
           status: 'collecting_info',
           readyForExecution: false,
-          model: 'gemini-2.0-flash',
+          model: 'gemini-2.5-flash',
           tokensUsed: null
         };
       }
@@ -116,7 +116,7 @@ class StageHandlers {
         assistantContext: context,
         status: 'awaiting_confirmation',
         readyForExecution: false,
-        model: 'gemini-2.0-flash',
+        model: 'gemini-2.5-flash',
         tokensUsed: null
       };
     }
@@ -129,7 +129,7 @@ class StageHandlers {
       assistantContext: context,
       status: 'awaiting_confirmation',
       readyForExecution: false,
-      model: 'gemini-2.0-flash',
+      model: 'gemini-2.5-flash',
       tokensUsed: null
     };
   }
@@ -150,7 +150,7 @@ class StageHandlers {
         assistantContext: context,
         status: 'awaiting_confirmation',
         readyForExecution: false,
-        model: 'gemini-2.0-flash',
+        model: 'gemini-2.5-flash',
         tokensUsed: null
       };
     }
@@ -178,7 +178,7 @@ class StageHandlers {
         assistantContext: context,
         status: 'collecting_info',
         readyForExecution: false,
-        model: 'gemini-2.0-flash',
+        model: 'gemini-2.5-flash',
         tokensUsed: null
       };
     }
@@ -193,7 +193,7 @@ class StageHandlers {
         assistantContext: context,
         status: 'awaiting_confirmation',
         readyForExecution: false,
-        model: 'gemini-2.0-flash',
+        model: 'gemini-2.5-flash',
         tokensUsed: null
       };
     }
@@ -210,7 +210,7 @@ class StageHandlers {
       assistantContext: context,
       status: 'collecting_info',
       readyForExecution: false,
-      model: 'gemini-2.0-flash',
+      model: 'gemini-2.5-flash',
       tokensUsed: null
     };
   }
@@ -241,7 +241,7 @@ class StageHandlers {
         assistantContext: context,
         status: 'awaiting_confirmation',
         readyForExecution: false,
-        model: 'gemini-2.0-flash',
+        model: 'gemini-2.5-flash',
         tokensUsed: null
       };
     }
@@ -259,7 +259,7 @@ class StageHandlers {
       assistantContext: context,
       status: 'collecting_info',
       readyForExecution: false,
-      model: 'gemini-2.0-flash',
+      model: 'gemini-2.5-flash',
       tokensUsed: null
     };
   }

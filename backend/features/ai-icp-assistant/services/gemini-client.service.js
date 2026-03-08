@@ -32,7 +32,7 @@ class GeminiClientService {
     }
     try {
       this.genAI = new GoogleGenerativeAI(apiKey);
-      const modelName = process.env.AI_MODEL || process.env.GEMINI_MODEL || 'gemini-2.0-flash';
+      const modelName = process.env.AI_MODEL || process.env.GEMINI_MODEL || 'gemini-2.5-flash';
       this.model = this.genAI.getGenerativeModel({ model: modelName });
       this._geminiAvailable = true;
       logger.info(`[GeminiClientService] Gemini API initialized with model: ${modelName}`);
@@ -74,4 +74,4 @@ class GeminiClientService {
     return this._geminiAvailable;
   }
 }
-module.exports = new GeminiClientService();
+module.exports = new GeminiClientService();

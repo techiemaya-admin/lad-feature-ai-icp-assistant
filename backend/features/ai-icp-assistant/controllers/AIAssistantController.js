@@ -290,7 +290,7 @@ class AIAssistantController {
         originalKeyword: topic,
         expandedKeywords,
         context,
-        model: process.env.AI_MODEL || 'gemini-2.0-flash',
+        model: process.env.AI_MODEL || 'gemini-2.5-flash',
         tenantId
       });
       res.json({

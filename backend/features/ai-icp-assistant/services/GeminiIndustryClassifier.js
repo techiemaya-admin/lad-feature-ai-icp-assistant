@@ -10,7 +10,7 @@ const logger = {
 class GeminiIndustryClassifier {
   constructor() {
     this.geminiApiKey = process.env.GEMINI_API_KEY;
-    this.geminiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent';
+    this.geminiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
     this.systemPrompt = `You are an industry classification expert that helps identify the exact industry category for a business. Your goal is to analyze user input about their business and return the most accurate industry name from the standardized list provided.
 ## Industry Format
 Use these exact industry names (spelling and formatting matter):

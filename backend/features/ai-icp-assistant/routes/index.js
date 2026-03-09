@@ -58,6 +58,8 @@ router.post('/lead-chat', authenticateToken, async (req, res) => {
       history,
       currentTargeting,
       pendingIntent,
+      tenantId: req.user?.tenantId || req.user?.organizationId,
+      context: req
     });
     return res.json({ success: true, ...result });
   } catch (error) {

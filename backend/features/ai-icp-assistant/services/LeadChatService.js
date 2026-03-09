@@ -15,6 +15,7 @@
  */
 
 const geminiClientService = require('./gemini-client.service');
+const companyAnalyzer = require('./CompanyAnalyzerService');
 const logger = require('../utils/logger');
 
 // ─── Intent labels ────────────────────────────────────────────────────────────
@@ -28,6 +29,8 @@ const INTENTS = {
     CLARIFY_TITLE: 'clarify_title',     // answering a pending "which title?" prompt
     CLARIFY_INDUSTRY: 'clarify_industry',  // answering a pending "which industry?" prompt
     CAMPAIGN_QUESTION: 'campaign_question', // "how many days should I run?"
+    REQUEST_ICP_HELP: 'request_icp_help', // "who should I target?", "what type of leads?"
+    ANALYZE_COMPANY_URLS: 'analyze_company_urls', // User provides linkedin OR website URL
     GENERAL_Q: 'general_q',         // everything else
 };
 
@@ -52,17 +55,25 @@ class LeadChatService {
      * @param {Array}       params.history           - Recent messages [{role, text}]
      * @param {Object|null} params.currentTargeting  - Active targeting
      * @param {string|null} params.pendingIntent     - null | 'location' | 'title' | 'industry'
+     * @param {string|null} params.tenantId          - User tenant ID for Unipile config
+     * @param {Object|null} params.context           - Request context
      * @returns {Promise<Object>} { response, newSearch, updatedTargeting, pendingIntent, options }
      */
-    async processMessage({ message, history = [], currentTargeting = null, pendingIntent = null }) {
+    async processMessage({ message, history = [], currentTargeting = null, pendingIntent = null, tenantId = null, context = null }) {
         try {
-            // Step 1: Fast-path check for trigger phrases (before calling Gemini)
-            const isTrigger = TRIGGER_PHRASES.some(re => re.test(message.trim()));
+            // Step 1: Explicitly check for URLs to override trigger phrases
+            const hasUrls = /(http:\/\/|https:\/\/|www\.|[a-z0-9-]+\.com(?=\s|$))/i.test(message);
+            const isTrigger = !hasUrls && TRIGGER_PHRASES.some(re => re.test(message.trim()));
 
             // Step 2: Detect intent
-            const intent = isTrigger
-                ? { type: INTENTS.CONTEXT_SEARCH, value: null }
-                : await this._detectIntent(message, currentTargeting, pendingIntent, history);
+            let intent;
+            if (hasUrls) {
+                intent = { type: INTENTS.ANALYZE_COMPANY_URLS, value: null };
+            } else {
+                intent = isTrigger
+                    ? { type: INTENTS.CONTEXT_SEARCH, value: null }
+                    : await this._detectIntent(message, currentTargeting, pendingIntent, history);
+            }
 
             logger.info('[LeadChatService] Intent', { type: intent.type, msg: message.substring(0, 80), isTrigger });
 
@@ -213,6 +224,58 @@ class LeadChatService {
                     };
                 }
 
+                // ── Request ICP Help ───────────────────────────────────────────────
+                case INTENTS.REQUEST_ICP_HELP: {
+                    return {
+                        response: `I'd love to help you find the best leads to target! 🎯\n\nCould you please share your **Company's LinkedIn URL** and your **Website URL**? I'll analyze them to figure out exactly who your ideal customers should be.`,
+                        newSearch: false,
+                        updatedTargeting: currentTargeting,
+                        pendingIntent: null,
+                        options: [],
+                    };
+                }
+
+                // ── Analyze Company URLs ───────────────────────────────────────────
+                case INTENTS.ANALYZE_COMPANY_URLS: {
+                    if (!tenantId) {
+                        return {
+                            response: `I need your account to be properly connected to analyze that right now. Could you just manually tell me what industries and titles you want to search?`,
+                            newSearch: false,
+                            updatedTargeting: currentTargeting,
+                            pendingIntent: null,
+                            options: [],
+                        };
+                    }
+
+                    // Send an immediate acknowledgment that analysis is starting (Note: since this is HTTP request/response, 
+                    // this will just take a few seconds and return the final answer. In a real streaming environment, 
+                    // we'd sent this first. For now, we just do the work).
+
+                    const urls = message.match(/(https?:\/\/[^\s]+)/g) || [];
+                    const linkedinUrl = urls.find(url => url.includes('linkedin.com/company') || url.includes('linkedin.com/in'));
+                    const websiteUrl = urls.find(url => !url.includes('linkedin.com'));
+
+                    if (!linkedinUrl && !websiteUrl) {
+                        return {
+                            response: `I see you shared some info, but I couldn't find a valid link! Could you provide the full URL starting with "https://" (e.g. https://www.yourdomain.com)?`,
+                            newSearch: false,
+                            updatedTargeting: currentTargeting,
+                            pendingIntent: null,
+                            options: [],
+                        };
+                    }
+
+                    const analysisResponse = await companyAnalyzer.analyzeCompanyProfiles(linkedinUrl, websiteUrl, tenantId, context, history, message);
+
+                    return {
+                        response: analysisResponse,
+                        newSearch: false,
+                        updatedTargeting: currentTargeting,
+                        pendingIntent: null,
+                        options: [],
+                    };
+                }
+
                 // ── General / fallback ─────────────────────────────────────────────
                 case INTENTS.GENERAL_Q:
                 default: {
@@ -255,7 +318,7 @@ class LeadChatService {
             ? `Current targeting: titles=${JSON.stringify(currentTargeting.job_titles)}, industries=${JSON.stringify(currentTargeting.industries)}, locations=${JSON.stringify(currentTargeting.locations)}`
             : 'No current targeting set.';
 
-        const recentHistory = history.slice(-4).map(m => `${m.role === 'user' ? 'User' : 'AI'}: ${m.text?.substring(0, 200)}`).join('\n');
+        const recentHistory = history.slice(-4).map(m => `${m.role === 'user' ? 'User' : 'AI'}: ${m.text?.substring(0, 2500)}`).join('\n');
 
         const prompt = `You are an AI assistant for a LinkedIn lead generation tool.
 
@@ -273,6 +336,8 @@ Classify the user's intent as exactly ONE of these:
 - "refine_title"      — User wants to change ONLY the job title
 - "refine_industry"   — User wants to change ONLY the industry
 - "campaign_question" — User asks about campaigns, scheduling, duration, daily limits, connection messages
+- "request_icp_help"  — User asks for advice on "who should I target?", "help me figure out what leads to search", "what companies should I find"
+- "analyze_company_urls" — User is providing a website URL (http/https) OR a LinkedIn URL, specifically for you to analyze their business.
 - "general_q"         — Any other general question, website analysis, advice request, or follow-up
 
 IMPORTANT: If the message is short (under 6 words) and contains "find", "search", "go" or similar action words without specific lead details → use "context_search".
@@ -288,10 +353,12 @@ Respond ONLY with valid JSON:
         } catch (e) {
             logger.warn('[LeadChatService] Intent detection fallback', { error: e.message });
             const lower = message.toLowerCase();
+            if (message.includes('http://') || message.includes('https://') || message.includes('www.') || message.includes('.com')) return { type: INTENTS.ANALYZE_COMPANY_URLS };
             if (/\b(campaign|schedule|daily|limit|days|run|duration|connection message)\b/.test(lower)) return { type: INTENTS.CAMPAIGN_QUESTION };
             if (/\b(try|change|switch|update|different)\b.*(location|city|country|place)/i.test(message)) return { type: INTENTS.REFINE_LOCATION };
             if (/\b(try|change|switch|update|different)\b.*(title|role|position|job)/i.test(message)) return { type: INTENTS.REFINE_TITLE };
             if (/\b(try|change|switch|update)\b.*(industry|sector|field)/i.test(message)) return { type: INTENTS.REFINE_INDUSTRY };
+            if (/\b(who should|help me|what type|suggest targeting|what leads)\b/i.test(message)) return { type: INTENTS.REQUEST_ICP_HELP };
             if (/\b(cto|cfo|coo|ceo|vp\s|director|manager|engineer|developer)\b/i.test(message) && message.length > 15) return { type: INTENTS.SEARCH_LEADS };
             return { type: INTENTS.GENERAL_Q };
         }
@@ -302,7 +369,7 @@ Respond ONLY with valid JSON:
      * Also uses history to fill in missing fields (e.g. location mentioned earlier).
      */
     async _extractTargetingFromMessage(message, history = []) {
-        const historyCtx = history.slice(-6).map(m => `${m.role === 'user' ? 'User' : 'AI'}: ${m.text?.substring(0, 300)}`).join('\n');
+        const historyCtx = history.slice(-6).map(m => `${m.role === 'user' ? 'User' : 'AI'}: ${m.text?.substring(0, 2500)}`).join('\n');
 
         const prompt = `Extract LinkedIn lead targeting from this search request.
 
@@ -354,7 +421,7 @@ Respond ONLY with valid JSON:
 
         // Build full conversation context for Gemini to scan
         const fullHistory = history.slice(-10)
-            .map(m => `${m.role === 'user' ? 'User' : 'AI'}: ${m.text?.substring(0, 500)}`)
+            .map(m => `${m.role === 'user' ? 'User' : 'AI'}: ${m.text?.substring(0, 2500)}`)
             .join('\n');
 
         const prompt = `You are extracting LinkedIn lead targeting parameters from a conversation.

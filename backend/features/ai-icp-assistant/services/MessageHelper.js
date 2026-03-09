@@ -39,7 +39,7 @@ class MessageHelper {
         assistantContext: context,
         status: 'ready_for_execution',
         readyForExecution: true,
-        model: 'gemini-2.0-flash',
+        model: 'gemini-2.5-flash',
         tokensUsed: null
       };
     } else {
@@ -64,7 +64,7 @@ class MessageHelper {
         assistantContext: context,
         status: 'collecting_info',
         readyForExecution: false,
-        model: 'gemini-2.0-flash',
+        model: 'gemini-2.5-flash',
         tokensUsed: null
       };
     }

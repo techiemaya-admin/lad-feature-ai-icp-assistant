@@ -64,7 +64,7 @@ ${stageInstructions}
 - Always move the conversation forward
 - Check the conversation history - if a question was already asked and answered, skip it
 Generate your response now (just the text, no JSON, no explanations):`;
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
       const result = await model.generateContent(prompt);
       const response = await result.response;
       const responseText = response.text().trim();

@@ -37,6 +37,39 @@ const upload = multer({
  * Chat with AI assistant to define ICP and trigger searches
  */
 router.post('/chat', authenticateToken, validateChatRequest, AIAssistantController.chat);
+
+/**
+ * POST /api/ai-icp-assistant/lead-chat
+ * Conversational AI for the Advanced Search AI page.
+ * Handles lead refinement (location/title/industry), campaign questions, and general follow-ups.
+ * Stateless — conversation context is passed by the client each request, not stored in DB.
+ * Self-contained: only imports from within this ai-icp-assistant feature.
+ */
+router.post('/lead-chat', authenticateToken, async (req, res) => {
+  const LeadChatService = require('../services/LeadChatService');
+  const logger = require('../utils/logger');
+  try {
+    const { message, history = [], currentTargeting = null, pendingIntent = null } = req.body;
+    if (!message || !message.trim()) {
+      return res.status(400).json({ success: false, error: 'Message is required' });
+    }
+    const result = await LeadChatService.processMessage({
+      message: message.trim(),
+      history,
+      currentTargeting,
+      pendingIntent,
+    });
+    return res.json({ success: true, ...result });
+  } catch (error) {
+    logger.error('[lead-chat route] Error', { error: error.message });
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to process message',
+      response: "I had trouble processing that. Please try again."
+    });
+  }
+});
+
 /**
  * GET /api/ai-icp-assistant/history
  * Get conversation history for user

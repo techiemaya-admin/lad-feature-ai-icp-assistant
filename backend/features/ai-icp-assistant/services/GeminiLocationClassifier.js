@@ -10,7 +10,7 @@ const logger = {
 class GeminiLocationClassifier {
   constructor() {
     this.geminiApiKey = process.env.GEMINI_API_KEY;
-    this.geminiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent';
+    this.geminiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
     this.systemPrompt = `You are a location classification expert that helps identify and correct location names. Your goal is to analyze user input about target locations and return the most accurate, properly spelled location name.
 ## Location Format
 Use proper spelling and formatting for all locations:

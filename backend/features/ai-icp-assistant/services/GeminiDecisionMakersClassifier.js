@@ -10,7 +10,7 @@ const logger = {
 class GeminiDecisionMakersClassifier {
   constructor() {
     this.geminiApiKey = process.env.GEMINI_API_KEY;
-    this.geminiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent';
+    this.geminiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
     this.systemPrompt = `You are a job title classification expert that helps identify and standardize decision maker roles. Your goal is to analyze user input about target decision makers and return the most accurate, standardized job title.
 ## Job Title Format
 Use proper spelling and standard formatting for all roles:

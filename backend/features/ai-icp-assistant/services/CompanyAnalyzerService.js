@@ -176,6 +176,9 @@ class CompanyAnalyzerService extends UnipileBaseService {
 I am giving you data about a company extracted from their LinkedIn profile and Website. 
 Your goal is to figure out EXACTLY who their Ideal Customer Profile (ICP) is, and what kind of leads they should target on LinkedIn Sales Navigator, WHILE directly answering the user's specific question.
 
+CRITICAL RULE: LinkedIn Sales Navigator is purely for B2B (Business-to-Business) searching. NEVER suggest targeting "High-Net-Worth Individuals", "Consumers", or industries simply because the people in them "earn high salaries". 
+If the company is B2C (like residential real estate), you MUST pivot to suggest B2B referral partners (e.g. Wealth Managers, Family Offices, Corporate Relocation Managers, Real Estate Investors, HR Directors) rather than end-consumers.
+
 --- PREVIOUS CONVERSATION CONTEXT ---
 ${historyCtx || '(None)'}
 
@@ -187,13 +190,13 @@ ${ctxContent}
 --- COMPANY DATA END ---
 
 Based on the company data AND what the user explicitly said or asked for in their latest message:
-1. Identify the BEST target **industries** for them to sell to.
-2. Identify the BEST **job titles** (decision-makers) they should target.
+1. Identify the BEST target **industries** for them to sell to or partner with (B2B ONLY).
+2. Identify the BEST **job titles** (decision-makers or referral partners) they should target (B2B ONLY).
 
 Respond directly addressing the user in a helpful, conversational, professional tone (like ChatGPT would).
 First, acknowledge and respond to whatever specific question or context the user gave in their "CURRENT USER MESSAGE". 
 If the user explicitly asked to "find leads" in a specific sector or in general, address that!
-Then, explain *why* these leads make sense based on the website/LinkedIn data.
+Then, explain *why* these B2B leads make sense based on the website/LinkedIn data.
 Conclude by asking: "Would you like me to go ahead and run a search for these [Job Titles] in [Industries]?" (Format this as a friendly question).
 
 Keep it concise (3-4 paragraphs max). Use bullet points for titles and industries to make it readable.`;

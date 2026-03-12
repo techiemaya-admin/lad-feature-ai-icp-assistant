@@ -98,7 +98,7 @@ class LeadChatService {
 
                     if (!targeting || (!targeting.job_titles?.length && !targeting.industries?.length && !targeting.locations?.length)) {
                         return {
-                            response: `🎯 I'd love to find those leads! Could you describe who you're looking for? For example:\n\n• "Event Managers in Dubai"\n• "HR Directors at corporate companies in UAE"`,
+                            response: `🎯 I'd love to find those leads! Tell me what you're looking for — here are some examples:\n\n• **Find a person:** \"John Smith, CTO at Stripe\"\n• **People at a company:** \"Find all people in Tesla\"\n• **Decision makers:** \"Find decision makers at Google\"\n• **Specific role:** \"Find founders at techiemaya\"\n• **Industry search:** \"Marketing directors at fintech startups in London\"`,
                             newSearch: false,
                             updatedTargeting: currentTargeting,
                             pendingIntent: null,
@@ -293,7 +293,7 @@ class LeadChatService {
         } catch (error) {
             logger.error('[LeadChatService] processMessage error', { error: error.message });
             return {
-                response: `I had a bit of trouble with that. Could you rephrase?\n\n• "Find Event Managers in Dubai"\n• "Change location to Abu Dhabi"\n• "How long should my campaign run?"`,
+                response: `I had a bit of trouble with that. Could you rephrase? Here are some examples:\n\n• \"Find all people in Tesla\"\n• \"Find decision makers at Google\"\n• \"Find John Smith, CTO at Stripe\"\n• \"Marketing directors at fintech startups in London\"`,
                 newSearch: false,
                 updatedTargeting: currentTargeting,
                 pendingIntent: null,
@@ -529,7 +529,7 @@ Keep tone friendly, professional, and helpful. Max 8 sentences.`;
         try {
             return await geminiClientService.generateContent(prompt);
         } catch (e) {
-            return `I'm here to help you find the perfect leads! 🎯\n\nYou can:\n• Ask me to find leads — e.g. "Find Event Managers in Dubai"\n• Refine your search — e.g. "Try Abu Dhabi instead"\n• Ask about campaign setup\n\nWhat would you like to do?`;
+            return `I'm here to help you find the perfect leads! 🎯\n\nYou can:\n• **Find a person:** "John Smith, CTO at Stripe"\n• **People at a company:** "Find all people in Tesla"\n• **Decision makers:** "Find decision makers at Google"\n• **Specific role:** "Find founders at techiemaya"\n• **Industry search:** "Marketing directors in London"\n\nWhat would you like to do?`;
         }
     }
 
